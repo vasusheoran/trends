@@ -1,0 +1,39 @@
+<div class="mat-elevation-z8" *ngIf="dataSource">
+    <table mat-table [dataSource]="dataSource">
+        <!-- Position Column -->
+        <ng-container matColumnDef="Date">
+            <th mat-header-cell *matHeaderCellDef> Date </th>
+            <td mat-cell *matCellDef="let element"> {{element.Date  | date }} </td>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="CP">
+            <th mat-header-cell *matHeaderCellDef> Close Price </th>
+            <td mat-cell *matCellDef="let element"> {{element.CP  | number : '1.0-0' }} </td>
+        </ng-container>
+
+        <!-- Weight Column -->
+        <ng-container matColumnDef="HP">
+            <th mat-header-cell *matHeaderCellDef> High Price </th>
+            <td mat-cell *matCellDef="let element"> {{element.HP  | number : '1.0-0' }} </td>
+        </ng-container>
+
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="LP">
+            <th mat-header-cell *matHeaderCellDef> Low Price </th>
+            <td mat-cell *matCellDef="let element"> {{element.LP  | number : '1.0-0' }} </td>
+        </ng-container>
+
+        <!-- Star Column -->
+        <!-- <ng-container matColumnDef="star" stickyEnd>
+    <th mat-header-cell *matHeaderCellDef> More </th>
+    <td mat-cell *matCellDef="let element">
+    </td>
+</ng-container> -->
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[10, 5, 20]" showFirstLastButtons></mat-paginator>
+</div>

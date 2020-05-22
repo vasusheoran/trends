@@ -1,0 +1,12 @@
+<app-header (toggleSideBarOutput)="sideBarToggler()"></app-header>
+
+<mat-sidenav-container>
+    <mat-sidenav mode="side" [opened] = "sideBarOpen">
+        <app-sidebar></app-sidebar>
+    </mat-sidenav>
+    <mat-sidenav-content>
+        <router-outlet></router-outlet>
+    </mat-sidenav-content>
+</mat-sidenav-container>
+
+<!-- <app-footer></app-footer> -->

@@ -1,0 +1,53 @@
+.bg-custom{
+    background-color: #e976d8;
+}
+
+.bg-green{
+    background-color: #74992e;
+}
+
+.bg-red{
+    background-color: #ff0000b8;
+}
+
+.bg-blue{
+    background-color: #0000ff7a;
+}
+
+.bg-grey{
+    background-color: grey;
+}
+
+.cursor{
+    cursor:pointer;
+}
+
+table {
+    width: 100%;
+}
+
+h4{
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.total{
+    font-size: 1.5em;
+}
+
+.mat-icon,
+.description{
+    color:green;
+    font-size: 1.5em;
+}
+
+.margin-left{
+    margin-left: 10px;
+}
+
+.custom-mat-divider{
+    
+   border-top-width: 2px;
+   border-top-style: solid;
+   border-top-color: whitesmoke;
+}

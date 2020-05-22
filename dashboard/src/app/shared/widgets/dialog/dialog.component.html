@@ -1,0 +1,33 @@
+<h1 fxLayout="row" fxLayoutGap="10px" mat-dialog-title>{{ data.task }}</h1>
+<div mat-dialog-content>
+  <p *ngIf="data.task === 'Freeze buy.'">Date : {{ data.tempDate | date }}</p>
+  <p *ngIf="data.task === 'Add current day.'">Time : {{ data.tempDate | date:'H:m:s' }}</p>
+  <div *ngIf="data.bi">
+  <mat-divider></mat-divider>
+  <br>
+  <p><span><b>Frozen Value :</b> {{ data.bi | number : '1.0-0'}}</span></p>
+  <mat-divider></mat-divider>
+  <br>
+</div>
+  <mat-form-field>
+    <mat-label>CP</mat-label>
+    <input type="number" matInput [(ngModel)]="data.CP" [formControl]="close" required>
+    <mat-error *ngIf="close.invalid">You must enter a value</mat-error>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>HP</mat-label>
+    <input type="number" matInput [(ngModel)]="data.HP" [formControl]="high" required>
+    <mat-error *ngIf="high.invalid">You must enter a value</mat-error>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>LP</mat-label>
+    <input type="number" matInput [(ngModel)]="data.LP" [formControl]="low" required>
+    <mat-error *ngIf="low.invalid">You must enter a value</mat-error>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">No Thanks</button>
+  <button mat-button [mat-dialog-close]="data" cdkFocusInitial>Ok</button>
+</div>
+
+<!-- <p>{{data.date | date }}</p> -->

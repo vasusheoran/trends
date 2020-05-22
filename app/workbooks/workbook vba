@@ -1,0 +1,54 @@
+Function pythonUpdateLocal(x As String, y As String, z As String)
+    t = "/" & x & "/" & y & "/" & z
+    x = VBA.CreateObject("Python.ObjectLibrary").pythonUpdateLocal(t)
+    pythonUpdateLocal = t
+End Function
+
+
+Function pythonUpdateRemote(x As String, y As String, z As String)
+    t = "/" & x & "/" & y & "/" & z
+    x = VBA.CreateObject("Python.ObjectLibrary").pythonUpdateRemote(t)
+    pythonUpdateRemote = t
+End Function
+
+Function SAS(x As String, y As String, z As String, index As String, time As Date)
+    t = "/" & x & "/" & y & "/" & z & "/" & Format(time, "h:m:s") & "/" & index
+    x = VBA.CreateObject("Python.ObjectLibrary").SAS(t)
+    SAS = t
+End Function
+
+Function Check(x As Date)
+    Check = Format(x, "h:m:s")
+End Function
+
+################ Final Version with Post #############################
+Sub TestObjectLibrary()
+    Dim Row As String
+    Row = 2
+    Dim time As Date
+    Dim url As String
+    
+    time = ActiveSheet.Range("U" & 2)
+    url = "http://localhost:5000/update"
+    
+    x = VBA.CreateObject("Python.ObjectLibrary").SAS(ActiveSheet.Range("H" & Row).Value, ActiveSheet.Range("B" & Row).Value, ActiveSheet.Range("I" & Row).Value, ActiveSheet.Range("J" & Row).Value, Format(time, "mm:dd:yyyy h:m:s"), ActiveSheet.Range("A" & Row).Value, url)
+    Debug.Print x
+End Sub
+
+Sub GetSelection(Row As String)
+    Dim time As Date
+    Dim url As String
+    
+    time = ActiveSheet.Range("U" & 2)
+    url = "http://localhost:5000/update"
+    
+    x = VBA.CreateObject("Python.ObjectLibrary").SAS(ActiveSheet.Range("H" & Row).Value, ActiveSheet.Range("B" & Row).Value, ActiveSheet.Range("I" & Row).Value, ActiveSheet.Range("J" & Row).Value, Format(time, "mm:dd:yyyy h:m:s"), ActiveSheet.Range("A" & Row).Value, url)
+    Debug.Print x
+End Sub
+
+Function SAS(rngRef As Range)
+    Dim MyCellRow As String
+    MyCellRow = rngRef.Row
+    Call GetSelection(MyCellRow)
+    SAS = rngRef.Value
+End Function

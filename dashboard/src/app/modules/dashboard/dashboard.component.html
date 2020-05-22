@@ -1,0 +1,47 @@
+<div fxLayout="row" fxLayoutGap="10px" class="stats-cards">
+    <app-widget-autocomplete fxFlex="30" (selectedListing)="setSelectedListing($event)"></app-widget-autocomplete>
+    <div fxFlex="70"></div>
+</div>
+
+<div fxLayout="row" *ngIf="cards" fxLayoutGap="10px" class="stats-cards">
+    <!-- fxLayoutAlign="space-between center"  -->
+
+    <mat-card fxFlex="10" class="bg-green cursor" (click)="toggleEnable(cards[0], 'Buy')">
+        <app-widget-card [label]="cards[0].name" [value]="cards[0].value"></app-widget-card>
+        <mat-divider class="custom-mat-divider" *ngIf="isEnabled[cards[0].key]"></mat-divider>
+    </mat-card>
+    <mat-card fxFlex="10" class="bg-blue cursor" (click)="toggleEnable(cards[1], 'Support')">
+        <app-widget-card [label]="cards[1].name" [value]="cards[1].value"></app-widget-card>
+        <mat-divider class="custom-mat-divider" *ngIf="isEnabled[cards[1].key]"></mat-divider>
+    </mat-card>
+    <mat-card fxFlex="10" [ngClass]="cards[2].value>cards[0].value?'bg-red cursor':'bg-custom cursor'"
+        (click)="toggleEnable(cards[2], 'Sell')">
+        <app-widget-card [label]="cards[2].name" [value]="cards[2].value"></app-widget-card>
+        <mat-divider class="custom-mat-divider" *ngIf="isEnabled[cards[2].key]"></mat-divider>
+    </mat-card>
+    <mat-card fxFlex="10" class="bg-custom cursor" (click)="toggleEnable(cards[3], 'Min_High')">
+        <app-widget-card [label]="cards[3].name" [value]="cards[3].value"></app-widget-card>
+        <mat-divider class="custom-mat-divider" *ngIf="isEnabled[cards[3].key]"></mat-divider>
+    </mat-card>
+    
+    <mat-card fxFlex="60" fxLayoutAlign="space-between center" fxLayoutGap="5px" (click)="toggleEnable(cards[3], 'High')">
+        <div fxFlex="1"></div>
+        <div fxFlex="14" *ngFor="let value of values; let i = index;">
+            <div fxFlex="99" style="margin-right:-10px;">
+                <h4>{{ value.name }}</h4>            
+                <span class="total">{{ value.value  | number : '1.0-1'}}</span>
+            </div>
+            <mat-divider *ngIf="i!=(values.length - 1)" [vertical]="true"></mat-divider>
+        </div>
+        
+    </mat-card>
+</div>
+
+<br *ngIf="cards">
+<mat-divider></mat-divider>
+<br>
+<div fxLayout="row" fxLayoutGap="30px"  fxLayoutAlign="space-between center" class="stats-cards">
+    <mat-card fxFlex="100">
+        <app-widget-stock></app-widget-stock>
+    </mat-card>
+</div>

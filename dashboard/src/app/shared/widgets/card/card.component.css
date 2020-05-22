@@ -1,0 +1,20 @@
+h4{
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.total{
+    font-size: 2.5em;
+}
+
+.mat-icon,
+.description{
+    color:green;
+    font-size: 1.5em;
+}
+
+.mat-icon{
+    position: relative;
+    padding: 0 20px;
+    top: 5px;
+}

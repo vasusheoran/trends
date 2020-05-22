@@ -1,0 +1,94 @@
+version: "3.3"
+services:
+  web:
+    environment: 
+      - TIME_ZONE=Asia/Kolkata
+    build: 
+      context: ./dashboard
+      dockerfile: prod.dockerfile
+      cache_from:
+        - alpine:latest
+    image: h20180061/dashboard
+    ports:
+      - "80:80"
+    container_name: web
+    # volumes:
+    #   - webdata:/ng-app
+    depends_on:
+      - app
+
+  app:
+    # environment: 
+    #   - TIME_ZONE=Asia/Kolkata
+    build: ./trends
+    image: h20180061/trends
+    ports:
+      - "5000:5000"
+      - "123"
+    container_name: app
+    volumes:
+      - appdata:/home/app/data
+      # logging:
+      #   driver: syslog
+      #   options:
+      #     syslog-address: "tcp://192.168.99.101:123"
+      
+
+volumes:
+  appdata:
+    driver: local
+    driver_opts:
+      type: none
+      device: /c/Users/vedvp/sasonline/trends/data
+      o: bind
+      # C:\Users\vedvp\sasonline\trends\src\data
+  webdata:
+    driver: local
+    driver_opts:
+      type: none
+      device: /c/Users/vedvp/sasonline/dashboard/
+      o: bind
+  
+   # Elasticsearch Docker Images: https://www.docker.elastic.co/
+  # es:
+  #   build: ./es
+  #   image: h20180061/es
+  #   container_name: elasticsearch
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #     nofile:
+  #       soft: 65536
+  #       hard: 65536
+  #   cap_add:
+  #     - IPC_LOCK
+  #   environment:
+  #     - xpack.security.enabled=false
+  #     - discovery.type=single-node
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   volumes:
+  #     - esdata:/usr/share/elasticsearch/data
+  #     # - esbackup:/usr/share/elasticsearch/backup
+  #     # - eslogs:/usr/share/elasticsearch/logs
+  #   ports:
+  #     - 9200:9200
+  #     # - 9300:9300
+  
+  # kibana:
+  #   container_name: kibana
+  #   image: docker.elastic.co/kibana/kibana:7.4.0
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+  #   ports:
+  #     - 5601:5601
+  #   depends_on:
+  #     - es
+  
+# volumes:
+#   appdata:
+#     driver: local
+#     driver_opts:
+#       type: none
+#       device: /c/Users/vedvp/es_data/data
+#       o: bind
