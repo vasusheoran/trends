@@ -36,11 +36,11 @@ def fetch_symbol_list():
     return response
 
 def reset_current_index():
-    global calc, df, current
+    global calc, df, current, db
     calc = None
     df = None
     current = dict()
-    
+    db.reset()
     return {"data": "Reset Successfull"}
     
 def set_current_listing(jsonData):
@@ -79,6 +79,8 @@ def set_current_listing(jsonData):
         
     except KeyError:
         abort(500, description="No data found for this date range, symbol may be delisted.")
+    except Exception as er:
+        abort(500, er)
 
 def fetch_index_if_set():
     global current, db, calc

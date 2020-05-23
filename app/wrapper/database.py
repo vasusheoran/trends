@@ -138,6 +138,10 @@ class DB:
             logger.info(f"Removing file : {item}")
             os.remove(item)
         df.to_csv(self.path_to_historical_csv, index=False)  
+        
+    def reset(self):
+        os.remove(self.path_to_historical_csv)
+        os.remove(self.path_to_real_time_csv)
     
     # def get_real_time_pkl(self): 
     #     db = dict()
