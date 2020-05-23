@@ -52,7 +52,7 @@ export class AutocompleteComponent implements OnInit {
 
   public getLisiting(option:typeof Listing){
     this.selectedListing.emit(option);
-    this._shared.nextListing(option);
+    // this._shared.nextListing(option);
   }  
 
   displayFn(user: User): string {

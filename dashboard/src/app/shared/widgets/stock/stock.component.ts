@@ -64,19 +64,19 @@ export class StockComponent implements OnInit, OnDestroy {
         });
 
         // Subscribe to 
-        this._shared.sharedListing.subscribe(resp => {
-            if(typeof resp != 'function' && !this.isUpdated){
-                this.listing = resp;
-                this._config.setListing(resp).subscribe(resp => {
-                this._stockHelper.setRealTimeData(resp['chart'], resp['data']['dashboard']['cards']); 
-                this._shared.nextUpdateResponse(resp['data']['dashboard']);
-                },(err) =>{
-                    this._snack.open('Unbable to fetch data. Please set a Listing to view chart.');
-                });
-            } 
-         },(err) =>{
-             this._snack.open('Error. Unbable to fetch data.');
-         });
+        // this._shared.sharedListing.subscribe(resp => {
+        //     if(typeof resp != 'function' && !this.isUpdated){
+        //         this.listing = resp;
+        //         this._config.setListing(resp).subscribe(resp => {
+        //         this._stockHelper.setRealTimeData(resp['chart'], resp['data']['dashboard']['cards']); 
+        //         this._shared.nextUpdateResponse(resp['data']['dashboard']);
+        //         },(err) =>{
+        //             this._snack.open('Unbable to fetch data. Please set a Listing to view chart.');
+        //         });
+        //     } 
+        //  },(err) =>{
+        //      this._snack.open('Error. Unbable to fetch data.');
+        //  });
     }
     
     ngOnDestroy(): void {

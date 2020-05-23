@@ -43,24 +43,13 @@ export class SidebarComponent implements OnInit {
     
   }
 
-  ngOnInit(): void {
-    this._router.events.subscribe((val:NavigationStart) => {
-      // see also 
-        let currentUrl = this._router.url;  
-        if(currentUrl == '/'){
-         this.toggleDashBoardTools = true;
-         this.toggleHistoricDataTools = false; 
-        }else if(currentUrl == '/historica-data'){
-          this.toggleHistoricDataTools = true;
-          this.toggleDashBoardTools = false;
-        }
-    });  
-    
+  ngOnInit(): void {    
     this._shared.sharedListing.subscribe((resp) =>{
-      if(typeof resp != 'function')
+      if(typeof resp != 'function'){
         this.listing = resp;
+        this.fetchFreezeValues();
+      }
     });
-    this.fetchFreezeValues();
   }
 
   fetchFreezeValues(){

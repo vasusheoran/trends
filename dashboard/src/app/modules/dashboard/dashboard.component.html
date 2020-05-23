@@ -1,9 +1,9 @@
-<div fxLayout="row" fxLayoutGap="10px" class="stats-cards">
+<!-- <div fxLayout="row" fxLayoutGap="10px" class="stats-cards">
     <app-widget-autocomplete fxFlex="30" (selectedListing)="setSelectedListing($event)"></app-widget-autocomplete>
     <div fxFlex="70"></div>
-</div>
+</div> -->
 
-<div fxLayout="row" *ngIf="cards" fxLayoutGap="10px" class="stats-cards">
+<div fxLayout="row" *ngIf="cards" fxLayoutGap="5px" class="stats-cards">
     <!-- fxLayoutAlign="space-between center"  -->
 
     <mat-card fxFlex="10" class="bg-green cursor" (click)="toggleEnable(cards[0], 'Buy')">
@@ -37,10 +37,12 @@
     </mat-card>
 </div>
 
-<br *ngIf="cards">
-<mat-divider></mat-divider>
-<br>
-<div fxLayout="row" fxLayoutGap="30px"  fxLayoutAlign="space-between center" class="stats-cards">
+<div  *ngIf="cards">
+    <br>
+    <mat-divider></mat-divider>
+    <br>
+</div>
+<div fxLayout="row" fxLayoutGap="5px"  fxLayoutAlign="space-between center" class="stats-cards">
     <mat-card fxFlex="100">
         <app-widget-stock></app-widget-stock>
     </mat-card>

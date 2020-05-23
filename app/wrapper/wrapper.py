@@ -10,7 +10,7 @@ Created on Mon Mar 23 19:09:43 2020
 import pandas as pd
 from .utilities import get_logger
 from .calculate import Calculate
-from .yfinance_wrapper import get_historical_data_by_period
+from .finance import *
 from .database import DB
 from flask import abort
 from datetime import datetime
@@ -60,7 +60,14 @@ def set_current_listing(jsonData):
         if not historical_data:
             logger.info("Fetching data from yahoo finance .. ")
             data = pd.DataFrame()
-            data = get_historical_data_by_period(yahoo_index , period, interval)
+            if 'Derivative' in jsonData['Series']:
+                data = derivative(ticker=jsonData['YahooSymbol'], 
+                                  period=jsonData['options']['period'], 
+                                  expiry = jsonData['options']['expiry'], 
+                                  instrument = jsonData['options']['instrument'])
+            else:
+                data = history(yahoo_index , period, interval)
+                
             db.set_historical_data(data)
         else:
             data = pd.DataFrame.from_records(historical_data)

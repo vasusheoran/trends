@@ -228,7 +228,8 @@ export class StockService {
   }
 
   destroyChart(){
-    this._chart.destroy();
+    if(this._chart)
+      this._chart.destroy();
   }
 
   addPoint(update, plotLineData){
