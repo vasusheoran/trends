@@ -9,10 +9,10 @@ import { SharedService } from '../../services/shared.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 export interface User {
-  CompanyName: string;
+  Company: string;
   Series: string;
-  SASSymbol: string;
-  YahooSymbol: string;
+  SAS: string;
+  Symbol: string;
 }
 
 @Component({
@@ -56,11 +56,11 @@ export class AutocompleteComponent implements OnInit {
   }  
 
   displayFn(user: User): string {
-    return user && user.CompanyName ? user.CompanyName : '';
+    return user && user.Company ? user.Company : '';
   }
 
   private _filter(name: string): User[] {
     const filterValue = name.toLowerCase();
-    return this.options.filter(option => option.CompanyName.toLowerCase().indexOf(filterValue) === 0);
+    return this.options.filter(option => option.Company.toLowerCase().indexOf(filterValue) === 0);
   }
 }

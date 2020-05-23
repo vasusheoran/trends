@@ -140,7 +140,7 @@ export class StockComponent implements OnInit, OnChanges, OnDestroy {
 
     ngOnChanges(changes: import("@angular/core").SimpleChanges): void {
 
-        if (this.isReload && changes['listing'] && changes.listing.currentValue && changes.listing.currentValue['YahooSymbol'] !=null ) {
+        if (this.isReload && changes['listing'] && changes.listing.currentValue && changes.listing.currentValue['Symbol'] !=null ) {
 
             if (this._chart) {
                 this._chart.destroy();
@@ -304,7 +304,7 @@ export class StockComponent implements OnInit, OnChanges, OnDestroy {
     //         },
 
     //         title: {
-    //             text: name.CompanyName
+    //             text: name.Company
     //         },
 
     //         exporting: {

@@ -45,7 +45,7 @@ class AsyncUpdateRealTimeTask(threading.Thread):
                 task['Date'] = int(current_time.timestamp() * 1000)
                 
                 # Calcuate response if listing matches
-                if 'listing' in current and task['index'] == current['listing']['SASSymbol']:
+                if 'listing' in current and task['index'] == current['listing']['SAS']:
                     update_values(task, should_freeze)
                     
                 self.update_queue(task)

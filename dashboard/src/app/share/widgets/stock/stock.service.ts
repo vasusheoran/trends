@@ -212,7 +212,7 @@ export class StockService {
       chart['data'] = [current];
     }
     var options= this.setChartOptions();
-    options['title']['text'] = chart['listing']['CompanyName'];
+    options['title']['text'] = chart['listing']['Company'];
     options['series'][0]['data'] = chart['data'];
     this._chart = Highcharts.stockChart('canvas', options);
     this.currentData = current;

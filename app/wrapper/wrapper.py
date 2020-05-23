@@ -49,8 +49,8 @@ def set_current_listing(jsonData):
     
     data = pd.DataFrame()
     
-    yahoo_index = jsonData['YahooSymbol']
-    db_index = jsonData['SASSymbol']  
+    yahoo_index = jsonData['Symbol']
+    db_index = jsonData['SAS']  
     period = "2y"
     interval = "1d"
     db = DB(listing=db_index)
@@ -61,7 +61,7 @@ def set_current_listing(jsonData):
             logger.info("Fetching data from yahoo finance .. ")
             data = pd.DataFrame()
             if 'Derivative' in jsonData['Series']:
-                data = derivative(ticker=jsonData['YahooSymbol'], 
+                data = derivative(ticker=jsonData['Symbol'], 
                                   period=jsonData['options']['period'], 
                                   expiry = jsonData['options']['expiry'], 
                                   instrument = jsonData['options']['instrument'])
@@ -97,7 +97,7 @@ def fetch_index_if_set():
             response.update({'data' : values})
         else:
             historical_data = paginate(1, 1)[0]
-            historical_data.update({'index' : current['listing']['SASSymbol']})
+            historical_data.update({'index' : current['listing']['SAS']})
             values = calc.update(historical_data)
             response.update({'data' : values})
             
@@ -126,7 +126,7 @@ def update_values(ob, isFreezeEnabled = False):
     global calc, current
     
     try:
-        if isFreezeEnabled and ob['index'] == current['listing']['SASSymbol']:
+        if isFreezeEnabled and ob['index'] == current['listing']['SAS']:
             calc.freeze_value(ob)   
         else:    
             values = calc.update(ob)

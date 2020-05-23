@@ -93,7 +93,7 @@ export class SidebarComponent implements OnInit {
 
   openDailog(task, isFreeze): void {
 
-    if(this.listing ==null || this.listing.SASSymbol == null){
+    if(this.listing ==null || this.listing.SAS == null){
       this.snackBarRef = this._snack.open('Please set the Stock Listing to continue.','Close',{
         duration:4000
       });
@@ -115,7 +115,7 @@ export class SidebarComponent implements OnInit {
             });
             return;
           }
-          result['index'] = this.listing.SASSymbol;
+          result['index'] = this.listing.SAS;
 
           if(isFreeze)
             this.updateFreezeTime(result);

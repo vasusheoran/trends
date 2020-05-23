@@ -1,16 +1,16 @@
 export interface IListing {
-    CompanyName: string;
+    Company: string;
     Series: string;
-    SASSymbol: string;
-    YahooSymbol: string;
+    SAS: string;
+    Symbol: string;
 }
 
 export class Listing implements IListing { 
   
-    public CompanyName: string;
+    public Company: string;
     public Series:string;
-    public SASSymbol:string;
-    public YahooSymbol:string;
+    public SAS:string;
+    public Symbol:string;
 
     constructor(data: Partial<Listing>){
         Object.assign(this, data);
