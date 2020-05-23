@@ -8,11 +8,10 @@ Created on Sun Mar 29 18:32:11 2020
 import pandas as pd
 from datetime import datetime
 from csv import DictWriter
-from utilities import get_logger
-import glob, os, pickle 
+from .utilities import get_logger, real_time_field_names
+import glob, os 
 
 logger = get_logger("db.py")
-real_time_field_names = ["CP","HP","LP","Date","index"]
     
 class DB:
     base_path = os. getcwd()

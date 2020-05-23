@@ -7,12 +7,12 @@ Created on Wed Mar 25 20:36:00 2020
 
 #from modules.utilities import Utilities
 import pandas as pd
-from utilities import Utilities, get_logger
-from calchelper import find_BI
-from datetime import datetime, timedelta
+from .utilities import Utilities, get_logger
+from .calchelper import find_BI
+from datetime import datetime
 # import alpha_vantage_wrapper
 
-logger = get_logger("async_update_task.py")
+logger = get_logger("calcuate.py")
 
 class Calculate:
     df = pd.DataFrame()

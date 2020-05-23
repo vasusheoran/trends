@@ -4,20 +4,14 @@ Created on Tue Mar 31 00:41:53 2020
 
 @author: vsheoran
 """
-import threading,time, os
+import threading,time
 from datetime import datetime, timedelta
-from pytz import timezone
-from wrapper import update_values, current
-from utilities import get_logger, base_path
-from DB import DB, real_time_field_names
+from .wrapper import update_values, current
+from .utilities import get_logger, real_time_field_names, min_freeze_time, max_freeze_time
+from .database import DB
 
+logger = get_logger("thread.py")
 real_time_data = dict()
-
-logger = get_logger("async_update_task.py")
-
-
-max_freeze_time =  datetime.now().replace(hour=9,minute=19,second=58)
-min_freeze_time =  max_freeze_time + timedelta(seconds=1)
 
 class AsyncUpdateRealTimeTask(threading.Thread):
     real_time_field_names = list()
@@ -98,10 +92,12 @@ class FlushToDatabase(threading.Thread):
     def __init__(self):
         super().__init__()
         self.running = True
+        
+        global real_time_data
     
     
     def run(self):
-        delay = 360
+        delay = 10
         
         while(self.running):
             time.sleep(delay)
@@ -116,8 +112,8 @@ class FlushToDatabase(threading.Thread):
     def save(self):
         global real_time_data
         for key in real_time_data:
-            try:                
-                data= real_time_data[key]                
+            try:           
+                data= real_time_data[key] 
                 if len(data)>=1:
                     db = DB(key)
                     db.set_real_time_data(data)
@@ -132,6 +128,7 @@ class DailyCleanup(threading.Thread):
     def __init__(self):
         super().__init__()
         self.running = True
+        global max_freeze_time, min_freeze_time
     
     
     def run(self):
@@ -143,7 +140,7 @@ class DailyCleanup(threading.Thread):
         
         while(self.running):
             time.sleep(secs)
-            logging.info("Cleaning Up")
+            logger.info("Cleaning Up")
             max_freeze_time =  datetime.now().replace(hour=9,minute=19,second=58)
             min_freeze_time =  max_freeze_time + timedelta(seconds=1)
             

@@ -63,7 +63,7 @@ export class DashboardComponent implements OnInit {
       this.values = resp['table'];
     });
 
-    this._socket.emit('message', "Connected.");
+    this._socket.emit('updateui', "event name : updateui");
   }  
 
   setSelectedListing(event){

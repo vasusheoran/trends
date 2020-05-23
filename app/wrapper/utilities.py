@@ -6,9 +6,13 @@ Created on Mon Mar 23 19:16:30 2020
 """
 
 import logging, os
+from datetime import datetime, timedelta
 from logging import handlers
 
 base_path = "data" + os.sep
+real_time_field_names = ["CP","HP","LP","Date","index"]
+max_freeze_time =  datetime.now().replace(hour=9,minute=19,second=58)
+min_freeze_time =  max_freeze_time + timedelta(seconds=1)
 
 def get_logger(filename):
     global base_path

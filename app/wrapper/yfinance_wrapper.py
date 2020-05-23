@@ -7,8 +7,6 @@ Created on Mon Mar 30 13:44:04 2020
 
 import yfinance as yf
 import pandas as pd
-import logging
-from datetime import datetime
 
 def get_historical_data_by_period(listing, period, interval):
     df = yf.download(listing, period=period, interval=interval)    

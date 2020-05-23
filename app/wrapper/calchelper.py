@@ -4,8 +4,7 @@ Created on Sun Mar 29 17:10:15 2020
 
 @author: vsheoran
 """
-from utilities import Utilities
-import logging
+from .utilities import Utilities
 values = dict()
 
 def ema_future(n, span ,df):

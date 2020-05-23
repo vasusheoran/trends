@@ -7,18 +7,14 @@ Created on Mon Mar 23 19:09:43 2020
 
 
 #from lib.calculate import Calculate
-import inspect,os
 import pandas as pd
-from calculate import Calculate
-from yfinance_wrapper import get_historical_data_by_period
-from async_es_task import AsyncUpdateHistoricalTask
-from DB import DB
-import numpy as np
-from flask import Flask, abort, Response
-from flask_socketio import SocketIO, emit
-from flask_cors import CORS
-from utilities import get_logger
+from .utilities import get_logger
+from .calculate import Calculate
+from .yfinance_wrapper import get_historical_data_by_period
+from .database import DB
+from flask import abort
 from datetime import datetime
+from flask_socketio import emit
 
 calc = None
 df = None
@@ -26,14 +22,13 @@ current = dict()
 db = DB()
 count = 0
 
-app = Flask(__name__) 
-app.config['UPLOAD_FOLDER'] = os.getcwd() + os.sep + 'files'
-app.config['SECRET_KEY'] = 'secret!'
-CORS(app, resources={r"/*": {"origins": "*"}})
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = None
 
 logger = get_logger("wrapper.py")
 
+def set_up_socketio(io):
+    global socketio
+    socketio = io
     
 def fetch_symbol_list():
     global db
@@ -80,18 +75,6 @@ def set_current_listing(jsonData):
 
 def fetch_index_if_set():
     global current, db, calc
-# =============================================================================
-#     real_time_data = db.get_real_time_data()
-#     df = calc.get_dataframe()
-#     response = {'chart' : {'update' : [(datetime.today().timestamp()) , df.at[2, 'CP'] ], 
-#                            'listing' : current['listing'], 
-#                            'data' : real_time_data}}
-#     if len(real_time_data) > 0:
-#         last_row = db.get_latest_record()
-#         values = calc.update(last_row)
-#         # response.update({'data' : values})
-#     return response
-# =============================================================================
     try:
         real_time_data = db.get_real_time_data()
         df = calc.get_dataframe()
@@ -116,24 +99,6 @@ def fetch_index_if_set():
     except Exception as er:
         logger.error(er)
         abort(500, description="Please choose a index from search option.")
-    
-def add_new_rows(ob):
-    global calc, current
-    resp = calc.add_new_days(ob)
-    vals = dict()
-    vals.update({'data' : calc.get_dataframe(), 'index' : current['listing']['YahooSymbol']})
-    async_task = AsyncUpdateHistoricalTask(task_details=vals)
-    async_task.start()
-    return resp
-
-def delete_new_rows():
-    global calc, current
-    resp = calc.delete_new_days()
-    vals = dict()
-    vals.update({'data' : calc.get_dataframe(), 'index' : current['listing']['YahooSymbol']})
-    async_task = AsyncUpdateHistoricalTask(task_details=vals)
-    async_task.start()
-    return resp
     
 def fetch_updated_or_frozen(isUpdateEnabled = True):
     global calc

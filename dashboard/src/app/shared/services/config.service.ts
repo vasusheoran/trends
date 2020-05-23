@@ -19,7 +19,7 @@ export class ConfigService {
 
   private fetchListingsUrl:string;
 
-  private fetchHistoricalDataUrl:string;
+  private paginateHistoricalDataUrl:string;
 
   private freezeBIUrl:string;
 
@@ -49,16 +49,13 @@ export class ConfigService {
     this.fetchValuesUrl = this.baseUrl  + 'fetch/value';  
     this.fetchIndexUrl = this.baseUrl  + 'fetch/index';
     this.fetchListingsUrl = this.baseUrl  + 'fetch/listings';
-    this.fetchHistoricalDataUrl = this.baseUrl  + 'fetch/';
-    this.freezeBIUrl = this.baseUrl  + 'freeze';  
-    this.fetchFrozenUrl = this.baseUrl  + 'fetch/freeze';  
-    this.addNewRowUrl = this.baseUrl  + 'add';  
-    this.setIndexUrl = this.baseUrl  + 'set';  
-    this.resetIndexUrl = this.baseUrl  + 'reset';  
+    this.fetchFrozenUrl = this.baseUrl  + 'fetch/freeze'; 
+    this.paginateHistoricalDataUrl = this.baseUrl  + 'fetch/';
+    this.freezeBIUrl = this.baseUrl  + 'listing/freeze';  
+    this.setIndexUrl = this.baseUrl  + 'listing/set';  
+    this.resetIndexUrl = this.baseUrl  + 'listing/reset';  
     this.downloadLogUrl = this.baseUrl  + 'download/';  
     this.uploadSymbolsUrl = this.baseUrl  + 'upload';
-  
-    this.deleteRowUrl = this.baseUrl  + 'delete';
   }
 
   fetchValues() {
@@ -70,7 +67,7 @@ export class ConfigService {
   }
 
   fetchHistoricalData(page, size) {
-    const url = this.fetchHistoricalDataUrl + '/' + page + '/' + size;
+    const url = this.paginateHistoricalDataUrl + '/' + page + '/' + size;
     return this._http.get(url).pipe(map(data => data));
   }
 
