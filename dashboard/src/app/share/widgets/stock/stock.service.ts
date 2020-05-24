@@ -1,16 +1,8 @@
 import { Injectable, EventEmitter, OptionalDecorator } from '@angular/core';
 import * as Highcharts from 'highcharts/highstock';
 import { LoggerService } from 'src/app/shared/services/logger.service';
-import { IUpdateResponse, UpdateResponse } from 'src/app/shared/models/listing-response';
-import { HistoricalResponse } from 'src/app/shared/widgets/stock/stock.component';
-import * as moment from 'moment';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { IRealTimeDataResponse, RealTimeDataResponse } from 'src/app/shared/models/reat-time-response';
 import { WebSocketsService } from 'src/app/shared/services/web-sockets.service';
-import { SharedService } from 'src/app/shared/services/shared.service';
-import { IListing } from 'src/app/shared/models/listing';
 import { ConfigService } from 'src/app/shared/services/config.service';
-import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -20,11 +12,7 @@ export class StockService {
   _chart: Highcharts.Chart;
   chartOptions = {};
   currentData: any;
-
-//  buy:boolean;
-//  support:boolean;
-//  sell:boolean;
-//  high:boolean;
+  
  plotLinesOptions:any;
  isPlotLineEnabled:any;
  data: any[];
@@ -105,9 +93,6 @@ export class StockService {
         scrollbar: {
           liveRedraw: false
         },
-        // type: 'spline',
-      // animation: Highcharts.svg, // don't animate in old IE
-        // marginRight: 10,
         time: {
             // useUTC: false,
             timezone: 'Asia/Kolkata'
@@ -153,29 +138,8 @@ export class StockService {
         },
 
         chart: {
-          events: {
-              // load: function(){
-              //   this.options.fn.sockets.listen('updateui').subscribe((resp) =>{
-              //     // this.options.fn._shared.ne
-              //     console.log(resp);
-
-              //     if(this.series[0].length > 10000)
-              //       this.series[0].addPoint(resp['update'], true, true);
-              //     else
-              //       this.series[0].addPoint(resp['update']);
-              //     // this.options.fn.updatePlotLine(resp);
-              //   });
-              // }
-          },
           zoomType: 'x'
         },
-
-        // xAxis: {
-        //   events: {
-        //     afterSetExtremes: this.afterSetExtremes
-        //   }, 
-        //   minRange: 60 * 1000
-        // },
 
         series: [{
           name: 'Close',

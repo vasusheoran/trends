@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { IListing } from 'src/app/shared/models/listing';
 import { UpdateResponse, IUpdateResponse } from 'src/app/shared/models/listing-response';
 import { WebSocketsService } from 'src/app/shared/services/web-sockets.service';
-import { SharedService, ListingResponse, IUpdatedValues, ValuesData } from 'src/app/shared/services/shared.service';
+import { SharedService } from 'src/app/shared/services/shared.service';
 import { StockService } from 'src/app/share/widgets/stock/stock.service';
 
 @Component({
@@ -12,8 +12,6 @@ import { StockService } from 'src/app/share/widgets/stock/stock.service';
 })
 export class DashboardComponent implements OnInit {
 
-  
-  listing:any;
   cards:any;
   values:any;
   isEnabled:any;
@@ -26,16 +24,6 @@ export class DashboardComponent implements OnInit {
     }
 
   ngOnInit(): void { 
-    this._shared.resetListing(resp => {
-        if (resp){
-            this.listing = null;
-        }
-    }); 
-
-    // this._shared.sharedListing.subscribe(resp => {
-    //   this.listing = this.listing;
-    // })
-
     this._shared.sharedUpdateResponse.subscribe(resp =>{
       // debugger;
       if(typeof resp != "function"){
@@ -46,10 +34,6 @@ export class DashboardComponent implements OnInit {
 
     this._socket.emit('updateui', "event name : updateui");
   }  
-
-  setSelectedListing(event){
-    this.listing = event;
-  }
 
   toggleEnable(card, key){
     this.isEnabled[key] = !this.isEnabled[key];

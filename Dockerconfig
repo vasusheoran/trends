@@ -30,6 +30,8 @@ docker build -f Dockerfile -t vasu/node .
 
 List Dangling images
 docker images -f “dangling=true” -q
+@FOR /f "tokens=*" %i IN ('docker images -f "dangling=true" -q') DO (docker rmi %i)
+@FOR /f "tokens=*" %i IN ('docker ps -aq') DO (docker rm %i)
 
 Running in daemon mode
 docker run -p 80:4200 vasu/dashboard

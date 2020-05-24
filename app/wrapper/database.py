@@ -140,8 +140,11 @@ class DB:
         df.to_csv(self.path_to_historical_csv, index=False)  
         
     def reset(self):
-        os.remove(self.path_to_historical_csv)
-        os.remove(self.path_to_real_time_csv)
+        if os.path.isfile(self.path_to_historical_csv):
+            os.remove(self.path_to_historical_csv)
+            
+        if os.path.isfile(self.path_to_real_time_csv):
+            os.remove(self.path_to_real_time_csv)
     
     # def get_real_time_pkl(self): 
     #     db = dict()

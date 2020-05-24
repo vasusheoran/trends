@@ -10,13 +10,16 @@ const routes: Routes = [{
   path : '',
   component: DefaultComponent,
   children:[{
-    path:'',
+    path: '',
     component: SettingsComponent
   },{
-    path: 'historica-data',
+    path: 'settings',
+    component: SettingsComponent
+  },{
+    path: 'historical',
     component: HistoricalDataComponent
   },{
-    path: 'dash',
+    path: 'dashboard',
     component: DashboardComponent
   }]
 }];

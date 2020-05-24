@@ -3,7 +3,7 @@ import {MatPaginator} from '@angular/material/paginator';
 import {MatTableDataSource} from '@angular/material/table'
 import { ConfigService } from 'src/app/shared/services/config.service';
 import { SharedService } from 'src/app/shared/services/shared.service';
-import { MatSnackBar, MatSnackBarRef } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarRef, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 
 @Component({
@@ -25,16 +25,19 @@ export class HistoricalDataComponent implements OnInit {
     this._config.fetchHistoricalData(1, 10).subscribe((resp:ResponseData[]) => {
 
       if(resp.length ==0){
-        let snackBarRef = this._snack.open('Error fetching historical data. Please set the listing first.', 'Go',{
-          duration:9000
-        });
-        snackBarRef.onAction().subscribe(() => {
-          this._route.navigate(['/']);
-        });
+        this.openSnackBar("Please set the symbol to continue.");
+        this._route.navigateByUrl('settings');
+      }else{
+        this.dataSource = new MatTableDataSource<ResponseData>(resp);
+        this.dataSource.paginator = this.paginator;
       }
-      this.dataSource = new MatTableDataSource<ResponseData>(resp);
-      this.dataSource.paginator = this.paginator;
-
+    },err =>{
+      if(err.status == 200){
+          this.openSnackBar(err.statusText);
+        this._route.navigateByUrl('settings');
+      }
+      else
+          this.openSnackBar("Server unavailable...");  
     });
   }
 
@@ -42,8 +45,23 @@ export class HistoricalDataComponent implements OnInit {
     private _route : Router,
     private _snack : MatSnackBar) { 
       this.dataSource = null; 
-    }
+  }
+  
+  horizontalPosition: MatSnackBarHorizontalPosition = 'end';
+  verticalPosition: MatSnackBarVerticalPosition = 'bottom';
+  
+  openSnackBar(msg?:string, actionName?:string) {
+    if (!msg)
+      msg = "Unknown Error.";
+
+    this._snack.open(msg, actionName, {
+      duration: 3000,
+      horizontalPosition: this.horizontalPosition,
+      verticalPosition: this.verticalPosition,
+    });
+  }
 }
+
 
 export interface ResponseData {
   Date:Date;

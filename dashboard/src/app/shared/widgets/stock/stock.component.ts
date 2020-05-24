@@ -2,16 +2,12 @@ import { Component, OnInit, Input, EventEmitter, OnChanges, SimpleChange, Output
 import * as Highcharts from 'highcharts/highstock';
 
 import HC_exporting from 'highcharts/modules/exporting';
-import { IListing } from '../../models/listing';
 import { ConfigService } from '../../services/config.service';
-import { IUpdateResponse, UpdateResponse } from '../../models/listing-response';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 import { SharedService, ListingResponse } from '../../services/shared.service';
-import { CountdownTimerService } from '../../services/countdown-timer.service';
 import { WebSocketsService } from '../../services/web-sockets.service';
 import { StockService } from 'src/app/share/widgets/stock/stock.service';
-import { IRealTimeDataResponse } from '../../models/reat-time-response';
-import * as moment from 'moment';
+import { Router } from '@angular/router';
 
 export interface HistoricalResponse{
     CP:number;
@@ -30,23 +26,19 @@ export class StockComponent implements OnInit, OnDestroy {
     currentValues:ListingResponse;
     isUpdated:boolean;
     listing:any;
+    alertStatus:boolean = false;
     
     constructor(private _config:ConfigService,
         private _snack : MatSnackBar,
         private _shared : SharedService,
         private _socket : WebSocketsService,
-        private _stockHelper : StockService ) { 
+        private _stockHelper : StockService,
+        private _route : Router ) { 
             this.isUpdated = false;
         }
 
-    ngOnInit(): void {         
-        this._shared.resetListing(resp => {
-            if (resp){
-                this._stockHelper.destroyChart();
-            }
-        });
+    ngOnInit(): void { 
         this._socket.listen('updateui').subscribe((resp) =>{
-            // this.options.fn._shared.ne
             this._stockHelper.addPoint(resp['stocks'], resp['dashboard']['cards']);
             this._shared.nextUpdateResponse(resp['dashboard']);
         });
@@ -58,29 +50,42 @@ export class StockComponent implements OnInit, OnDestroy {
             this._shared.nextUpdateResponse(resp['data']['dashboard']);
             this.isUpdated = true;
             this._shared.nextListing(this.listing);
-        }, (err) => {            
-            this._snack.open('Please set a Listing to view chart.');
-            // this._stockHelper.enableLoading('Please set a Listing to view chart.');
+        }, (err) => {     
+            if(err.status == 200 || err.status == 500){
+                this.openSnackBar("Please set the Symbol to continue...");
+                this._route.navigateByUrl('settings');
+            }
+            else
+                this.openSnackBar("Server unavailable...");
         });
-
-        // Subscribe to 
-        // this._shared.sharedListing.subscribe(resp => {
-        //     if(typeof resp != 'function' && !this.isUpdated){
-        //         this.listing = resp;
-        //         this._config.setListing(resp).subscribe(resp => {
-        //         this._stockHelper.setRealTimeData(resp['chart'], resp['data']['dashboard']['cards']); 
-        //         this._shared.nextUpdateResponse(resp['data']['dashboard']);
-        //         },(err) =>{
-        //             this._snack.open('Unbable to fetch data. Please set a Listing to view chart.');
-        //         });
-        //     } 
-        //  },(err) =>{
-        //      this._snack.open('Error. Unbable to fetch data.');
-        //  });
     }
     
     ngOnDestroy(): void {
         this._stockHelper.destroyChart();
+    }
+    
+    horizontalPosition: MatSnackBarHorizontalPosition = 'end';
+    verticalPosition: MatSnackBarVerticalPosition = 'bottom';
+    
+    openSnackBar(msg?:string, actionName?:string) {
+        if (!msg)
+            msg = "Unknown Error.";
+    
+        if(this._snack._openedSnackBarRef){
+            this._snack._openedSnackBarRef.afterDismissed().subscribe(() => {
+                this._snack.open(msg, actionName, {
+                    duration: 1000,
+                    horizontalPosition: this.horizontalPosition,
+                    verticalPosition: this.verticalPosition,
+                });
+            });
+        }else{
+            this._snack.open(msg, actionName, {
+                duration: 1000,
+                horizontalPosition: this.horizontalPosition,
+                verticalPosition: this.verticalPosition,
+            });
+        }
     }
 
 }
