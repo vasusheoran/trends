@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys as _sys
 
 class ProgressBar:
     def __init__(self, iterations, text='completed'):

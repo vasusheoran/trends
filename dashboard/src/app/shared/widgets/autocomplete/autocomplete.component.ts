@@ -6,7 +6,7 @@ import {map, startWith} from 'rxjs/operators';
 import {IListing, Listing} from 'src/app/shared/models/listing';
 import { ConfigService } from '../../services/config.service';
 import { SharedService } from '../../services/shared.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarVerticalPosition, MatSnackBarHorizontalPosition } from '@angular/material/snack-bar';
 
 export interface User {
   Company: string;
@@ -36,17 +36,20 @@ export class AutocompleteComponent implements OnInit {
     private _snack : MatSnackBar){ }
 
   ngOnInit() {
+    this.openSnackBar('Fetching Symbols...')
     this._config.fetchListings().subscribe((resp:Array<User>) =>{
-      this.options = resp;
-        
+      this.options = resp;        
       this.filteredOptions = this.myControl.valueChanges
         .pipe(
           startWith(''),
           map(value => typeof value === 'string' ? value : value.name),
           map(name => name ? this._filter(name) : this.options.slice())
         );
-    },(err) => {
-      this._snack.open('Unable to fetch Listings. Please make sure server is running.')
+    },(err) => {   
+      if(err.status == 200)
+        this.openSnackBar(err.statusText, "Go to Settings");
+      else
+        this.openSnackBar('Unable to fetch Symbols. Server Unavailable.')
     });
   }
 
@@ -62,5 +65,19 @@ export class AutocompleteComponent implements OnInit {
   private _filter(name: string): User[] {
     const filterValue = name.toLowerCase();
     return this.options.filter(option => option.Company.toLowerCase().indexOf(filterValue) === 0);
+  }
+    
+  horizontalPosition: MatSnackBarHorizontalPosition = 'end';
+  verticalPosition: MatSnackBarVerticalPosition = 'bottom';
+  
+  openSnackBar(msg:string, actionName?:string) {
+    if (!msg)
+      msg = "Unknown Error.";
+
+    this._snack.open(msg, actionName, {
+      duration: 1000,
+      horizontalPosition: this.horizontalPosition,
+      verticalPosition: this.verticalPosition,
+    });
   }
 }

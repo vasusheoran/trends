@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder  } from '@angular/forms';
 import { ConfigService } from 'src/app/shared/services/config.service';
 import { Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 import * as _moment from 'moment';
 
 interface Period {
@@ -68,24 +68,40 @@ export class SettingsComponent implements OnInit {
       this.symbolForm.get('instrument').setValue('FUTCUR');
 
     }else{
-        this._snack.open('Listing set successfully.');
-        this._config.setListing(this.listing).subscribe(resp =>{
-          this._route.navigateByUrl('dash');
-        },err =>{
-          this._snack.open(err);
-        });
+      this.openSnackBar('Please Wait...');
+      this._config.setListing(this.listing).subscribe(resp =>{
+        this.openSnackBar(resp['msg']);
+        this._route.navigateByUrl('dashboard');
+      },err =>{
+        this.openSnackBar(err.statusText);
+      });
     }
   }
 
   onSubmit(data) {
-    this._snack.open('Please Wait...');
+    debugger;
+    this.openSnackBar('Please Wait...');
     data['expiry'] = _moment(data['expiry']).format("DDMMMYYYY")
     this.listing['options'] = data;
     this._config.setListing(this.listing).subscribe(resp =>{
-      this._snack.open('Listing set successfully.');
-      this._route.navigateByUrl('dash');
+      this.openSnackBar(resp['msg']);
+      this._route.navigateByUrl('dashboard');
     },err =>{
-      this._snack.open(err.message);
+      this.openSnackBar(err.statusText);
+    });
+  }
+    
+  horizontalPosition: MatSnackBarHorizontalPosition = 'end';
+  verticalPosition: MatSnackBarVerticalPosition = 'bottom';
+  
+  openSnackBar(msg?:string, actionName?:string) {
+    if (!msg)
+      msg = "Unknown Error.";
+
+    this._snack.open(msg, actionName, {
+      duration: 3000,
+      horizontalPosition: this.horizontalPosition,
+      verticalPosition: this.verticalPosition,
     });
   }
 

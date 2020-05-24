@@ -15,6 +15,7 @@ RUN pip install -r ./home/app/req.txt
 COPY . /home/app/
 WORKDIR /home/app/
 
-EXPOSE      5000
+# ENV TZ=Asia/Kolkata
+# RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 CMD [ "python", "main.py" ]

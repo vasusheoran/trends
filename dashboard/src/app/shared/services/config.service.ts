@@ -67,7 +67,7 @@ export class ConfigService {
   }
 
   fetchHistoricalData(page, size) {
-    const url = this.paginateHistoricalDataUrl + '/' + page + '/' + size;
+    const url = this.paginateHistoricalDataUrl + page + '/' + size;
     return this._http.get(url).pipe(map(data => data));
   }
 

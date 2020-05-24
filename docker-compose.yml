@@ -6,21 +6,22 @@ services:
     build: 
       context: ./dashboard
       dockerfile: prod.dockerfile
+      # dockerfile: dev.dockerfile
       cache_from:
         - alpine:latest
     image: h20180061/dashboard
     ports:
       - "80:80"
     container_name: web
-    # volumes:
-    #   - webdata:/ng-app
+    volumes:
+      - webdata:/var/log/
     depends_on:
       - app
 
   app:
-    # environment: 
-    #   - TIME_ZONE=Asia/Kolkata
-    build: ./trends
+    environment: 
+      - TIME_ZONE=Asia/Kolkata
+    build: ./app
     image: h20180061/trends
     ports:
       - "5000:5000"
@@ -39,14 +40,14 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /c/Users/vedvp/sasonline/trends/data
+      device: /c/Users/vedvp/sasonline/app/data
       o: bind
       # C:\Users\vedvp\sasonline\trends\src\data
   webdata:
     driver: local
     driver_opts:
       type: none
-      device: /c/Users/vedvp/sasonline/dashboard/
+      device: /c/Users/vedvp/sasonline/dashboard/logs
       o: bind
   
    # Elasticsearch Docker Images: https://www.docker.elastic.co/

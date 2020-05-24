@@ -12,7 +12,7 @@ from .utilities import get_logger
 from .calculate import Calculate
 from .finance import *
 from .database import DB
-from flask import abort
+from flask import abort, Response
 from datetime import datetime
 from flask_socketio import emit
 
@@ -58,24 +58,27 @@ def set_current_listing(jsonData):
     
     try:
         if not historical_data:
-            logger.info("Fetching data from yahoo finance .. ")
+            logger.info("Fetching data from nse .. ")
             data = pd.DataFrame()
             if 'Derivative' in jsonData['Series']:
                 data = derivative(ticker=jsonData['Symbol'], 
                                   period=jsonData['options']['period'], 
                                   expiry = jsonData['options']['expiry'], 
                                   instrument = jsonData['options']['instrument'])
+                
             else:
                 data = history(yahoo_index , period, interval)
                 
+            logger.info(len(data))
             db.set_historical_data(data)
         else:
+            logger.info("Fetching data from yahoo finance .. ")
             data = pd.DataFrame.from_records(historical_data)
             
         calc = Calculate()
         calc.process_file_or_df(data, db_index)
         
-        return fetch_index_if_set()
+        return {'status' : "success", "msg" : "Symbol set successfully."}
         
     except KeyError:
         abort(500, description="No data found for this date range, symbol may be delisted.")

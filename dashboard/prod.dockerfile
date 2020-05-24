@@ -14,19 +14,23 @@
 ### STAGE 1: Build ###
 FROM        node:alpine as build-stage
 LABEL       AUTHOR="Vasu Sheoran"  
-COPY        package.json package-lock.json* ./
 
 ## Storing node modules on a separate layer will prevent unnecessary npm installs at each build
-RUN         npm i && mkdir /ng-app && mv ./node_modules ./ng-app
-
-WORKDIR     /ng-app
-COPY        . /ng-app
+RUN         mkdir /ng-app
+COPY        package.json /ng-app
+RUN         cd /ng-app && npm install && npm install -g @angular/cli@7.3.9
 
 ## Build the angular app in production mode and store the artifacts in dist folder
-RUN         $(npm bin)/ng build --prod --output-path=dist
+WORKDIR     /ng-app
+COPY        . /ng-app
+RUN         ng build --prod --output-path=dist
+
 
 ### STAGE 2: Setup ###
 FROM        nginx:alpine
 RUN         rm -rf /usr/share/nginx/html/*
+
+COPY        default.conf /etc/nginx/conf.d/default.conf
 COPY        --from=build-stage /ng-app/dist /usr/share/nginx/html
+
 CMD         ["nginx", "-g", "daemon off;"]
