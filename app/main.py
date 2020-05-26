@@ -28,31 +28,6 @@ app.register_blueprint(fetch)
 app.register_blueprint(listing)
 
 socketio = SocketIO(app, cors_allowed_origins="*")
-
-# =============================================================================
-# def allowed_file(filename):
-#     return '.' in filename and \
-#            filename.rsplit('.', 1)[1].lower() in ['csv', 'xlsx']
-# 
-# @app.route('/upload', methods=['GET', 'POST'])
-# def upload_file():
-#     if request.method == 'POST':
-#         if 'file' not in request.files:
-#             return {'status' : 'Failiure', 'msg' :'No file part.'}
-#         file = request.files['file']
-#         if file.filename == '':
-#             return {'status' : 'Failiure', 'msg' :'No file selected.'}
-#         if file and allowed_file(file.filename):
-#             filename = secure_filename(file.filename)
-#             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#         
-#             async_task = AsyncUpdateSymbolsTask(task_details=file.filename)
-#             async_task.start()
-#             
-#             return {'status' : 'Success', 'msg' :'File Saved.'}
-#         
-#     return {'status' : 'Failiure', 'msg' :'Unknown.'}
-# =============================================================================
   
 @app.route('/')
 def ping():

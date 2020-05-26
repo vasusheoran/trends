@@ -13,8 +13,7 @@ def derivative(ticker=None, period="3months", expiry=None, instrument = "FUTCUR"
         df = tk.future_cur(period=period, expiry=expiry, instrument=instrument, include=include)
         return reset(df)
     except Exception as ex:
-        logger.info(ex)
-
+        logger.info(ex)        
 
 def reset(df):
     df = df.rename(columns={"High": "HP", "Close": "CP", "Low":"LP"})

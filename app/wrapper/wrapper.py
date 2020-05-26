@@ -69,7 +69,6 @@ def set_current_listing(jsonData):
             else:
                 data = history(yahoo_index , period, interval)
                 
-            logger.info(len(data))
             db.set_historical_data(data)
         else:
             logger.info("Fetching data from yahoo finance .. ")
@@ -80,8 +79,8 @@ def set_current_listing(jsonData):
         
         return {'status' : "success", "msg" : "Symbol set successfully."}
         
-    except KeyError:
-        abort(500, description="No data found for this date range, symbol may be delisted.")
+    except KeyError as err:
+        abort(500, description=f"Key Error. {err}")
     except Exception as er:
         abort(500, er)
 
@@ -166,3 +165,43 @@ def fetch_data_by_start_end(start, end):
     global db
     data = db.get_real_time_data(start, end)    
     return {'start' : start, 'end' : end, 'data' : data}
+
+def fetch_expires(data):
+    global current
+    
+    expiries = db.get_metadata(data['instrument'])
+    
+    try:
+        if not expiries:
+            symbol = current['listing']['Symbol']
+            ticker = Ticker(symbol)
+            data = ticker.quotes(instrument=data['instrument'])
+            return data['expiries']
+            # return data['expiries']
+        
+    except Exception as ex:
+        logger.info(ex)
+        
+    return []
+
+def fetch_strike_prices(data):
+    global current
+    print(data)
+    
+    expiries = db.get_metadata(data['instrument'])
+    
+    try:
+        if not expiries:
+            symbol = current['listing']['Symbol']
+            ticker = Ticker(symbol)            
+            data = ticker.quotes(instrument=data['instrument'], 
+                                 expiry=data['expiry'], 
+                                 optionType=data['optionType'])  
+            return data['strikePrices']
+            # return data['expiries']
+        
+    except Exception as ex:
+        logger.info(ex)
+        
+    return []
+            

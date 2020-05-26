@@ -145,6 +145,12 @@ class DB:
             
         if os.path.isfile(self.path_to_real_time_csv):
             os.remove(self.path_to_real_time_csv)
+            
+    def get_metadata(self, symbol):
+        return []
+    
+    def set_metadata(self, symbol):
+        return "Success"
     
     # def get_real_time_pkl(self): 
     #     db = dict()

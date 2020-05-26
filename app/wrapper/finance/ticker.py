@@ -48,13 +48,44 @@ class Ticker(Base):
         data = requests.get(url, params=params ,headers=self.headers, timeout=5)
         
         if "Your request could not be processed due to technical difficulties" in data.text:
-            raise RuntimeError("*** NSE IS CURRENTLY DOWN! ***\n"
-                                "Thank you for your patience.")
+            raise RuntimeError("*** NSE IS CURRENTLY DOWN! ***\n Thank you for your patience.")
         if "No Data" in data.text:
-            raise RuntimeError(f"*** Unable to fetch data from NSE! ***\n"
-                                "Please check expiry date for {}.", self.ticker)
+            raise RuntimeError(f"*** Unable to fetch data from NSE! ***\n Please check expiry date for {self.ticker}.")
             
         df = self.parse(data, include)
         
         return df
+    
+    def quotes(self, instrument = "OPTCUR", expiry=None, optionType = None):
+        """
+        :Parameters:
+            instrument: str
+                Valid instrument : FUTCUR, OPTCUR ,FURIDX, OPTIDX, FUTSTK, OPTSTK
+                Default is FUTCUR
+                
+        """
+        params = { 'u' : self.ticker}
+        
+        params['i'] = instrument  
+        
+        if expiry:
+            params['e'] = expiry
+        if optionType:
+            params['o'] = optionType
+            params['k'] = optionType
+        
+        url = self.get_qoute_url(instrument)
+        data = requests.get(url, params=params ,headers=self.headers, timeout=10)
+        
+        if "Your request could not be processed due to technical difficulties" in data.text:
+            raise RuntimeError("*** NSE IS CURRENTLY DOWN! ***\n Thank you for your patience.")
+        if "FAILIURE" in data.text:
+            raise RuntimeError(f"*** Unable to fetch data from NSE! ***\n Please check expiry date for {self.ticker}." )
+        
+        try:
+            json = data.json()
+            return json
+        except Exception as ex:
+            print("Error in Ticker ..." + ex)
+            return {}
             
