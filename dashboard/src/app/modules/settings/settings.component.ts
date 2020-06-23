@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder  } from '@angular/forms';
+import { FormBuilder, Validators  } from '@angular/forms';
 import { ConfigService } from 'src/app/shared/services/config.service';
 import { Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
@@ -24,7 +24,6 @@ export class SettingsComponent implements OnInit {
 
   listing:any;
   isDerivative:boolean = false;
-  options;any;
   symbolForm;
 
   selectedValue: string;
@@ -44,15 +43,28 @@ export class SettingsComponent implements OnInit {
     {value: 'OPTCUR', viewValue: 'Options Currency'}
   ];
 
+  expiries:[];
+  isExpiryEnabled:boolean = false;
+
+  options = [
+    {value: 'CE', viewValue: 'Call'},
+    {value: 'PE', viewValue: 'Put'}];
+
+  strikePrices:[];
+  
+
+
 
   constructor(private formBuilder : FormBuilder,
     private _config : ConfigService,
     private _route : Router,
     private _snack : MatSnackBar) { 
     this.symbolForm = this.formBuilder.group({
-      period: '',
-      expiry: '',
-      instrument: ''
+      period: [{value: ''}, Validators.required],
+      expiry: [{value: '', disabled: true}, Validators.required],
+      instrument: [{value: ''}, Validators.required],
+      option: [{value: '', disabled: true}, Validators.required],
+      strikePrice: [{value: '', disabled: true}, Validators.required],
     });
   }
 
@@ -66,6 +78,7 @@ export class SettingsComponent implements OnInit {
       
       this.symbolForm.get('period').setValue('3months');
       this.symbolForm.get('instrument').setValue('FUTCUR');
+      this.onInstrumentChange({'value' : 'FUTCUR'})
 
     }else{
       this.openSnackBar('Please Wait...');
@@ -73,21 +86,22 @@ export class SettingsComponent implements OnInit {
         this.openSnackBar(resp['msg']);
         this._route.navigateByUrl('dashboard');
       },err =>{
-        this.openSnackBar(err.statusText);
+        this.openSnackBar(err.message);
       });
     }
   }
 
   onSubmit(data) {
-    debugger;
     this.openSnackBar('Please Wait...');
-    data['expiry'] = _moment(data['expiry']).format("DDMMMYYYY")
+    // Setting symbol as SAS
+    data['symbol'] = this.listing['Symbol']
     this.listing['options'] = data;
     this._config.setListing(this.listing).subscribe(resp =>{
       this.openSnackBar(resp['msg']);
       this._route.navigateByUrl('dashboard');
     },err =>{
-      this.openSnackBar(err.statusText);
+      debugger;
+      this.openSnackBar(err.error.message);
     });
   }
     
@@ -102,6 +116,46 @@ export class SettingsComponent implements OnInit {
       duration: 3000,
       horizontalPosition: this.horizontalPosition,
       verticalPosition: this.verticalPosition,
+    });
+  }
+
+  onInstrumentChange(event){
+    
+    this.symbolForm.get('expiry').setValue(null);
+    this.symbolForm.get('expiry').disable();
+    this._config.fetchExpiry({'instrument' : event.value, 'symbol' : this.listing['Symbol']}).subscribe((resp:[]) => {
+        this.expiries = resp;
+        this.symbolForm.get('expiry').enable();
+    },err =>{
+      this._snack.open(err.message);
+    });
+
+  }
+
+  onExpiryChange(){
+    if(this.symbolForm.get('instrument').value == "OPTCUR"){      
+      this.symbolForm.get('option').enable();
+    }else{
+      this.symbolForm.get('option').disable();
+    }
+  }
+
+  onOptionTypeChange(event){ 
+    this._snack.open("Fetching strike prices ...");
+    this.symbolForm.get('strikePrice').setValue(null);
+    this.symbolForm.get('strikePrice').disable();  
+    var options = {
+      "optionType" : event.value,
+      "expiry" : this.symbolForm.get('expiry').value,
+      "instrument" : this.symbolForm.get('instrument').value,
+      "symbol" : this.listing['Symbol']
+    } 
+    this._config.fetchStrikePrices(options).subscribe((resp:[]) => {
+      this.strikePrices = resp;
+      this.symbolForm.get('strikePrice').enable();
+      this._snack.open("Done.");
+    },err =>{
+      this._snack.open(err.message);
     });
   }
 

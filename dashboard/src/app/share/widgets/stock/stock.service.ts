@@ -57,37 +57,6 @@ export class StockService {
     this._chart.update({yAxis: { plotLines: plotLines }}, true);
   }
 
-
-  afterSetExtremes(e) {
-
-    // var chart = Highcharts.charts[0];
-
-    // chart.showLoading('Loading data from server...');
-    
-    console.log("start : " + e.min + ", end : " + e.max);
-    var chart = Highcharts.charts[0];
-    chart.showLoading('Loading data from server...');
-    let url = "http://localhost:5000/"  + 'data?start=' + e.min + '&end=' + e.max;
-    chart.options['fn']._http.get(url).subscribe(resp =>{
-      var data = resp['data'];
-      // chart.series[0].update({
-      //   data: data
-      // });
-      chart.series[0].setData(data, false);
-      chart.hideLoading();
-    }, (error) =>{
-      console.error(error);
-    })
-    // chart.options['fn'].fetchDataByStartAndEnd(e.min, e.max).subscribe(resp =>{
-    //   console.log(resp);
-    //   // chart.series[0].setData(data);
-    //   // chart.hideLoading();
-
-    // });
-   
-   
-  }
-
   setChartOptions():{}{        
     var options = {
         scrollbar: {
@@ -176,7 +145,7 @@ export class StockService {
       chart['data'] = [current];
     }
     var options= this.setChartOptions();
-    options['title']['text'] = chart['listing']['Company'];
+    options['title']['text'] = chart['listing']['SAS'];
     options['series'][0]['data'] = chart['data'];
     this._chart = Highcharts.stockChart('canvas', options);
     this.currentData = current;
