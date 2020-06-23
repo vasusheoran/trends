@@ -6,7 +6,7 @@ Created on Fri Mar 27 02:50:36 2020
 """
 
 import os
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 import wrapper as mods
 from flask_socketio import SocketIO
@@ -45,6 +45,12 @@ def connect(message):
 def test(msg):
     mods.push_notifications('updateui', {'data' : msg})
     return {'status' : 'Success'}    
+
+@app.errorhandler(400)
+def custom400(error):
+    response = jsonify({'message': error.description})
+    response.status_code = 400
+    return response
 
 def set_up(isEnabled):
     global async_task_1, daily_task, socketio

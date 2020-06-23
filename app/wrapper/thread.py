@@ -37,19 +37,16 @@ class AsyncUpdateRealTimeTask(threading.Thread):
             if 'reset_freeze_value' in task:
                 should_freeze = task['reset_freeze_value']
             else:
-                current_time = datetime.strptime(task['Date'], '%m:%d:%Y %H:%M:%S')
+                current_time = datetime.strptime(task['Date'], '%m:%d:%Y %H:%M:%S')                
+                should_freeze = self.isFreezeEnabled(task, current_time, should_freeze)            
                 
-                should_freeze = self.isFreezeEnabled(task, current_time, should_freeze)
-                
+            task['Date'] = int(current_time.timestamp() * 1000)            
+            # Calcuate response if listing matches
+            if 'listing' in current and task['index'] == current['listing']['SAS']:
+                update_values(task, should_freeze)
                     
-                task['Date'] = int(current_time.timestamp() * 1000)
-                
-                # Calcuate response if listing matches
-                if 'listing' in current and task['index'] == current['listing']['SAS']:
-                    update_values(task, should_freeze)
-                    
-                self.update_queue(task)
-                # self.update_data(data)               
+            self.update_queue(task)
+            # self.update_data(data)               
 
         except KeyError as err:
             logger.info(f"Key Error : {err}")

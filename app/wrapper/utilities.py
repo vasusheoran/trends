@@ -139,3 +139,24 @@ class Utilities:
     
     def ema_calculate(self, span, val, prev_ema):
         return ((2/(span+1)) * (val - prev_ema)) + prev_ema
+
+    def combine_dict_values(self, elem):
+        return '_'.join(y for x, y in sorted(elem.items()))
+    
+    def keys_exists(self, element, *keys):
+        '''
+        Check if *keys (nested) exists in `element` (dict).
+        '''
+        if not isinstance(element, dict):
+            raise AttributeError('keys_exists() expects dict as first argument.')
+        if len(keys) == 0:
+            raise AttributeError('keys_exists() expects at least two arguments, one given.')
+    
+        _element = element
+        for key in keys:
+            try:
+                _element = _element[key]
+            except KeyError:
+                return False
+        return True
+    
