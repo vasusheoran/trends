@@ -73,7 +73,7 @@ class Ticker(Base):
         params['datePeriod'] = period                
         
         url = self.get_url(instrument)     
-        print(params)      
+        # print(params)      
         
         
         
@@ -181,6 +181,6 @@ class Ticker(Base):
             json = data.json()
             return json
         except Exception as ex:
-            print("Error in Ticker ..." + ex)
+            logger.error("Error in Ticker ..." + ex)
             return {}
             

@@ -17,7 +17,6 @@ class AsyncUpdateTask(threading.Thread):
         # print("Type : " + str(self.task_type))
         ob = self.task_type
         resp = requests.post(self.q, json = ob)
-        print(resp.text)
   
         
 # =============================================================================

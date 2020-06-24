@@ -79,7 +79,7 @@ class AsyncUpdateRealTimeTask(threading.Thread):
             logger.error(ex)
             
     def update_data(self, data):
-        print(data)
+        # print(data)
         db = DB(data['index'])
         db.save([data])
 

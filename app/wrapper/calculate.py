@@ -208,9 +208,7 @@ class Calculate:
                 ema50 = ""
             else:
                 ema50 = self.df.at[2,'emaCP50']
-                
-            print(self.df.at[2,'emaCP50'])
-                
+                                
             response = find_BI(self.db, self.frozen, self.df)
             self.back_ground = response
             self.db.update({

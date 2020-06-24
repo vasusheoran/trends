@@ -9,7 +9,39 @@ Created on Mon Mar 30 21:58:19 2020
 
 import pythoncom
 import win32com.client
+import logging
+from logging import handlers
 from async_task import AsyncUpdateTask
+
+
+def get_logger(filename):
+    base_path = "C:/Users/vedvp/sasonline/app/data/"
+    # log_format = "[%(levelname)s]   | [%(name)s]    | %(asctime)s | %(filename)s    | Line : %(lineno)d | %(message)s"
+    log_format = "[%(levelname)s] | %(asctime)s | %(thread)s | Line : %(lineno)d | [%(name)s] | %(message)s"
+    
+    logger = logging.getLogger(str(filename))
+    logger.handlers = []
+    
+    # To override the default severity of logging
+    logger.setLevel('DEBUG')
+    
+    # Use FileHandler() to log to a file
+    # file_handler = logging.FileHandler(base_path + "app.log")
+    file_handler = handlers.RotatingFileHandler(base_path + "excel.log", 
+                                                        mode='a', 
+                                                        maxBytes=1*1024*1024,
+                                                        backupCount=5, 
+                                                        encoding=None, 
+                                                        delay=0)
+    formatter = logging.Formatter(log_format)
+    file_handler.setFormatter(formatter)
+    
+    # Don't forget to add the file handler
+    logger.addHandler(file_handler)
+    
+    return logger
+
+logger = get_logger("workbook.py")
 
 class PythonObjectLibrary:
     
@@ -41,11 +73,13 @@ class PythonObjectLibrary:
         return a + b
 
     # multiply two cell values.
-    def SAS(self, op, close, high, low, date, index, reqUrl ):        
+    def SAS(self, op, close, high, low, date, index, reqUrl ):      
+        
+        # logger.info("Entering SAS")
+        
         data = dict()
         
-        data.update({'OP' : op,
-                     'CP' : close,
+        data.update({'CP' : close,
                      'HP' : high,
                      'LP' : low,
                      'Date' : date,
@@ -56,11 +90,11 @@ class PythonObjectLibrary:
         
         if bool(reqUrl):
             URL = reqUrl
-        else:
-            URL = "http://localhost:5000/update"
-         
-        # logger.warning(data)
-        self.update_values_async(URL, data)
+        else:        
+            URL = "http://localhost:5000/listing/update"
+            
+
+        self.update_values_async(URL, data)        
         return URL
 
     # multiply two cell values.
