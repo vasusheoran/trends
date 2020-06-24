@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from datetime import  datetime
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from wrapper import set_current_listing, reset_current_index, fetch_updated_or_frozen, update_values
-from wrapper import AsyncUpdateRealTimeTask
+from wrapper import AsyncUpdateRealTimeTask, fetch_expires, fetch_strike_prices
 
 listing = Blueprint('listing', __name__, url_prefix='/listing')
 
@@ -33,3 +33,20 @@ def update_values_by_time():
     async_task = AsyncUpdateRealTimeTask(task_details=data)
     async_task.start()
     return "Success"
+
+
+@listing.route('/expiry', methods = ['POST'])
+def fetch_expiry(): 
+    data = request.get_json()    
+    if 'instrument' in data:
+        return jsonify(fetch_expires(data))
+    else:
+        return []
+    
+@listing.route('/strike', methods = ['POST'])
+def fetch_sp(): 
+    data = request.get_json()    
+    if 'instrument' in data:
+        return jsonify(fetch_strike_prices(data))
+    else:
+        return []

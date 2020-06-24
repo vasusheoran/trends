@@ -1,12 +1,12 @@
 <mat-nav-list>
-    <div class="profile-card">
+    <!-- <div class="profile-card">
         <div class="header">
             <h2>Vasu Sheoran</h2>
         </div>
         <img src="https://material.angular.io/assets/img/examples/shiba2.jpg" alt="Shiba">
     </div>
 
-    <mat-divider></mat-divider>
+    <mat-divider></mat-divider> -->
 
     <h2 matSubheader>Pages</h2>
 
@@ -17,13 +17,15 @@
     <mat-divider></mat-divider>
 
     <h2 matSubheader>Tools</h2>
-    <a (click)="openDailog('Freeze Buy', true)" routerLinkActive="list-item-active" *ngIf="toggleDashBoardTools && listing!=null" mat-list-item>
-        <mat-icon>pause</mat-icon>
-        Freeze Buy
-    </a>
-    <a (click)="openDailog('Add current day.', false)" routerLinkActive="list-item-active" *ngIf="toggleHistoricDataTools && listing!=null" mat-list-item>
-        <mat-icon>library_add</mat-icon>
-        Add Current Day
-    </a>
+    <div *ngIf="listing">
+        <a (click)="openDailog('Freeze Buy', true)" routerLinkActive="list-item-active" *ngIf="toggleDashBoardTools && listing!=null" mat-list-item>
+            <mat-icon>pause</mat-icon>
+            Freeze Buy
+        </a>
+        <a (click)="openDailog('Add current day.', false)" routerLinkActive="list-item-active" *ngIf="toggleHistoricDataTools && listing!=null" mat-list-item>
+            <mat-icon>library_add</mat-icon>
+            Add Current Day
+        </a>
+    </div>
 
 </mat-nav-list>

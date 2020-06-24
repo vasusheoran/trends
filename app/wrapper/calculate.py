@@ -193,6 +193,22 @@ class Calculate:
         if isUpdated:
             return self.db
         else:
+            
+            if self.df.at[2,'emaCP5'] == None:
+                ema5 = ""
+            else:
+                ema5 = self.df.at[2,'emaCP5']
+                
+            if not self.df.at[2,'emaCP20'] == None:
+                ema20 = ""
+            else:
+                ema20 = self.df.at[2,'emaCP20']
+                
+            if not self.df.at[2,'emaCP50'] == None:
+                ema50 = ""
+            else:
+                ema50 = self.df.at[2,'emaCP50']
+                                
             response = find_BI(self.db, self.frozen, self.df)
             self.back_ground = response
             self.db.update({
@@ -205,9 +221,9 @@ class Calculate:
                     'table' : [{'name' : 'Close', 'value': self.curValues['CP']},
                                {'name' : 'High', 'value': self.curValues['HP']},
                                {'name' : 'Low', 'value': self.curValues['LP']},
-                               {'name' : 'EMA 5', 'value': self.df.at[2,'emaCP5']},
-                               {'name' : 'EMA 20', 'value': self.df.at[2, 'emaCP20']},
-                               {'name' : 'EMA 50', 'value': self.df.at[2, 'emaCP50']},
+                               {'name' : 'EMA 5', 'value': ema5},
+                               {'name' : 'EMA 20', 'value': ema20},
+                               {'name' : 'EMA 50', 'value': ema50},
                                # {'name' : 'RSI', 'value': 0},
                                # {'name' : 'PE', 'value': 0}
                                ]},

@@ -16,32 +16,18 @@ export class ConfigService {
 
   private fetchValuesUrl:string;
   private fetchIndexUrl:string;
-
   private fetchListingsUrl:string;
-
   private paginateHistoricalDataUrl:string;
-
   private freezeBIUrl:string;
-
   private fetchFrozenUrl:string;
-
   private addNewRowUrl:string;
-
   private setIndexUrl:string;
-
   private resetIndexUrl:string;
-
   private downloadLogUrl:string;
-
   private uploadSymbolsUrl:string;
-
   private deleteRowUrl:string;
-
-  private fetchDataByStartAndEndUrl(start:string, end:string):string
-  {
-      let query = this.baseUrl  + 'data?start={0}&end={1}';
-      return query;
-  }
+  private fetchExpiryUrl:string;
+  private fetchStrikePricesUrl: any;
 
 
   constructor(private _http: HttpClient) { 
@@ -56,6 +42,8 @@ export class ConfigService {
     this.resetIndexUrl = this.baseUrl  + 'listing/reset';  
     this.downloadLogUrl = this.baseUrl  + 'download/';  
     this.uploadSymbolsUrl = this.baseUrl  + 'upload';
+    this.fetchExpiryUrl = this.baseUrl  + 'listing/expiry';
+    this.fetchStrikePricesUrl = this.baseUrl  + 'listing/strike';
   }
 
   fetchValues() {
@@ -77,6 +65,12 @@ export class ConfigService {
 
   fetchFrozenValues() {
     return this._http.get(this.fetchFrozenUrl).pipe(map(data => data));
+  }
+
+  private fetchDataByStartAndEndUrl(start:string, end:string):string
+  {
+      let query = this.baseUrl  + 'data?start={0}&end={1}';
+      return query;
   }
 
   addNewRow(ob) {
@@ -117,5 +111,13 @@ export class ConfigService {
     // let url = this.fetchDataByStartAndEndUrl(start, end);
     let url = this.baseUrl  + 'data?start=' + start + '&end=' + end;
     return this._http.get(url).pipe(map(data => data));
+  }
+  
+  fetchExpiry(object: any) {
+    return this._http.post(this.fetchExpiryUrl, object).pipe(map(data => data));
+  }
+
+  fetchStrikePrices(options: any) {
+    return this._http.post(this.fetchStrikePricesUrl, options ).pipe(map(data => data));
   }
 }

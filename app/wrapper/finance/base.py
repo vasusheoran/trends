@@ -29,6 +29,13 @@ class Base():
             url = "{}/getFOHistoricalData.jsp".format(self.base_url)
             
         return url
+    
+    def get_qoute_url(self, instrument):
+        if "CUR" in instrument:
+            url = "{}/ajaxCDGetQuoteDataTest.jsp".format(self.base_url)
+            
+        return url
+            
             
     def parse(self, data, include=None):
         soup = BeautifulSoup(data.text, features="lxml")        

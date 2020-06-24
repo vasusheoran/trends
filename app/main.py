@@ -6,7 +6,7 @@ Created on Fri Mar 27 02:50:36 2020
 """
 
 import os
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 import wrapper as mods
 from flask_socketio import SocketIO
@@ -28,31 +28,6 @@ app.register_blueprint(fetch)
 app.register_blueprint(listing)
 
 socketio = SocketIO(app, cors_allowed_origins="*")
-
-# =============================================================================
-# def allowed_file(filename):
-#     return '.' in filename and \
-#            filename.rsplit('.', 1)[1].lower() in ['csv', 'xlsx']
-# 
-# @app.route('/upload', methods=['GET', 'POST'])
-# def upload_file():
-#     if request.method == 'POST':
-#         if 'file' not in request.files:
-#             return {'status' : 'Failiure', 'msg' :'No file part.'}
-#         file = request.files['file']
-#         if file.filename == '':
-#             return {'status' : 'Failiure', 'msg' :'No file selected.'}
-#         if file and allowed_file(file.filename):
-#             filename = secure_filename(file.filename)
-#             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#         
-#             async_task = AsyncUpdateSymbolsTask(task_details=file.filename)
-#             async_task.start()
-#             
-#             return {'status' : 'Success', 'msg' :'File Saved.'}
-#         
-#     return {'status' : 'Failiure', 'msg' :'Unknown.'}
-# =============================================================================
   
 @app.route('/')
 def ping():
@@ -70,6 +45,12 @@ def connect(message):
 def test(msg):
     mods.push_notifications('updateui', {'data' : msg})
     return {'status' : 'Success'}    
+
+@app.errorhandler(400)
+def custom400(error):
+    response = jsonify({'message': error.description})
+    response.status_code = 400
+    return response
 
 def set_up(isEnabled):
     global async_task_1, daily_task, socketio
