@@ -86,10 +86,18 @@ export class StockService {
                 type: 'hour',
                 text: '1H'
             },{
+                count: 2,
+                type: 'hour',
+                text: '2H'
+            },{
+                count: 3,
+                type: 'hour',
+                text: '3H'
+            },{
               type: 'all',
               text: 'All'
             },],
-            selected: 4,
+            selected: 1,
             inputEnabled: false
         },
 
