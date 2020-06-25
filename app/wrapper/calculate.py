@@ -201,12 +201,12 @@ class Calculate:
             else:
                 ema5 = self.df.at[2,'emaCP5']
                 
-            if not self.df.at[2,'emaCP20'] == None:
+            if self.df.at[2,'emaCP20'] == None:
                 ema20 = ""
             else:
                 ema20 = self.df.at[2,'emaCP20']
                 
-            if not self.df.at[2,'emaCP50'] == None:
+            if self.df.at[2,'emaCP50'] == None:
                 ema50 = ""
             else:
                 ema50 = self.df.at[2,'emaCP50']

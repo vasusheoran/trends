@@ -139,13 +139,13 @@ class DB:
         
     def reset(self, symbols):
         try:
-            if os.path.isfile(self.path_to_historical_csv):
-                os.remove(self.path_to_historical_csv)
-            logger.debug(f"Deleting : {self.path_to_historical_csv}")
+            # if os.path.isfile(self.path_to_historical_csv):
+            #     os.remove(self.path_to_historical_csv)
+            # logger.debug(f"Deleting : {self.path_to_historical_csv}")
             
-            if os.path.isfile(self.path_to_real_time_csv):
-                os.remove(self.path_to_real_time_csv)
-            logger.debug(f"Deleting : {self.path_to_real_time_csv}")
+            # if os.path.isfile(self.path_to_real_time_csv):
+            #     os.remove(self.path_to_real_time_csv)
+            # logger.debug(f"Deleting : {self.path_to_real_time_csv}")
                 
             for symbol in symbols:
                 path_to_metadata = self.base_metadata_path + os.sep + symbol

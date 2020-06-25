@@ -300,3 +300,5 @@ def fetch_strike_prices(data):
     logger.error("Unable to fetch data for strike prices...")
     return []
             
+def fetch_calc():
+    return calc
