@@ -27,6 +27,8 @@ class Calculate:
         self.cols= ['CP', 'CP_CI_HP']
         
         self.db = dict()
+        self.frozen = dict()
+        self.back_ground = dict()
         
         if isinstance(df, pd.DataFrame) and df.empty == False:
             self.process_data(df)
