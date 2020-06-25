@@ -188,3 +188,5 @@ Thumbs.db
 **/test*
 app/data/**
 scripts/*
+dev*.dockerfile
+*.json

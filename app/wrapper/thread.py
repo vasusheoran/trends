@@ -116,7 +116,7 @@ class FlushToDatabase(threading.Thread):
                     db.set_real_time_data(data)
                     real_time_data[key] = []
             except Exception as err:
-                logger.error(f"Unable to log real time data : {err}")
+                logger.error(err)
         
 
 class DailyCleanup(threading.Thread):

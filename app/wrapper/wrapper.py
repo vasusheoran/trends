@@ -42,6 +42,9 @@ def reset_current_index():
         global calc, df, current, db
         logger.info("Inside reset_current_index")
         
+        calc = None
+        df = None
+        
         li =[]
         
         util = Utilities()
@@ -54,12 +57,10 @@ def reset_current_index():
                                                         'instrument' : options['instrument']})
             li.append(expiry_filename)
             li.append(strike_filename)
+            current = dict()
         db.reset(li) 
         
         db = DB()
-        calc = None
-        df = None
-        current = dict()
         logger.info("Exiting reset_current_index")
         return {"data": "Reset Successfull"}
     except Exception as err:
@@ -72,7 +73,12 @@ def reset_current_index():
     
 def set_current_listing(jsonData):
     logger.info("Inside set_current_listing")
-    global calc, df, global_data, current_listing, db
+    global calc, df, db, current
+    
+    calc = None
+    df = None
+    current = dict()
+    
     current.update({'listing' : jsonData})
     
     data = pd.DataFrame()
@@ -80,11 +86,6 @@ def set_current_listing(jsonData):
     yahoo_index = jsonData['Symbol']
     period = "2y"
     interval = "1d"
-    # utils = Utilities()
-    
-    # if utils.keys_exists(current, 'listing', 'options') and current['listing']['options']:
-    #     db_index = utils.combine_dict_values(current['listing']['options'])
-    # else:
         
     db_index = jsonData['SAS']  
         
