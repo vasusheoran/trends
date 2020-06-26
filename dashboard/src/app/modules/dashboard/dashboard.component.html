@@ -21,11 +21,11 @@
     
     <mat-card fxFlex="60" fxLayoutAlign="space-between center" fxLayoutGap="5px" (click)="toggleEnable(cards[3], 'High')">
         <div fxFlex="15" *ngFor="let value of values; let i = index;">
-            <div fxFlex="100" >
+            <div fxFlex="100" style="margin-right: -10px;">
                 <h4>{{ value.name }}</h4>            
-                <span class="total">{{ value.value  | number : '1.0-2'}}</span>
+                <span class="total">{{ value.value  | number : '1.2-2'}}</span>
             </div>
-            <mat-divider *ngIf="i!=(values.length - 1)" [vertical]="true"></mat-divider>
+            <mat-divider *ngIf="i!=(values.length - 1)" [vertical]="true"></mat-divider>            
         </div>
         
     </mat-card>

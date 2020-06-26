@@ -62,11 +62,11 @@ export class StockService {
         scrollbar: {
           liveRedraw: false
         },
-        time: {
+        // time: {
             // useUTC: false,
-            timezone: 'Asia/Kolkata'
+            // timezone: 'Asia/Kolkata'
             // timezoneOffset: 330
-        },
+        // },
 
         rangeSelector: {
             buttons: [{

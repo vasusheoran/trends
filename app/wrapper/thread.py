@@ -6,7 +6,7 @@ Created on Tue Mar 31 00:41:53 2020
 """
 import threading,time
 from datetime import datetime, timedelta
-from .wrapper import update_values, current
+from .wrapper import update_values, fetch_current
 from .utilities import get_logger, real_time_field_names, min_freeze_time, max_freeze_time
 from .database import DB
 
@@ -23,7 +23,7 @@ class AsyncUpdateRealTimeTask(threading.Thread):
         self.real_time_field_names = real_time_field_names
         
     def run(self):
-        # logger.info('Parsing Request')
+        logger.info("Inside AsyncUpdateRealTimeTask")
         try:
             task = self.task_details
             if isinstance(task['CP'], str):
@@ -40,9 +40,11 @@ class AsyncUpdateRealTimeTask(threading.Thread):
                 current_time = datetime.strptime(task['Date'], '%m:%d:%Y %H:%M:%S')                
                 should_freeze = self.isFreezeEnabled(task, current_time, should_freeze)            
                 
-            task['Date'] = int(current_time.timestamp() * 1000)            
+            task['Date'] = int(current_time.timestamp() * 1000)
+
+            current_listing = fetch_current() 
             # Calcuate response if listing matches
-            if 'listing' in current and task['index'] == current['listing']['SAS']:
+            if 'listing' in current_listing and task['index'] == current_listing['listing']['SAS']:
                 update_values(task, should_freeze)
                     
             self.update_queue(task)
@@ -53,6 +55,7 @@ class AsyncUpdateRealTimeTask(threading.Thread):
             # print(err)
         except Exception as ex:
             logger.info(ex)
+        logger.info("Exiting AsyncUpdateRealTimeTask")
             
     def isFreezeEnabled(self, task, current_time, should_freeze):
         global max_freeze_time, min_freeze_time
@@ -94,7 +97,7 @@ class FlushToDatabase(threading.Thread):
     
     
     def run(self):
-        delay = 10
+        delay = 60
         
         while(self.running):
             time.sleep(delay)

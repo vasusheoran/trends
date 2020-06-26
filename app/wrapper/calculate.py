@@ -226,7 +226,7 @@ class Calculate:
                                {'name' : 'EMA 5', 'value': ema5},
                                {'name' : 'EMA 20', 'value': ema20},
                                {'name' : 'EMA 50', 'value': ema50},
-                               # {'name' : 'RSI', 'value': 0},
+                               {'name' : 'RSI', 'value': ""},
                                # {'name' : 'PE', 'value': 0}
                                ]},
                 'Date' : {'name' : 'Date', 'value': self.curValues['Date']},
