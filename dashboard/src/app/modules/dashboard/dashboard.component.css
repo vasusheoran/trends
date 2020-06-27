@@ -26,13 +26,14 @@ table {
     width: 100%;
 }
 
-h4{
+h3{
     margin-top: 0;
     margin-bottom: 10px;
+    font-weight: 500;
 }
 
 .total{
-    font-size: 1.25em;
+    font-size: 1.20em;
 }
 
 .mat-icon,
