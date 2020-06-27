@@ -61,11 +61,29 @@ class Calculate:
         self.df = self.__find_ema([5,20, 50], self.cols, self.df)
         self.df = self.util.findMin(self.df, ['HP'],3)
         self.df = self.util.av_rolling(self.df,['CP_CI_HP'],50)
-        self.df = self.util.av_rolling(self.df,['CP_CI_HP'],10)  
+        self.df = self.util.av_rolling(self.df,['CP_CI_HP'],10) 
+        self.df = self.util.diff_rolling(self.df,['CP'],1)  
+        self.df = self.util.pos_d_rolling(self.df,'diffCP1')  
+        self.df = self.util.neg_d_rolling(self.df,'diffCP1')  
+        
+        self.df = self.df.drop(columns=['diffCP1' ,'diffCP1Pos', 'diffCP1Neg'])
         
     def __set_up_new_only(self, num = 2):
         spans = [5, 20, 50]
         avColName = 'CP_CI_HP'
+        
+        cur_cp_diff = self.df.at[2, 'CP'] - self.df.at[3, 'CP']
+        
+        prev_ema_d = self.df.at[3, 'ema_diffCP1Pos']
+        cp_diff = cur_cp_diff if cur_cp_diff > 0 else 0
+        new_ema_d = (prev_ema_d*13 + cp_diff)/14
+        self.df.at[2, 'ema_diffCP1Pos'] = new_ema_d
+        
+        prev_ema_e = self.df.at[3, 'ema_diffCP1Neg']
+        cp_diff = (-1 * cur_cp_diff) if cur_cp_diff < 0 else 0
+        new_ema_e = (prev_ema_e*13 + cp_diff)/14
+        self.df.at[2, 'ema_diffCP1Neg'] = new_ema_e
+        
         for i in range(num, -1 , -1):
             # Set up new EMI Values
             for col in self.cols:
@@ -82,6 +100,7 @@ class Calculate:
                 col_name = 'av' + str(avColName) + str(span)
                 sma = self.df[:span + 3]
                 self.df.loc[:3,col_name] = sma[avColName].rolling(window=span).mean()[-4::].reset_index(drop = True)
+                
               
         
     def get_dataframe(self):
@@ -226,8 +245,8 @@ class Calculate:
                                {'name' : 'EMA 5', 'value': ema5},
                                {'name' : 'EMA 20', 'value': ema20},
                                {'name' : 'EMA 50', 'value': ema50},
-                               {'name' : 'RSI', 'value': ""},
-                               # {'name' : 'PE', 'value': 0}
+                               {'name' : 'AVG', 'value': response['ar']},
+                               {'name' : 'RSI', 'value': response['cr']}
                                ]},
                 'Date' : {'name' : 'Date', 'value': self.curValues['Date']},
                 'stocks' : [self.curValues['Date'], self.curValues['CP']]})

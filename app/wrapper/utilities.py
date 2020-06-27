@@ -123,6 +123,53 @@ class Utilities:
             return df.copy()
         
         
+    def diff_rolling(self, df, cols, span, reverse=True):
+        if reverse:
+            df = df.iloc[::-1]
+        for col in cols:
+            col_name = 'diff' + str(col) + str(span)
+            diff = df[col].rolling(window=2).apply(lambda x: x.iloc[1] - x.iloc[0])
+            df[col_name] = diff
+        if reverse:
+            return df.iloc[::-1].copy()
+        else:
+            return df.copy()
+        
+    def pos_d_rolling(self, df, col): 
+        df = df.iloc[::-1].reset_index(drop=True)    
+        # Add Pos Col
+        df[col + 'Pos'] = df[col].mask(df[col].lt(0),0)
+        
+        col = col + 'Pos'
+        col_name = 'ema_' + col
+        
+        prev_ema = sum(df[col][1:15])/14
+        df[col_name] = df[col]
+        df.at[14, col_name] = prev_ema
+        
+        for index in range(15, len(df)):
+            # print(str(temp.at[(index-1), 'ema_diffCP1Pos']) + ' * 13 + ' + str(temp.at[index, 'ema_diffCP1Pos'] ))
+            df.at[index, col_name] = (df.at[(index-1), col_name] *13 + df.at[index, col_name])/14
+            
+        df = df.iloc[::-1].reset_index()        
+        return df
+        
+    def neg_d_rolling(self, df, col): 
+        df = df.iloc[::-1].reset_index(drop=True)
+        
+        col_name = 'ema_' + col + 'Neg'
+        df[col + 'Neg'] = df[col].mask(df[col].gt(0),0)
+        
+        prev_ema = -sum(df[col + 'Neg'][1:15])/14
+        df[col_name] = df[col + 'Neg']
+        df.at[14, col_name] = prev_ema
+        
+        for index in range(15, len(df)):
+            df.at[index, col_name] = (df.at[(index-1), col_name] *13 + (-1 * df.at[index, col_name]))/14        
+        
+        df = df.iloc[::-1].reset_index()        
+        return df
+        
     def ema_update(self, df, row, col, span):
         vals = row        
         for i in range(vals+1):

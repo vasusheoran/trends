@@ -6,15 +6,14 @@ services:
     build: 
       context: ./dashboard
       dockerfile: prod.dockerfile
-      # dockerfile: dev.dockerfile
       cache_from:
         - alpine:latest
-    image: h20180061/dashboard
+    image: h20180061/dashboard:${TAG}
     ports:
       - "80:80"
     container_name: web
     volumes:
-      - webdata:/var/log/
+      - .:/ng-app
     depends_on:
       - app
 
@@ -22,7 +21,7 @@ services:
     environment: 
       - TIME_ZONE=Asia/Kolkata
     build: ./app
-    image: h20180061/trends
+    image: h20180061/trends:${TAG}
     ports:
       - "5000:5000"
       - "123"
