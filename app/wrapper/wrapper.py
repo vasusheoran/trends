@@ -191,6 +191,7 @@ def fetch_updated_or_frozen(isUpdateEnabled = True):
         abort(500, description="The server encountered an internal error and was unable to complete your request. Try setting the listing again.")
 
 def update_values(ob, isFreezeEnabled = False):
+    logger.info("Inside set_current_listing")
     global calc, current
     
     try:
@@ -202,11 +203,12 @@ def update_values(ob, isFreezeEnabled = False):
             push_notifications('updateui', values)
     except Exception as err:
         logger.error(err)
-    #     return resp
-    # return {}
+    logger.info("Exiting set_current_listing")
     
 def push_notifications(eventName, update):
+    logger.info("Inside push_notifications")
     socketio.emit(eventName, update)
+    logger.info("Exiting push_notifications")
     
 def paginate(page, size):
     offset = 3
@@ -300,3 +302,5 @@ def fetch_strike_prices(data):
     logger.error("Unable to fetch data for strike prices...")
     return []
             
+def fetch_current():
+    return current
