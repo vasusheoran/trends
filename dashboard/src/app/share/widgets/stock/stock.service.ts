@@ -59,9 +59,9 @@ export class StockService {
 
   setChartOptions():{}{        
     var options = {
-        scrollbar: {
-          liveRedraw: false
-        },
+        // scrollbar: {
+        //   liveRedraw: false
+        // },
         // time: {
             // useUTC: false,
             // timezone: 'Asia/Kolkata'
@@ -96,49 +96,93 @@ export class StockService {
             },{
               type: 'all',
               text: 'All'
-            },],
+            }],
             selected: 1,
             inputEnabled: false
         },
+        yAxis: [{
+            labels: {
+                align: 'left'
+            },
+            height: '110%',
+            resize: {
+                enabled: true
+            }
+        }],
 
         title: {
             text: ''
         },
-
-        exporting: {
-            enabled: false
-        },
-
-        fn:{
-          sockets:this._socket,         
-          fetchDataByStartAndEnd: this._config.fetchDataByStartAndEnd,
-        },
-
+        
         chart: {
           zoomType: 'x'
         },
 
+        tooltip: {
+            shape: 'square',
+            headerShape: 'callout',
+            borderWidth: 0,
+            shadow: false,
+            positioner: function (width, height, point) {
+                var chart = this.chart,
+                    position;
+
+                if (point.isHeader) {
+                    position = {
+                        x: Math.max(
+                            // Left side limit
+                            chart.plotLeft,
+                            Math.min(
+                                point.plotX + chart.plotLeft - width / 2,
+                                // Right side limit
+                                chart.chartWidth - width - chart.marginRight
+                            )
+                        ),
+                        y: point.plotY
+                    };
+                } else {
+                    position = {
+                        x: point.series.chart.plotLeft,
+                        y: point.series.yAxis.top - chart.plotTop
+                    };
+                }
+
+                return position;
+            }
+        },
+
         series: [{
           name: 'Close',
+          type: 'area',
           data: [],
-          marker: {
-            enabled: true,
-            radius: 1
-          },
           tooltip: {
               valueDecimals: 2
           },
-          states: {
-              hover: {
-                  markerRadiusPlus : 1
-              }
-          },
-          lineWidth: 1,
           dataGrouping: {
             enabled: true,
-            groupPixelWidth : 4
-          }
-        }]
+            // groupPixelWidth : 4
+          },
+          fillColor: {
+            linearGradient: {
+                x1: 0,
+                y1: 0,
+                x2: 0,
+                y2: 1
+            },
+            stops: [
+                [0, Highcharts.getOptions().colors[0]],
+                [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+            ]
+          },
+          threshold: null
+        }],
+        responsive: {
+            rules: [{
+                condition: {
+                    maxWidth: 800
+                }
+            }]
+        }
     };
     return options;
   }
@@ -153,7 +197,7 @@ export class StockService {
       chart['data'] = [current];
     }
     var options= this.setChartOptions();
-    options['title']['text'] = chart['listing']['SAS'];
+    // options['title']['text'] = chart['listing']['SAS'];
     options['series'][0]['data'] = chart['data'];
     this._chart = Highcharts.stockChart('canvas', options);
     this.currentData = current;
@@ -203,12 +247,13 @@ export class StockService {
         this.plotLinesOptions['Sell']['value'] = resp[2].value;
         plotLines.push(this.plotLinesOptions['Sell']); //Green
         flag = true;
-      }if(this.isPlotLineEnabled["Min_High"] && this.plotLinesOptions['Min_High'].value != resp[3].value){
-        this.plotLinesOptions['Min_High']['value'] = resp[3].value;
-        plotLines.push(this.plotLinesOptions['Min_High']); //Green
-        flag = true;
       }
       if (flag)
+        if(this.isPlotLineEnabled["Min_High"]){
+          this.plotLinesOptions['Min_High']['value'] = resp[3].value;
+          plotLines.push(this.plotLinesOptions['Min_High']); //Green
+          flag = true;
+        }
         this._chart.update({yAxis: { plotLines: plotLines }}, true);
     }
     this.setCurrentData(resp);

@@ -242,10 +242,10 @@ class Calculate:
                     'table' : [{'name' : 'Close', 'value': self.curValues['CP']},
                                {'name' : 'High', 'value': self.curValues['HP']},
                                {'name' : 'Low', 'value': self.curValues['LP']},
+                               {'name' : 'AVG', 'value': response['ar']},
                                {'name' : 'EMA 5', 'value': ema5},
                                {'name' : 'EMA 20', 'value': ema20},
                                {'name' : 'EMA 50', 'value': ema50},
-                               {'name' : 'AVG', 'value': response['ar']},
                                {'name' : 'RSI', 'value': response['cr']}
                                ]},
                 'Date' : {'name' : 'Date', 'value': self.curValues['Date']},
