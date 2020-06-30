@@ -104,7 +104,9 @@ class DB:
                     resp = resp[(resp['Date'] > start)
                                 & (resp['Date'] < end)] 
                 
+                resp = resp.sort_values(by=["Date"])
                 return resp.values.tolist()
+                # return resp
             else:
                 return []
         except Exception as err:
@@ -139,9 +141,9 @@ class DB:
         
     def reset(self, symbols):
         try:
-            # if os.path.isfile(self.path_to_historical_csv):
-            #     os.remove(self.path_to_historical_csv)
-            # logger.debug(f"Deleting : {self.path_to_historical_csv}")
+            if os.path.isfile(self.path_to_historical_csv):
+                os.remove(self.path_to_historical_csv)
+            logger.debug(f"Deleting : {self.path_to_historical_csv}")
             
             # if os.path.isfile(self.path_to_real_time_csv):
             #     os.remove(self.path_to_real_time_csv)
