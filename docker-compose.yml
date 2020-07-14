@@ -2,7 +2,7 @@ version: "3.3"
 services:
   web:
     environment: 
-      - TIME_ZONE=Asia/Kolkata
+      - TZ=Asia/Kolkata
     build: 
       context: ./dashboard
       dockerfile: prod.dockerfile
@@ -19,7 +19,7 @@ services:
 
   app:
     environment: 
-      - TIME_ZONE=Asia/Kolkata
+      - TZ=Asia/Kolkata
     build: ./app
     image: h20180061/trends:${TAG}
     ports:
