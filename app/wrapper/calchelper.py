@@ -122,16 +122,17 @@ def find_BI(db, frozen, df , freeze = False):
     
     find_BK(frozen_bi, df, bi)
     
-    find_AR(df)
+    # find_AR(df)
     find_CR(df)
-    
+    find_BN(df)
     
      
     global values    
     values.update({'bi' : bi, 
                    'frozen.bi': bi, 
                    'ao': ao, 
-                   'min.HP.2' : min(df.at[3,'HP'], df.at[4,'HP'])})
+                   'min.HP.2' : min(df.at[3,'HP'], df.at[4,'HP']),
+                   'cr': find_CR(df)})
     
     return values
 
@@ -141,27 +142,37 @@ def find_BK(old_bi ,df, bi):
     global values   
     values.update({'bk' : bk, 'bj' : bj})
     
-def find_AR(df):
-    global values     
-    row = 2
+def find_AR(df, row):
+    # global values     
+    # row = 2
     cp_av_10 = df[['CP']][row:row+10].values.mean(axis=0)
     cp_av_50 = df[['CP']][row:row+50].values.mean(axis=0)
     av = cp_av_10 + cp_av_50    # Sum
     ar = ((av)/2)-((av)/2*(((av)/2-(((((av)/2-((av)/2*0.01))+(((av)/2-((av)/2*0.01))*0.025))+(av)/2)/2))/(av)/2*100/2)/100)
-    values.update({'ar' : float(ar)})
+    # values.update({'ar' : float(ar)})
+    return ar
 
 def find_CR(df):    
-    global values 
+    # global values 
     ema_d = df.at[2, 'ema_diffCP1Pos']
     ema_e = df.at[2, 'ema_diffCP1Neg']
     
     if ema_e == 0:
-        values.update({'cr' : 100.0})
-        return
+        return 100.0
+        # values.update({'cr' : 100.0})
+        # return
     else:
         val = 100 - (100/(1+(ema_d)/ema_e))
-        values.update({'cr' : val})
-        return
+        return val
+        # values.update({'cr' : val})
+        # return
     
+def find_BN(df):    
+    global values    
+    ar2 = float(find_AR(df, 2))
+    ar3 = float(find_AR(df, 3))
+    
+    bn = (df.at[2,'emaCP5'] - ar2) - (df.at[3,'emaCP5'] - ar3)
+    values.update({'bn' : bn, 'ar' : ar2 })
     
     

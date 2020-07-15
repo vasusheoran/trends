@@ -1,14 +1,9 @@
 version: "3.3"
 services:
   web:
-    environment: 
-      - TZ=Asia/Kolkata
-    build: 
-      context: ./dashboard
-      dockerfile: prod.dockerfile
-      cache_from:
-        - alpine:latest
     image: h20180061/dashboard:${WEB_TAG}
+    environment: 
+      - TIME_ZONE=Asia/Kolkata
     ports:
       - "80:80"
     container_name: web
@@ -16,12 +11,10 @@ services:
       - app
     networks:
         - network1
-
   app:
-    environment: 
-      - TZ=Asia/Kolkata
-    build: ./app
     image: h20180061/trends:${APP_TAG}
+    environment: 
+      - TIME_ZONE=Asia/Kolkata
     ports:
       - "5000:5000"
     container_name: app
@@ -29,6 +22,7 @@ services:
       - /d/wsl/data/trends:/home/app/data
     networks:
         - network1
+ 
 
 networks:
   network1:
