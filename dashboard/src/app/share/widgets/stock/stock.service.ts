@@ -191,14 +191,10 @@ export class StockService {
     return this.currentData;
   }
 
-  setRealTimeData(chart, current) { 
-      
-    if (chart['data'].length ==0){
-      chart['data'] = [current];
-    }
+  setRealTimeData(data, current, stocks) { 
     var options= this.setChartOptions();
     // options['title']['text'] = chart['listing']['SAS'];
-    options['series'][0]['data'] = chart['data'];
+    options['series'][0]['data'] = data;
     this._chart = Highcharts.stockChart('canvas', options);
     this.currentData = current;
     

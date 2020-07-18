@@ -6,12 +6,12 @@ Created on Fri Mar 27 02:50:36 2020
 """
 
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import wrapper as mods
 from flask_socketio import SocketIO
-from fetch import fetch
-from index import listing
+from routes.symbols import symbols
+from routes.index import index_route
 
 async_task_1 = None
 
@@ -22,17 +22,18 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.getcwd() + os.sep + 'files'
 app.config['SECRET_KEY'] = 'secret!'
 
-CORS(app, resources={r"/*": {"origins": "*"}})
+app.register_blueprint(symbols)
+app.register_blueprint(index_route)
 
-app.register_blueprint(fetch)
-app.register_blueprint(listing)
+CORS(app, resources={"/*": {"origins": "*"}})
+
 
 socketio = SocketIO(app, cors_allowed_origins="*")
   
 @app.route('/')
 def ping():
     return {'status' : "Success"} 
-              
+
 @socketio.on('message')
 def handle_message(message):
     logger.info('Connect to client: ' + message) 

@@ -43,14 +43,14 @@ export class SettingsComponent implements OnInit {
     {value: 'OPTCUR', viewValue: 'Options Currency'}
   ];
 
-  expiries:[];
+  expiries;
   isExpiryEnabled:boolean = false;
 
   options = [
     {value: 'CE', viewValue: 'Call'},
     {value: 'PE', viewValue: 'Put'}];
 
-  strikePrices:[];
+  strikePrices;
   
 
 
@@ -86,6 +86,7 @@ export class SettingsComponent implements OnInit {
         this.openSnackBar(resp['msg']);
         this._route.navigateByUrl('dashboard');
       },err =>{
+        console.log(err)
         this.openSnackBar(err.message);
       });
     }
@@ -100,7 +101,6 @@ export class SettingsComponent implements OnInit {
       this.openSnackBar(resp['msg']);
       this._route.navigateByUrl('dashboard');
     },err =>{
-      debugger;
       this.openSnackBar(err.error.message);
     });
   }
@@ -123,7 +123,7 @@ export class SettingsComponent implements OnInit {
     
     this.symbolForm.get('expiry').setValue(null);
     this.symbolForm.get('expiry').disable();
-    this._config.fetchExpiry({'instrument' : event.value, 'symbol' : this.listing['Symbol']}).subscribe((resp:[]) => {
+    this._config.fetchExpiry(event.value, this.listing['Symbol']).subscribe((resp) => {
         this.expiries = resp;
         this.symbolForm.get('expiry').enable();
     },err =>{
@@ -133,6 +133,7 @@ export class SettingsComponent implements OnInit {
   }
 
   onExpiryChange(){
+    this.symbolForm.get('option').setValue(null);
     if(this.symbolForm.get('instrument').value == "OPTCUR"){      
       this.symbolForm.get('option').enable();
     }else{
@@ -150,7 +151,7 @@ export class SettingsComponent implements OnInit {
       "instrument" : this.symbolForm.get('instrument').value,
       "symbol" : this.listing['Symbol']
     } 
-    this._config.fetchStrikePrices(options).subscribe((resp:[]) => {
+    this._config.fetchStrikePrices(this.listing['Symbol'], this.symbolForm.get('instrument').value, this.symbolForm.get('expiry').value, event.value).subscribe(resp=> {
       this.strikePrices = resp;
       this.symbolForm.get('strikePrice').enable();
       this._snack.open("Done.");

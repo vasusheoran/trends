@@ -189,6 +189,7 @@ class Calculate:
         self.__update_cp(val['CP'], val['HP'], val['LP'])
         self.curValues = val.copy()  
         return self.fetch_values()  
+        
     
     def freeze_value(self, val):
         temp = {'CP' : self.df.at[2,'CP'], 'HP' : self.df.at[2,'HP'],'LP' : self.df.at[2,'LP']}
@@ -215,17 +216,17 @@ class Calculate:
             return self.db
         else:
             
-            if self.df.at[2,'emaCP5'] == None:
+            if pd.isna(self.df.at[2,'emaCP5']):
                 ema5 = ""
             else:
                 ema5 = self.df.at[2,'emaCP5']
                 
-            if self.df.at[2,'emaCP20'] == None:
+            if pd.isna(self.df.at[2,'emaCP20']):
                 ema20 = ""
             else:
                 ema20 = self.df.at[2,'emaCP20']
                 
-            if self.df.at[2,'emaCP50'] == None:
+            if pd.isna(self.df.at[2,'emaCP50']):
                 ema50 = ""
             else:
                 ema50 = self.df.at[2,'emaCP50']
