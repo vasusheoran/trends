@@ -6,9 +6,10 @@ Created on Tue Mar 31 00:41:53 2020
 """
 import threading,time
 from datetime import datetime, timedelta
-from .wrapper import update_values, fetch_current
+from .wrapper import push_notifications
 from .utilities import get_logger, real_time_field_names, min_freeze_time, max_freeze_time
 from .database import DB
+from .index import index
 
 logger = get_logger("thread.py")
 real_time_data = dict()
@@ -42,11 +43,11 @@ class AsyncUpdateRealTimeTask(threading.Thread):
                 
             task['Date'] = int(current_time.timestamp() * 1000)
 
-            current_listing = fetch_current() 
             # Calcuate response if listing matches
-            if 'listing' in current_listing and task['index'] == current_listing['listing']['SAS']:
-                update_values(task, should_freeze)
-                    
+            if task['index'] == index.name():
+                values, ok = index.put(task)
+                push_notifications('updateui', values)
+                
             self.update_queue(task)
             # self.update_data(data)               
 
@@ -55,7 +56,6 @@ class AsyncUpdateRealTimeTask(threading.Thread):
             # print(err)
         except Exception as ex:
             logger.info(ex)
-        logger.info("Exiting AsyncUpdateRealTimeTask")
             
     def isFreezeEnabled(self, task, current_time, should_freeze):
         global max_freeze_time, min_freeze_time

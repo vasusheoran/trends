@@ -23,7 +23,7 @@ RUN         cd /ng-app && npm install && npm install -g @angular/cli@7.3.9
 ## Build the angular app in production mode and store the artifacts in dist folder
 WORKDIR     /ng-app
 COPY        . /ng-app
-RUN         ng build --prod --output-path=dist
+RUN         ng build --output-path=dist
 
 
 ### STAGE 2: Setup ###

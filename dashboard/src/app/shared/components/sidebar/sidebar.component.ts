@@ -54,14 +54,15 @@ export class SidebarComponent implements OnInit {
 
   fetchFreezeValues(){
     this._config.fetchFrozenValues().subscribe((resp) =>{
-      this.dialogData = resp['data'];
+      this.dialogData = resp
     });
   }
 
   updateFreezeTime(result){
     this._config.freezeBI(result).subscribe((res) => {
       this.snackBarRef = this._snack.open("Buy forzen successfully. Updating Values");
-      this.fetchFreezeValues();
+      // this.fetchFreezeValues();
+      this.dialogData = res
     },(err) =>{
       this.snackBarRef = this._snack.open('Error in Freezing Buy.','Close',{
         duration:4000
@@ -98,6 +99,7 @@ export class SidebarComponent implements OnInit {
         duration:4000
       });
     }else{
+      // this.dialogData = {}
       this.dialogData['task'] = task;
       this.dialogData['data'] = this.frozenValues;
       const dialogRef = this.dialog.open(DialogComponent, {

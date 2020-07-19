@@ -44,10 +44,10 @@ export class StockComponent implements OnInit, OnDestroy {
         });
 
         // Subscribe to refresh
-        this._config.fetchIndexIfSet().subscribe(resp => {
-            this.listing = resp['chart']['listing'];
-            this._stockHelper.setRealTimeData(resp['chart'], resp['data']['dashboard']['cards']); 
-            this._shared.nextUpdateResponse(resp['data']['dashboard']);
+        this._config.fetchIndex().subscribe(resp => {
+            this.listing = resp['symbol'];
+            this._stockHelper.setRealTimeData(resp['data'], resp['values']['dashboard']['cards']); 
+            this._shared.nextUpdateResponse(resp['values']['dashboard']);
             this.isUpdated = true;
             this._shared.nextListing(this.listing);
         }, (err) => {     

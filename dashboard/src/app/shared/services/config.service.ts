@@ -14,57 +14,56 @@ export class ConfigService {
 
   private baseUrl:string = "";
 
-  private fetchValuesUrl:string;
+  private getIndex:string;
   private fetchIndexUrl:string;
-  private fetchListingsUrl:string;
-  private paginateHistoricalDataUrl:string;
-  private freezeBIUrl:string;
-  private fetchFrozenUrl:string;
+  private getSymbol:string;
+  private getHistorical:string;
+  private postFreeze:string;
+  private getFreeze:string;
   private addNewRowUrl:string;
-  private setIndexUrl:string;
-  private resetIndexUrl:string;
+  private postIndex:string;
+  private deleteIndex:string;
   private downloadLogUrl:string;
   private uploadSymbolsUrl:string;
   private deleteRowUrl:string;
-  private fetchExpiryUrl:string;
-  private fetchStrikePricesUrl: any;
+  private getExpiry:string;
+  private getStrike: any;
 
 
   constructor(private _http: HttpClient) { 
     this.baseUrl = environment.apiUrl;
-    this.fetchValuesUrl = this.baseUrl  + 'fetch/value';  
-    this.fetchIndexUrl = this.baseUrl  + 'fetch/index';
-    this.fetchListingsUrl = this.baseUrl  + 'fetch/listings';
-    this.fetchFrozenUrl = this.baseUrl  + 'fetch/freeze'; 
-    this.paginateHistoricalDataUrl = this.baseUrl  + 'fetch/';
-    this.freezeBIUrl = this.baseUrl  + 'listing/freeze';  
-    this.setIndexUrl = this.baseUrl  + 'listing/set';  
-    this.resetIndexUrl = this.baseUrl  + 'listing/reset';  
-    this.downloadLogUrl = this.baseUrl  + 'download/';  
-    this.uploadSymbolsUrl = this.baseUrl  + 'upload';
-    this.fetchExpiryUrl = this.baseUrl  + 'listing/expiry';
-    this.fetchStrikePricesUrl = this.baseUrl  + 'listing/strike';
+    this.getIndex = this.baseUrl  + 'index';   
+    this.postIndex = this.baseUrl  + 'index';  
+    this.deleteIndex = this.baseUrl  + 'index';  
+    this.getSymbol = this.baseUrl  + 'symbol';
+    this.getFreeze = this.baseUrl  + 'index/freeze'; 
+    this.postFreeze = this.baseUrl  + 'index/freeze'; 
+    this.getHistorical = this.baseUrl  + 'index/history/';
+    // this.downloadLogUrl = this.baseUrl  + 'download/';  
+    // this.uploadSymbolsUrl = this.baseUrl  + 'upload';
+    this.getExpiry = this.baseUrl  + 'index/expiry';
+    this.getStrike = this.baseUrl  + 'index/strike';
   }
 
-  fetchValues() {
-    return this._http.get(this.fetchValuesUrl).pipe(map(data => data));
+  fetchIndex() {
+    return this._http.get(this.getIndex).pipe(map(data => data));
   }
 
   fetchListings() {
-    return this._http.get(this.fetchListingsUrl);
+    return this._http.get(this.getSymbol);
   }
 
   fetchHistoricalData(page, size) {
-    const url = this.paginateHistoricalDataUrl + page + '/' + size;
+    const url = this.getHistorical + page + '/' + size;
     return this._http.get(url).pipe(map(data => data));
   }
 
   freezeBI(data) {
-    return this._http.post(this.freezeBIUrl, data).pipe(map(data => data));
+    return this._http.post(this.postFreeze, data).pipe(map(data => data));
   }
 
   fetchFrozenValues() {
-    return this._http.get(this.fetchFrozenUrl).pipe(map(data => data));
+    return this._http.get(this.getFreeze).pipe(map(data => data));
   }
 
   private fetchDataByStartAndEndUrl(start:string, end:string):string
@@ -78,11 +77,11 @@ export class ConfigService {
   }
 
   setListing(selectedOption) {
-    return this._http.post(this.setIndexUrl, selectedOption).pipe(map(data => data));
+    return this._http.post(this.postIndex, selectedOption).pipe(map(data => data));
   }
 
   resetListing(options) {
-    return this._http.post(this.resetIndexUrl, options).pipe(map(data => data));
+    return this._http.delete(this.deleteIndex).pipe(map(data => data));
   }
 
   downloadLogs(num) {
@@ -113,11 +112,13 @@ export class ConfigService {
     return this._http.get(url).pipe(map(data => data));
   }
   
-  fetchExpiry(object: any) {
-    return this._http.post(this.fetchExpiryUrl, object).pipe(map(data => data));
+  fetchExpiry(instrument: string, symbol:string) {
+    var url = this.getExpiry + "/" + symbol + "/" + instrument
+    return this._http.get(url).pipe(map(data => data));
   }
 
-  fetchStrikePrices(options: any) {
-    return this._http.post(this.fetchStrikePricesUrl, options ).pipe(map(data => data));
+  fetchStrikePrices(symbol: string, instrument: string, expiry: string, optionType: string) {
+    var url = this.getStrike + "/" + symbol + "/" + instrument + "/" + expiry + "/" + optionType
+    return this._http.get(url ).pipe(map(data => data));
   }
 }
