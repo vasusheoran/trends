@@ -11,14 +11,38 @@ class Symbol:
         self.db = DB()
     
     def get(self):
-        logger.info("Getting symbols list")
+        logger.info("Handlling get")
         return self.db.get_listings()
     
-    def put(self, symbol, symbol_id):
-        raise RuntimeError("Implementation pending")
+    def put(self, symbol, sid):
+        logger.info("Handlling put")
+        symbols = self.db.get_listings_df()
+        # Delete existing mapping
+        symbols = symbols[symbols['Symbol'] != sid]
+        # Append new mapping
+        symbols = symbols.append(symbol, ignore_index=True)        
+        self.db.set_listings(symbols)
     
     def post(self, symbol):
-        raise RuntimeError("Implementation pending")
+        logger.info("Handlling post")
+        symbols = self.db.get_listings_df()
+        symbols = symbols.append(symbol, ignore_index=True)
+        self.db.set_listings(symbols)
         
-    def delete(self, symbol_id):
-        raise RuntimeError("Implementation pending")
+    def delete(self, sid):
+        logger.info("Handlling delete")
+        symbols = self.db.get_listings_df()
+        symbols = symbols[symbols['Symbol'] != sid]
+        self.db.set_listings(symbols)
+        
+
+# Symbol -- key
+def post(symbol): 
+    symbols = db.get_listings_df()
+    symbols = symbols.append(symbol, ignore_index=True)
+    db.set_listings(symbols)
+    
+def delete(sid):
+    symbols = db.get_listings_df()
+    symbols[symbols['Symbol'] != sid]
+    db.set_listings(symbols)
