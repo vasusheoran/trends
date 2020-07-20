@@ -21,6 +21,7 @@ import { MatSnackBarModule, MAT_SNACK_BAR_DEFAULT_OPTIONS } from '@angular/mater
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { HistoricalDataComponent } from 'src/app/modules/historical-data/historical-data.component';
 import { SettingsComponent } from 'src/app/modules/settings/settings.component';
+import { SymbolsComponent } from 'src/app/modules/symbols/symbols.component';
 
 
 @NgModule({
@@ -28,7 +29,8 @@ import { SettingsComponent } from 'src/app/modules/settings/settings.component';
     DefaultComponent,
     DashboardComponent,
     HistoricalDataComponent,
-    SettingsComponent
+    SettingsComponent,
+    SymbolsComponent
   ],
   imports: [
     CommonModule,

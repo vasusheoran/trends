@@ -191,7 +191,7 @@ export class StockService {
     return this.currentData;
   }
 
-  setRealTimeData(data, current, stocks) { 
+  setRealTimeData(data, current) { 
     var options= this.setChartOptions();
     // options['title']['text'] = chart['listing']['SAS'];
     options['series'][0]['data'] = data;
