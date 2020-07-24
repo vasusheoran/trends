@@ -30,6 +30,7 @@ import { CardComponent } from './widgets/card/card.component';
 import { AutocompleteComponent } from './widgets/autocomplete/autocomplete.component';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { DialogComponent } from './widgets/dialog/dialog.component';
+import { SymbolsDataDialog } from './widgets/dialog/symbols/symbols-dialog.component';
 import { CountdownSnackbarComponent } from './widgets/countdown-snackbar/countdown-snackbar.component';
 
 @NgModule({
@@ -42,6 +43,7 @@ import { CountdownSnackbarComponent } from './widgets/countdown-snackbar/countdo
     CardComponent,
     AutocompleteComponent,
     DialogComponent,
+    SymbolsDataDialog,
     CountdownSnackbarComponent
   ],
   imports: [
@@ -71,7 +73,8 @@ import { CountdownSnackbarComponent } from './widgets/countdown-snackbar/countdo
     StockComponent,
     CardComponent,
     AutocompleteComponent,
-    DialogComponent,    
+    DialogComponent,   
+    SymbolsDataDialog, 
     CountdownSnackbarComponent
   ]
 })

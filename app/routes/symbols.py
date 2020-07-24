@@ -23,13 +23,13 @@ def post():
     sb.post(data)
     return { 'status' : 'success'}
     
-@symbols.route('/<sid>/', methods = ['PUT'])
+@symbols.route('/<sid>', methods = ['PUT'])
 def put(sid):
     data = request.get_json() 
     sb.put(data, sid)
     return { 'status' : 'success'}
     
-@symbols.route('/<sid>/', methods = ['DELETE'])
+@symbols.route('/<sid>', methods = ['DELETE'])
 def delete(sid):
     sb.delete(sid)
     return { 'status' : 'success'}

@@ -1,11 +1,15 @@
-<div class="example-header" fxLayout="row" fxLayoutGap="2px">
-    <mat-form-field  fxFlex="30">
-      <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search Symbol">
+<div fxLayout="row" fxLayoutGap="10px">
+    <mat-form-field  fxFlex="30" class="example-header" >
+        <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search Symbol">
     </mat-form-field>
+    <a (click)="refreshSymbols('Refreshing Symbols ..')" style="padding-top: 10px;">
+        <mat-icon>refresh</mat-icon>
+    </a>
   </div>
 
+
 <div class="mat-elevation-z8" >
-    <table mat-table [dataSource]="dataSource">
+    <table mat-table [dataSource]="dataSource" matSort>
         <!-- Position Column -->
         <ng-container matColumnDef="Company">
             <th mat-header-cell *matHeaderCellDef> Company </th>
