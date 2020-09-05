@@ -204,7 +204,7 @@ class Calculate:
             'Date': val['Date'],
             'bi': res
             })
-        return self.frozen
+        return self.fetch_frozen_values()
               
 
     def fetch_rows(self, endIndex, startIndex = 0):
@@ -230,35 +230,50 @@ class Calculate:
                 ema50 = ""
             else:
                 ema50 = self.df.at[2,'emaCP50']
-                                
+            
+            logger.info("fetching response ..")                    
             response = find_BI(self.db, self.frozen, self.df)
+            
+            logger.info("response fetched..")
+            
+            
             self.back_ground = response
             self.db.update({
                 'dashboard' :{
-                    'cards' : [{'name' : 'Buy', 'key' : 'Buy', 'value': response['bi']},
-                               {'name' : 'Support', 'key' : 'Support', 'value': response['bj']},
-                               {'name' : 'Sell', 'key' : 'Sell', 'value': response['bk']},
-                               {'name' : 'Min High', 'key' : 'Min_High', 'value': response['min.HP.2']
-                                }],
-                    'table' : [{'name' : 'Close', 'value': self.curValues['CP']},
-                               {'name' : 'High', 'value': self.curValues['HP']},
-                               {'name' : 'Low', 'value': self.curValues['LP']},
-                               {'name' : 'AVG', 'value': response['ar']},
-                               {'name' : 'EMA 5', 'value': ema5},
-                               {'name' : 'EMA 20', 'value': ema20},
-                               {'name' : 'EMA 50', 'value': ema50},
-                               {'name' : 'RSI', 'value': response['cr']},
-                               {'name' : 'Trend', 'value': response['bn']},
-                               ]},
-                'Date' : {'name' : 'Date', 'value': self.curValues['Date']},
+                    'cards' : [{'isColorEnabled' : False, 'name' : 'Buy', 'key' : 'Buy', 'value': response['bi']},
+                                {'isColorEnabled' : False, 'name' : 'Support', 'key' : 'Support', 'value': response['bj']},
+                                {'isColorEnabled' : False, 'name' : 'Sell', 'key' : 'Sell', 'value': response['bk']},
+                                {'isColorEnabled' : False, 'name' : 'Min High - 2', 'key' : 'Min_High', 'value': response['min.HP.2']},],
+                    'table' : [{'isColorEnabled' : False, 'name' : 'Close', 'value': self.curValues['CP']},
+                                {'isColorEnabled' : False, 'name' : 'High', 'value': self.curValues['HP']},
+                                {'isColorEnabled' : False, 'name' : 'Low', 'value': self.curValues['LP']},
+                                {'isColorEnabled' : True, 'name' : 'AVG', 'value': response['ar']},
+                                {'isColorEnabled' : True, 'name' : 'EMA 5', 'value': ema5},
+                                {'isColorEnabled' : True, 'name' : 'EMA 20', 'value': ema20},
+                                {'isColorEnabled' : True, 'name' : 'EMA 50', 'value': ema50},
+                                {'isColorEnabled' : False, 'name' : 'RSI', 'value': response['cr']},
+                                {'isColorEnabled' : True, 'name' : 'Support', 'key' : 'Support', 'value': response['bj']},
+                                {'isColorEnabled' : True, 'name' : 'MH - 3', 'value': response['min.HP.3']},
+                                {'isColorEnabled' : True, 'name' : 'MH - 2', 'key' : 'Min_High', 'value': response['min.HP.2']},
+                                {'isColorEnabled' : False, 'name' : 'Trend', 'value': response['bn']},
+                                {'isColorEnabled' : True, 'name' : 'MH - F', 'value': response['min.HP.f']},
+                                ]},
+                'Date' : {'isColorEnabled' : True, 'name' : 'Date', 'value': self.curValues['Date']},
                 'stocks' : [self.curValues['Date'], self.curValues['CP']]})
         return self.db
         
     def fetch_frozen_values(self):
+        logger.info("fetch_frozen_values")
         # Update values if not yet frozen
         if 'bi' not in self.frozen:
             bi = find_BI(self.db, self.frozen, self.df, True)
-            self.frozen.update({'bi' : bi})          
+            self.frozen.update({'bi' : bi})     
+            
+        self.frozen.update({
+            'Buy': self.back_ground['bi'], 
+            'Sell' : self.back_ground['bk'],
+        })
+        
         return self.frozen
     
     def fetch_back_values(self):

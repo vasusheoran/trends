@@ -29,6 +29,8 @@ export interface IUpdatedValues {
   high:        ValuesData;
   low:         ValuesData;
   "min.HP.2":  ValuesData;
+  "min.HP.3":  ValuesData;
+  "min.HP.f":  ValuesData;
   open:        ValuesData;
   pe:          ValuesData;
   rsi:         ValuesData;
@@ -55,6 +57,9 @@ export class SharedService {
   private reset:BehaviorSubject<Boolean>  = new BehaviorSubject(null);
   sharedResetListing = this.reset.asObservable();
 
+  private isChartEnabled = new BehaviorSubject(Boolean);
+  sharedIsChartEnabled = this.isChartEnabled.asObservable();
+
   nextListing(listing){
     this.listing.next(listing);
   }
@@ -65,6 +70,10 @@ export class SharedService {
 
   resetListing(val){
     this.reset.next(val);
+  }
+
+  nextIsChartEnabled(val){
+    this.isChartEnabled.next(val);
   }
 
   constructor() { }

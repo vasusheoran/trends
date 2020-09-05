@@ -126,12 +126,16 @@ def find_BI(db, frozen, df , freeze = False):
     find_CR(df)
     find_BN(df)
     
+    minHP2 = min(df.at[3,'HP'], df.at[4,'HP'])
+    
      
     global values    
     values.update({'bi' : bi, 
                    'frozen.bi': bi, 
                    'ao': ao, 
-                   'min.HP.2' : min(df.at[3,'HP'], df.at[4,'HP']),
+                   'min.HP.2' : minHP2,
+                   'min.HP.3' : min(minHP2, df.at[5,'HP']),
+                   'min.HP.f' : min(df.at[3,'HP'], df.at[2,'HP']),
                    'cr': find_CR(df)})
     
     return values

@@ -13,7 +13,14 @@
 ### STAGE 1: Setup ###
 FROM        node
 
-# RUN         apk add --no-cache tzdata
-# ENV         TZ Asia/Kolkata
-RUN         npm install -g @angular/cli@7.3.9
-CMD         ["node", "npm", "start"]
+RUN         mkdir -p /ng-app
+WORKDIR     /ng-app
+
+COPY        package.json /ng-app
+
+RUN         npm install -g @angular/cli @angular-devkit/build-angular && npm install
+
+EXPOSE      4200
+EXPOSE      49153
+
+CMD         ["npm", "start"]

@@ -4,6 +4,7 @@ import { UpdateResponse, IUpdateResponse } from 'src/app/shared/models/listing-r
 import { WebSocketsService } from 'src/app/shared/services/web-sockets.service';
 import { SharedService } from 'src/app/shared/services/shared.service';
 import { StockService } from 'src/app/share/widgets/stock/stock.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,6 +17,7 @@ export class DashboardComponent implements OnInit {
   values:any;
   isEnabled:any;
   plotLines:[];
+  subscription: Subscription;
 
   constructor(private _socket : WebSocketsService,
     private _shared : SharedService,
@@ -24,20 +26,45 @@ export class DashboardComponent implements OnInit {
     }
 
   ngOnInit(): void { 
-    this._shared.sharedUpdateResponse.subscribe(resp =>{
+    
+    this._shared.sharedIsChartEnabled.subscribe(resp =>{
       // debugger;
-      if(typeof resp != "function"){
-        this.cards = resp['cards'];
-        this.values = resp['table'];
+
+      if (resp){
+        console.log("Subscribing to updates")
+        this.subscription=  this._shared.sharedUpdateResponse.subscribe(resp =>{
+          // debugger;
+          if(typeof resp != "function"){
+            this.cards = resp['cards'];
+            this.values = resp['table'];
+          }
+        });
+    
+        this._socket.emit('updateui', "event name : updateui");
+      }
+      else{
+        console.log("Unsubscribing to updates")
+        this.subscription.unsubscribe()
       }
     });
 
-    this._socket.emit('updateui', "event name : updateui");
   }  
 
   toggleEnable(card, key){
     this.isEnabled[key] = !this.isEnabled[key];
     this._stockHelper.toggleClickableFields(key, this.isEnabled);
+  }
+
+  toggleClass(value, isColorEnabled){
+    if (isColorEnabled == true){
+      if (isColorEnabled && this.values[0].value > value){
+        return 'green'
+      }
+      else{
+        return 'red'
+      }
+
+    }
   }
 
 }

@@ -1,0 +1,36 @@
+version: "3.3"
+services:
+  web:
+    environment: 
+      - TZ=Asia/Kolkata
+    build: 
+      context: ./dashboard
+      dockerfile: dev.dockerfile
+    image: h20180061/dashboard:${WEB_TAG}
+    ports:
+      - "4200:4200"
+      - "49153:49153"
+    container_name: web
+    # depends_on:
+    #   - app
+    networks:
+        - network1
+    volumes: 
+      - /e/Project/trends/dashboard:/ng-app
+      - /ng-app/node_modules
+
+  app:
+    environment: 
+      - TZ=Asia/Kolkata
+    build: ./app
+    image: h20180061/trends:${APP_TAG}
+    ports:
+      - "5000:5000"
+    container_name: app
+    volumes:
+      - /d/wsl/data/trends:/home/app/data
+    networks:
+        - network1
+
+networks:
+  network1:

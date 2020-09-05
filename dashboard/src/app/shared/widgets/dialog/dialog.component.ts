@@ -9,6 +9,8 @@ export interface DialogData {
   HP:     number;
   LP:     number;
   bi:     number;
+  Sell:   number;
+  Buy:    number;
   tempDate : Date;
   task:string;
 }
