@@ -27,6 +27,7 @@ export class StockComponent implements OnInit, OnDestroy {
     isUpdated:boolean;
     listing:any;
     alertStatus:boolean = false;
+    isChartEnabled:Boolean;
     
     constructor(private _config:ConfigService,
         private _snack : MatSnackBar,
@@ -35,12 +36,23 @@ export class StockComponent implements OnInit, OnDestroy {
         private _stockHelper : StockService,
         private _route : Router ) { 
             this.isUpdated = false;
+            this.isChartEnabled = true;
         }
 
     ngOnInit(): void { 
+        
+        this._shared.sharedIsChartEnabled.subscribe(resp =>{
+            if (resp)
+            this.isChartEnabled = true;
+            else
+            this.isChartEnabled = false;
+            
+        });
         this._socket.listen('updateui').subscribe((resp) =>{
-            this._stockHelper.addPoint(resp['stocks'], resp['dashboard']['cards']);
             this._shared.nextUpdateResponse(resp['dashboard']);
+
+            if(this.isChartEnabled)
+                this._stockHelper.addPoint(resp['stocks'], resp['dashboard']['cards']);
         });
 
         // Subscribe to refresh
