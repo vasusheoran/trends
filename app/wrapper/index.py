@@ -40,6 +40,10 @@ class Index:
             calc = self.index_map[self.index]['calc']
             calc.update(stock_data)            
             self.index_map[self.index]['values'] = calc.fetch_values()
+
+            # Updating latest buy/sell value in freeze object for open_dailogue
+            self.index_map[self.index]['freeze']['Buy'] = self.index_map[self.index]['values']['dashboard']['cards'][0]['value']
+            self.index_map[self.index]['freeze']['Sell'] = self.index_map[self.index]['values']['dashboard']['cards'][2]['value']
             return self.index_map[self.index]['values'], True
         else:
             return None, False

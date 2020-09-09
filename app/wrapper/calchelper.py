@@ -131,7 +131,7 @@ def find_BI(db, frozen, df , freeze = False):
      
     global values    
     values.update({'bi' : bi, 
-                   'frozen.bi': bi, 
+                   'frozen.bi': frozen_bi, 
                    'ao': ao, 
                    'min.HP.2' : minHP2,
                    'min.HP.3' : min(minHP2, df.at[5,'HP']),

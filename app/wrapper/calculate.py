@@ -195,7 +195,7 @@ class Calculate:
         temp = {'CP' : self.df.at[2,'CP'], 'HP' : self.df.at[2,'HP'],'LP' : self.df.at[2,'LP']}
         self.__update_cp(val['CP'], val['HP'], val['LP'])
         res = find_BI(self.db, self.frozen, self.df, True)
-        # self.__update_cp(temp['CP'], temp['HP'], temp['LP'])
+        self.__update_cp(temp['CP'], temp['HP'], temp['LP'])
         
         self.frozen.update({
             'CP': val['CP'] ,
@@ -263,16 +263,15 @@ class Calculate:
         return self.db
         
     def fetch_frozen_values(self):
-        logger.info("fetch_frozen_values")
         # Update values if not yet frozen
         if 'bi' not in self.frozen:
             bi = find_BI(self.db, self.frozen, self.df, True)
             self.frozen.update({'bi' : bi})     
-            
-        self.frozen.update({
-            'Buy': self.back_ground['bi'], 
-            'Sell' : self.back_ground['bk'],
-        })
+
+        # self.frozen.update({
+        #     'Buy': self.back_ground['bi'], 
+        #     'Sell' : self.back_ground['bk'],
+        # })
         
         return self.frozen
     
