@@ -12,6 +12,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -25,6 +26,7 @@ import { SettingsComponent } from 'src/app/modules/settings/settings.component';
 import { SymbolsComponent } from 'src/app/modules/symbols/symbols.component';
 
 const materialModules = [
+  MatMenuModule,
   MatSidenavModule,
   MatDividerModule,
   MatCardModule,

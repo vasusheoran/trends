@@ -9,11 +9,10 @@ NPM_PKG_STAGE_CMD = npm run start
 USER_ID := $(shell id -u)
 GROUP_ID := $(shell id -g)
 
-NPM_CMN_ARG_DR_LINUX =	--net=host \
+# NPM_CMN_ARG_DR_LINUX =	--net=host 
+NPM_CMN_ARG_DR_LINUX =	--name web \
 	-v ${ROOT}:${ROOT} \
 	-w ${ROOT}/${SERVICE_NAME} \
-
-
 
 NPM_PXY_ARG_DR_LINUX = -e HOME=. \
 	-e NPM_CONFIG_CACHE="${ROOT}/dashboard/.npm" \

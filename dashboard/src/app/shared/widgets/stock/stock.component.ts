@@ -8,6 +8,7 @@ import { SharedService, ListingResponse } from '../../services/shared.service';
 import { WebSocketsService } from '../../services/web-sockets.service';
 import { StockService } from 'src/app/share/widgets/stock/stock.service';
 import { Router } from '@angular/router';
+import { Observable, Subscription } from 'rxjs';
 
 export interface HistoricalResponse{
     CP:number;
@@ -28,6 +29,8 @@ export class StockComponent implements OnInit, OnDestroy {
     listing:any;
     alertStatus:boolean = false;
     isChartEnabled:Boolean;
+    updateUI:Observable<any>;
+    updateUISub:Subscription;
     
     constructor(private _config:ConfigService,
         private _snack : MatSnackBar,
@@ -36,26 +39,35 @@ export class StockComponent implements OnInit, OnDestroy {
         private _stockHelper : StockService,
         private _route : Router ) { 
             this.isUpdated = false;
-            this.isChartEnabled = true;
         }
 
     ngOnInit(): void { 
-        
+
+        this.updateUI = this._socket.listen('updateui')
+
         this._shared.sharedIsChartEnabled.subscribe(resp =>{
-            if (resp)
-            this.isChartEnabled = true;
-            else
-            this.isChartEnabled = false;
-            
-        });
-        this._socket.listen('updateui').subscribe((resp) =>{
-            this._shared.nextUpdateResponse(resp['dashboard']);
+            if (resp){
+                if (this.updateUISub != undefined) {
+                    this.updateUISub.unsubscribe();
+                }
 
-            if(this.isChartEnabled)
-                this._stockHelper.addPoint(resp['stocks'], resp['dashboard']['cards']);
+                console.log("Updating cards and chart");
+                this.updateUISub = this.updateUI.subscribe((resp) =>{
+                    this._shared.nextUpdateResponse(resp['dashboard']);
+                    this._stockHelper.addPoint(resp['stocks'], resp['dashboard']['cards']);
+                });
+            }
+            else{
+                console.log("Updating cards only");
+                this.updateUISub.unsubscribe();
+                this.updateUISub = this.updateUI.subscribe((resp) =>{
+                    this._shared.nextUpdateResponse(resp['dashboard']);
+                });
+            }
         });
 
-        // Subscribe to refresh
+
+        // Fetch index and related data
         this._config.fetchIndex().subscribe(resp => {
             this.listing = resp['symbol'];
             this._stockHelper.setRealTimeData(resp['data'], resp['values']['dashboard']['cards']); 
@@ -74,6 +86,7 @@ export class StockComponent implements OnInit, OnDestroy {
     
     ngOnDestroy(): void {
         this._stockHelper.destroyChart();
+        this.updateUISub.unsubscribe();
     }
     
     horizontalPosition: MatSnackBarHorizontalPosition = 'end';

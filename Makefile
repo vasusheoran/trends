@@ -14,9 +14,5 @@ run:
 update:
 	${NPM_UPDATE_ANGULAR} "${UPDATE_ANGULAR}"
 
-# Create venv using `pip3 instal virtualenv && virtualenv venv`
-runapp:
-	python app/main.py
-
 # Target pattern to match any from parent
 %: ;

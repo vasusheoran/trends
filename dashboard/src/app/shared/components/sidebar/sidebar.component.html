@@ -16,8 +16,8 @@
             Freeze Buy
         </a>
         <a (click)="toggleChart()" routerLinkActive="list-item-active" *ngIf="toggleDashBoardTools && listing!=null" mat-list-item>
-            <mat-icon>stop</mat-icon>
-            Enable/Disable Updates
+            <span *ngIf="isChartEnabled"><mat-icon>stop</mat-icon>Disable Chart</span>
+            <span *ngIf="!isChartEnabled"><mat-icon>play_arrow</mat-icon>Enable Chart</span>
         </a>
         <a (click)="openDailog('Add current day.', false)" routerLinkActive="list-item-active" *ngIf="toggleHistoricDataTools && listing!=null" mat-list-item>
             <mat-icon>library_add</mat-icon>

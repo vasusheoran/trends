@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class WebSocketsService {
- 
+
   constructor() { 
     this.uri = environment.apiUrl;
     this.socket = io(this.uri);
@@ -27,5 +27,13 @@ export class WebSocketsService {
 
   public emit(eventName: string, data:any){
     this.socket.emit(eventName, data)
+  }
+
+  public disconnet(){
+    this.socket.disconnect();
+  }
+
+  public connect(){
+    this.socket.connect();
   }
 }

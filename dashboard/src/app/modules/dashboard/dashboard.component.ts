@@ -18,24 +18,14 @@ export class DashboardComponent implements OnInit {
   isEnabled:any;
   plotLines:[];
   subscription: Subscription;
-  isChartEnabled:Boolean;
 
   constructor(private _socket : WebSocketsService,
     private _shared : SharedService,
     private _stockHelper : StockService) {
       this.isEnabled = this._stockHelper.isPlotLineEnabled;
-      this.isChartEnabled=true;
     }
 
   ngOnInit(): void { 
-    
-    this._shared.sharedIsChartEnabled.subscribe(resp =>{
-      if (resp)
-        this.isChartEnabled = true;
-      else
-        this.isChartEnabled = false;
-      
-    });
 
     this.subscription=  this._shared.sharedUpdateResponse.subscribe(resp =>{
       // debugger;
@@ -44,8 +34,6 @@ export class DashboardComponent implements OnInit {
         this.values = resp['table'];
       }
     });
-
-    this._socket.emit('updateui', "event name : updateui");
 
   }  
 
