@@ -6,7 +6,7 @@
         <mat-icon>refresh</mat-icon>
     </a>
   </div>
-<div class="mat-elevation-z8" *ngIf="isSymbolSelected">
+<div class="example-header" *ngIf="isSymbolSelected">
     <form *ngIf="isDerivative" [formGroup]="symbolForm" (ngSubmit)="onSubmit(symbolForm.value)">
         <table class="example-full-width" cellspacing="0">
         <tr>
@@ -70,7 +70,10 @@
             </td>
         </tr>
         </table>
-        <button mat-stroked-button color="primary" type="submit">Submit</button>
+        <div>
+            <button mat-stroked-button color="primary" type="submit">Submit</button>
+            <button mat-stroked-button color="secondary" (click)="back()" >Back</button>
+        </div>
     </form>
 </div>
 <div class="mat-elevation-z8" *ngIf="!isSymbolSelected">

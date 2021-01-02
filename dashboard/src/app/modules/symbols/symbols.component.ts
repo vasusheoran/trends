@@ -131,7 +131,6 @@ export class SymbolsComponent implements OnInit {
 
   setSelectedListing(event){
     this.listing = event;
-
     if(this.listing.Series == "Derivative"){
       this.isDerivative = true;
       
@@ -211,4 +210,7 @@ export class SymbolsComponent implements OnInit {
     this.setSelectedListing(element);
   }
 
+  back(){
+    this.isSymbolSelected = false;
+  }
 }
