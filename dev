@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cp dashboard/package.json.dev dashboard/package.json
+cp dev.ui.docker-compose.yml docker-compose.yml

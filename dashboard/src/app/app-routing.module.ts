@@ -4,6 +4,7 @@ import { DefaultComponent } from './layouts/default/default.component';
 import { DashboardComponent } from './modules/dashboard/dashboard.component';
 import { HistoricalDataComponent } from './modules/historical-data/historical-data.component';
 import { SettingsComponent } from './modules/settings/settings.component';
+import { SymbolsComponent } from 'src/app/modules/symbols/symbols.component';
 
 
 const routes: Routes = [{
@@ -18,6 +19,9 @@ const routes: Routes = [{
   },{
     path: 'historical',
     component: HistoricalDataComponent
+  },{
+    path: 'symbols',
+    component: SymbolsComponent
   },{
     path: 'dashboard',
     component: DashboardComponent

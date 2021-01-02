@@ -31,6 +31,7 @@ export class SidebarComponent implements OnInit {
   snackBarRef:any;
   frozenValues:FrozenValues;
   dialogData;
+  isChartEnabled:boolean
   
   constructor(private _router : Router,
     private _shared  : SharedService,
@@ -40,6 +41,7 @@ export class SidebarComponent implements OnInit {
     this.toggleDashBoardTools = true;
     this.toggleHistoricDataTools = false;
     this.dialogData = {};
+    this.isChartEnabled = true;
     
   }
 
@@ -50,6 +52,8 @@ export class SidebarComponent implements OnInit {
         this.fetchFreezeValues();
       }
     });
+    
+    this._shared.nextIsChartEnabled(this.isChartEnabled);
   }
 
   fetchFreezeValues(){
@@ -125,5 +129,10 @@ export class SidebarComponent implements OnInit {
             this.addRow(result);
       });
     }
+  }
+
+  toggleChart(){
+    this.isChartEnabled = !this.isChartEnabled;
+    this._shared.nextIsChartEnabled(this.isChartEnabled);
   }
 }

@@ -17,11 +17,12 @@ LABEL       AUTHOR="Vasu Sheoran"
 
 ## Storing node modules on a separate layer will prevent unnecessary npm installs at each build
 RUN         mkdir /ng-app
+WORKDIR     /ng-app
+
 COPY        package.json /ng-app
-RUN         cd /ng-app && npm install && npm install -g @angular/cli@7.3.9
+RUN         npm install -g @angular/cli@7.3.9 && npm install
 
 ## Build the angular app in production mode and store the artifacts in dist folder
-WORKDIR     /ng-app
 COPY        . /ng-app
 RUN         ng build --output-path=dist
 

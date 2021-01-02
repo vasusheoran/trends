@@ -1,54 +1,52 @@
-Function pythonUpdateLocal(x As String, y As String, z As String)
-    t = "/" & x & "/" & y & "/" & z
-    x = VBA.CreateObject("Python.ObjectLibrary").pythonUpdateLocal(t)
-    pythonUpdateLocal = t
-End Function
-
-
-Function pythonUpdateRemote(x As String, y As String, z As String)
-    t = "/" & x & "/" & y & "/" & z
-    x = VBA.CreateObject("Python.ObjectLibrary").pythonUpdateRemote(t)
-    pythonUpdateRemote = t
-End Function
-
-Function SAS(x As String, y As String, z As String, index As String, time As Date)
-    t = "/" & x & "/" & y & "/" & z & "/" & Format(time, "h:m:s") & "/" & index
-    x = VBA.CreateObject("Python.ObjectLibrary").SAS(t)
-    SAS = t
-End Function
-
-Function Check(x As Date)
-    Check = Format(x, "h:m:s")
-End Function
-
-################ Final Version with Post #############################
-Sub TestObjectLibrary()
-    Dim Row As String
-    Row = 2
-    Dim time As Date
-    Dim url As String
-    
-    time = ActiveSheet.Range("U" & 2)
-    url = "http://localhost:5000/update"
-    
-    x = VBA.CreateObject("Python.ObjectLibrary").SAS(ActiveSheet.Range("H" & Row).Value, ActiveSheet.Range("B" & Row).Value, ActiveSheet.Range("I" & Row).Value, ActiveSheet.Range("J" & Row).Value, Format(time, "mm:dd:yyyy h:m:s"), ActiveSheet.Range("A" & Row).Value, url)
-    Debug.Print x
-End Sub
-
 Sub GetSelection(Row As String)
     Dim time As Date
     Dim url As String
     
-    time = ActiveSheet.Range("U" & 2)
-    url = "http://localhost:5000/update"
-    
-    x = VBA.CreateObject("Python.ObjectLibrary").SAS(ActiveSheet.Range("H" & Row).Value, ActiveSheet.Range("B" & Row).Value, ActiveSheet.Range("I" & Row).Value, ActiveSheet.Range("J" & Row).Value, Format(time, "mm:dd:yyyy h:m:s"), ActiveSheet.Range("A" & Row).Value, url)
-    Debug.Print x
+    time = ActiveSheet.Range("U" & Row)
+    x = VBA.CreateObject("Python.ObjectLibrary").SAS(ActiveSheet.Range("H" & Row).Value, ActiveSheet.Range("B" & Row).Value, ActiveSheet.Range("I" & Row).Value, ActiveSheet.Range("J" & Row).Value, Format(time, "m:d:yyyy h:m:s"), ActiveSheet.Range("A" & Row).Value, "")
 End Sub
 
 Function SAS(rngRef As Range)
-    Dim MyCellRow As String
-    MyCellRow = rngRef.Row
-    Call GetSelection(MyCellRow)
-    SAS = rngRef.Value
+    If rngRef.Rows.Count < 2 Then
+        Dim MyCellRow As String
+        MyCellRow = rngRef.Row
+        Call GetSelection(MyCellRow)
+        SAS = rngRef.Value
+    End If
+    
+    If rngRef.Rows.Count > 1 Then
+        Debug.Print rngRef.Rows.Count
+        SAS = "Cannot Select more than 1 Row."
+    End If
+    
 End Function
+
+Sub TestGetSelection(Row As String)
+    Dim time As Date
+    Dim url As String
+    
+    time = ActiveSheet.Range("U" & Row)
+    url = "http://localhost:5000/listing/update"
+    x = VBA.CreateObject("Python.ObjectLibrary").SAS(ActiveSheet.Range("H" & Row).Value, ActiveSheet.Range("B" & Row).Value, ActiveSheet.Range("I" & Row).Value, ActiveSheet.Range("J" & Row).Value, Format(time, "m:d:yyyy h:m:s"), ActiveSheet.Range("A" & Row).Value, url)
+    'Debug.Print x
+End Sub
+
+Function TestSAS(rngRef As Range)
+    If rngRef.Rows.Count < 2 Then
+        Dim MyCellRow As String
+        MyCellRow = rngRef.Row
+        Call TestGetSelection(MyCellRow)
+        'Debug.Print rngRef.Rows.Count
+        TestSAS = rngRef.Value
+        'SAS = ActiveSheet.Range("U" & Row)
+        'Format(time, "mm:dd:yyyy h:m:s")
+    End If
+    
+    If rngRef.Rows.Count > 1 Then
+        Debug.Print rngRef.Rows.Count
+        TestSAS = "Cannot Select more than 1 Row."
+    End If
+    
+End Function
+
+

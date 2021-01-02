@@ -25,7 +25,7 @@ app.config['SECRET_KEY'] = 'secret!'
 app.register_blueprint(symbols)
 app.register_blueprint(index_route)
 
-CORS(app, resources={"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 socketio = SocketIO(app, cors_allowed_origins="*")

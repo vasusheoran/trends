@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { IListing } from '../models/listing';
 
 interface StringConstructor {
   format: (formatString: string, ...replacement: any[]) => string;
@@ -17,6 +18,9 @@ export class ConfigService {
   private getIndex:string;
   private fetchIndexUrl:string;
   private getSymbol:string;
+  private putSymbol:string;
+  private postSymbol:string;
+  private deleteSymbol:string;
   private getHistorical:string;
   private postFreeze:string;
   private getFreeze:string;
@@ -36,6 +40,9 @@ export class ConfigService {
     this.postIndex = this.baseUrl  + 'index';  
     this.deleteIndex = this.baseUrl  + 'index';  
     this.getSymbol = this.baseUrl  + 'symbol';
+    this.putSymbol = this.baseUrl  + 'symbol';
+    this.postSymbol = this.baseUrl  + 'symbol';
+    this.deleteSymbol = this.baseUrl  + 'symbol';
     this.getFreeze = this.baseUrl  + 'index/freeze'; 
     this.postFreeze = this.baseUrl  + 'index/freeze'; 
     this.getHistorical = this.baseUrl  + 'index/history/';
@@ -49,8 +56,22 @@ export class ConfigService {
     return this._http.get(this.getIndex).pipe(map(data => data));
   }
 
-  fetchListings() {
-    return this._http.get(this.getSymbol);
+  getSymbols() {
+    return this._http.get(this.getSymbol).pipe(map(data => data));
+  }
+
+  postSymbols(symbol:IListing) {
+    return this._http.post(this.postSymbol, symbol).pipe(map(data => data));
+  }
+
+  putSymbols(sid:string, symbol:IListing) {
+    var url = this.putSymbol + "/" + sid;
+    return this._http.put(url, symbol).pipe(map(data => data));
+  }
+
+  deleteSymbols(sid:string) {
+    var url = this.putSymbol + "/" + sid;
+    return this._http.delete(url).pipe(map(data => data));
   }
 
   fetchHistoricalData(page, size) {

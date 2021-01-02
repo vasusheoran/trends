@@ -9,6 +9,8 @@ export interface DialogData {
   HP:     number;
   LP:     number;
   bi:     number;
+  Sell:   number;
+  Buy:    number;
   tempDate : Date;
   task:string;
 }
@@ -29,7 +31,6 @@ export class DialogComponent{
     public dialogRef: MatDialogRef<DialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData) {
 
-      console.log(this.data);
       let time = new Date();
       data.tempDate = time;
       if(!data.Date){

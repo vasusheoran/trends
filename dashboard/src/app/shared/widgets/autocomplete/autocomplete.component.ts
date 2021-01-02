@@ -37,7 +37,7 @@ export class AutocompleteComponent implements OnInit {
 
   ngOnInit() {
     this.openSnackBar('Fetching Symbols...')
-    this._config.fetchListings().subscribe((resp:Array<User>) =>{
+    this._config.getSymbols().subscribe((resp:Array<User>) =>{
       this.options = resp;        
       this.filteredOptions = this.myControl.valueChanges
         .pipe(

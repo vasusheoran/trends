@@ -1,0 +1,58 @@
+<div fxLayout="row" fxLayoutGap="10px">
+    <mat-form-field  fxFlex="30" class="example-header" >
+        <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search Symbol">
+    </mat-form-field>
+    <a (click)="refreshSymbols('Refreshing Symbols ..')" style="padding-top: 10px;">
+        <mat-icon>refresh</mat-icon>
+    </a>
+  </div>
+
+<div class="mat-elevation-z8" >
+    <table mat-table [dataSource]="dataSource" matSort>
+        <!-- Position Column -->
+        <ng-container matColumnDef="Company">
+            <th mat-header-cell *matHeaderCellDef> Company </th>
+            <td mat-cell *matCellDef="let element"> {{element.Company }} </td>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="Symbol">
+            <th mat-header-cell *matHeaderCellDef> Symbol </th>
+            <td mat-cell *matCellDef="let element"> {{element.Symbol }} </td>
+        </ng-container>
+
+        <!-- Weight Column -->
+        <ng-container matColumnDef="SAS">
+            <th mat-header-cell *matHeaderCellDef> SAS </th>
+            <td mat-cell *matCellDef="let element"> {{element.SAS }} </td>
+        </ng-container>
+
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="Series">
+            <th mat-header-cell *matHeaderCellDef> Series </th>
+            <td mat-cell *matCellDef="let element"> {{element.Series }} </td>
+        </ng-container>
+
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="Actions">
+            <th mat-header-cell *matHeaderCellDef> 
+                <a (click)="openDailog('Add', null)" routerLinkActive="list-item-active">
+                    <mat-icon>add</mat-icon> 
+                </a>
+            </th>
+            <td mat-cell *matCellDef="let element"> 
+                <a (click)="openDailog('Edit', element)" routerLinkActive="list-item-active">
+                    <mat-icon>edit</mat-icon>
+                </a>
+                <a (click)="openDailog('Delete', element)" routerLinkActive="list-item-active">
+                    <mat-icon>delete</mat-icon> 
+                </a> 
+            </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[9, 5, 20]" showFirstLastButtons></mat-paginator>
+</div>

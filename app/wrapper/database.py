@@ -15,7 +15,7 @@ logger = get_logger("db.py")
     
 class DB:
     base_path = os. getcwd()
-    path_to_symbols = base_path + os.sep + "data" + os.sep + "Symbol.xlsx"
+    path_to_symbols = base_path + os.sep + "data" + os.sep + "Symbols.csv"
     base_real_time_path = base_path + os.sep + "data" + os.sep + "daily" + os.sep
     base_metadata_path = base_path + os.sep + "data" + os.sep + "metadata" 
     # "E:/Project/trends/src/data/daily/"
@@ -76,8 +76,14 @@ class DB:
         return self.path_to_real_time_csv
         
     def get_listings(self):
-        symbols = pd.read_excel(self.path_to_symbols)
+        symbols = pd.read_csv(self.path_to_symbols)
         return symbols.to_dict('records')
+        
+    def set_listings(self, symbols):
+        symbols.to_csv(self.path_to_symbols, index=False)
+        
+    def get_listings_df(self):
+        return pd.read_csv(self.path_to_symbols)
     
     def get_latest_record(self):
         try:
@@ -175,22 +181,5 @@ class DB:
         path_to_metadata = self.base_metadata_path + os.sep + symbol
         with open(path_to_metadata , 'wb') as dbfile:
             pickle.dump(data, dbfile)
-            
-    # def get_real_time_pkl(self): 
-    #     db = dict()
-    #     if os.path.isfile(self.path_to_real_time_pkl):
-    #         with open(self.path_to_real_time_pkl , 'rb') as dbfile:
-    #             db = pickle.load(dbfile)
-    #     return db
-    
-    # def set_real_time_pkl(self, data):
-    #     db = list()
-    #     with open(self.path_to_real_time_pkl , 'rb') as dbfile:
-    #         db = pickle.load(dbfile)
-        
-    #     db.extend(data)
-        
-    #     with open (self.path_to_real_time_pkl, 'wb') as dump:
-    #         pickle.dump(db, dump)
-            
-    #     return db
+
+sym = None

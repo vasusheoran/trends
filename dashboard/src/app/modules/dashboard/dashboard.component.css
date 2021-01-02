@@ -6,8 +6,16 @@
     background-color: #74992e;
 }
 
+.green{
+    color: #74992e;
+}
+
 .bg-red{
     background-color: #ff0000b8;
+}
+
+.red{
+    color: #ff0000b8;
 }
 
 .bg-blue{

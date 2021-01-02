@@ -2,15 +2,12 @@
 
 
 echo "Starting ..."
-set DOCKER_FILE="docker-compose.yml"
-
-echo Docker File :: %DOCKER_FILE%
 
 
-docker-compose  -f %DOCKER_FILE% down
+docker-compose down
 
-docker-compose  -f %DOCKER_FILE% pull 
+docker-compose pull 
 
-docker-compose   -f %DOCKER_FILE% up -d
+docker-compose up -d
 
 start http://localhost/
