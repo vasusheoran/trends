@@ -26,18 +26,20 @@ export class HistoricalDataComponent implements OnInit {
 
       if(resp.length ==0){
         this.openSnackBar("Please set the symbol to continue.");
-        this._route.navigateByUrl('settings');
-      }else{
-        this.dataSource = new MatTableDataSource<ResponseData>(resp);
-        this.dataSource.paginator = this.paginator;
+        this._route.navigateByUrl('symbols');
       }
+      
+      this.dataSource = new MatTableDataSource<ResponseData>(resp);
+      this.dataSource.paginator = this.paginator;
+    
     },err =>{
       if(err.status == 200){
           this.openSnackBar(err.statusText);
-        this._route.navigateByUrl('settings');
       }
       else
           this.openSnackBar("Server unavailable...");  
+          
+      this._route.navigateByUrl('symbols');
     });
   }
 

@@ -6,8 +6,74 @@
         <mat-icon>refresh</mat-icon>
     </a>
   </div>
-
-<div class="mat-elevation-z8" >
+<div class="mat-elevation-z8" *ngIf="isSymbolSelected">
+    <form *ngIf="isDerivative" [formGroup]="symbolForm" (ngSubmit)="onSubmit(symbolForm.value)">
+        <table class="example-full-width" cellspacing="0">
+        <tr>
+            <td>
+            <mat-form-field class="example-full-width">
+                <mat-label>Period</mat-label>
+                <mat-select formControlName="period" name="period">
+                <mat-option *ngFor="let period of periods" [value]="period.value">
+                    {{period.viewValue}}
+                </mat-option>
+                </mat-select>
+            </mat-form-field>
+            </td>
+        </tr>
+        <tr>
+            <td>        
+            <mat-form-field class="example-full-width">
+                <mat-label>Instrument</mat-label>
+                <mat-select formControlName="instrument" name="instrument" (selectionChange)="onInstrumentChange($event)">
+                <mat-option *ngFor="let item of intstruments" [value]="item.value">
+                    {{item.viewValue}}
+                </mat-option>
+                </mat-select>
+            </mat-form-field>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            <mat-form-field>
+                <mat-label>Choose a date</mat-label>
+                <mat-select formControlName="expiry" name="expiry" (selectionChange)="onExpiryChange()">
+                <mat-option *ngFor="let item of expiries" [value]="item">
+                    {{item}}
+                </mat-option>
+                </mat-select>
+            </mat-form-field>        
+            </td>
+        </tr> 
+        <tr>
+            <td>        
+            <mat-form-field class="example-full-width">
+                <mat-label>Option Type</mat-label>
+                <mat-select formControlName="option" name="option" (selectionChange)="onOptionTypeChange($event)">
+                <mat-option *ngFor="let item of options" [value]="item.value">
+                    {{item.viewValue}}
+                </mat-option>
+                </mat-select>
+            </mat-form-field>
+            </td>
+        </tr>
+        <tr>
+            <td>        
+            <mat-form-field class="example-full-width">
+                <mat-label>Strike Prices</mat-label>
+                <mat-select formControlName="strikePrice" name="strikePrice">
+                <mat-option *ngFor="let item of strikePrices" [value]="item">
+                    {{item}}
+                </mat-option>
+                </mat-select>
+            </mat-form-field>
+            </td>
+        </tr>
+        </table>
+        <button mat-stroked-button color="primary" type="submit">Submit</button>
+    </form>
+</div>
+<div class="mat-elevation-z8" *ngIf="!isSymbolSelected">
     <table mat-table [dataSource]="dataSource" matSort>
         <!-- Position Column -->
         <ng-container matColumnDef="Company">
@@ -47,6 +113,7 @@
                 <a (click)="openDailog('Delete', element)" routerLinkActive="list-item-active">
                     <mat-icon>delete</mat-icon> 
                 </a> 
+                <button mat-stroked-button color="primary" (click)="selectSymbol(element)" >Select</button>
             </td>
         </ng-container>
 
