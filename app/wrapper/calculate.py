@@ -230,9 +230,18 @@ class Calculate:
             response = find_BI(self.db, self.frozen, self.df)
             
             logger.info("response fetched..")
-            
-            
+
             self.back_ground = response
+
+            response['bi'] = response['bi']if response['bi'] == "NaN" else ''
+            response['bj'] = response['bj'] if response['bj'] == "NaN" else ''
+            response['bk'] = response['bk'] if response['bk'] == "NaN" else ''
+            response['ar'] = response['ar'] if response['ar'] == "NaN" else ''
+            response['min.HP.3'] = response['min.HP.3'] if response['min.HP.3'] == "NaN" else ''
+            response['bn'] = response['bn'] if response['bn'] == "NaN" else ''
+            response['cr'] = response['cr']  if response['cr'] == "NaN" else ''
+            response['ar'] = response['ar'] if response['ar'] == "NaN" else ''
+
             self.db.update({
                 'dashboard' :{
                     'cards' : [{'isColorEnabled' : False, 'name' : 'Buy', 'key' : 'Buy', 'value': response['bi']},
