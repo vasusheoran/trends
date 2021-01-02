@@ -59,15 +59,6 @@ export class StockService {
 
   setChartOptions():{}{        
     var options = {
-        // scrollbar: {
-        //   liveRedraw: false
-        // },
-        // time: {
-            // useUTC: false,
-            // timezone: 'Asia/Kolkata'
-            // timezoneOffset: 330
-        // },
-
         rangeSelector: {
             buttons: [{
                 count: 1,

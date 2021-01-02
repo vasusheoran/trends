@@ -41,7 +41,7 @@ export class SidebarComponent implements OnInit {
     this.toggleDashBoardTools = true;
     this.toggleHistoricDataTools = false;
     this.dialogData = {};
-    this.isChartEnabled = true;
+    this.isChartEnabled = false;
     
   }
 

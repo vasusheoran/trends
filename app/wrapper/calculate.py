@@ -58,7 +58,7 @@ class Calculate:
         return df  
     
     def __set_up(self):
-        self.df = self.__find_ema([5,20, 50], self.cols, self.df)
+        self.df = self.__find_ema([5,20], self.cols, self.df)
         self.df = self.util.findMin(self.df, ['HP'],3)
         self.df = self.util.av_rolling(self.df,['CP_CI_HP'],50)
         self.df = self.util.av_rolling(self.df,['CP_CI_HP'],10) 
@@ -69,7 +69,7 @@ class Calculate:
         self.df = self.df.drop(columns=['diffCP1' ,'diffCP1Pos', 'diffCP1Neg'])
         
     def __set_up_new_only(self, num = 2):
-        spans = [5, 20, 50]
+        spans = [5, 20]
         avColName = 'CP_CI_HP'
         
         cur_cp_diff = self.df.at[2, 'CP'] - self.df.at[3, 'CP']
@@ -225,11 +225,6 @@ class Calculate:
                 ema20 = ""
             else:
                 ema20 = self.df.at[2,'emaCP20']
-                
-            if pd.isna(self.df.at[2,'emaCP50']):
-                ema50 = ""
-            else:
-                ema50 = self.df.at[2,'emaCP50']
             
             logger.info("fetching response ..")                    
             response = find_BI(self.db, self.frozen, self.df)
@@ -244,20 +239,21 @@ class Calculate:
                                 {'isColorEnabled' : False, 'name' : 'Support', 'key' : 'Support', 'value': response['bj']},
                                 {'isColorEnabled' : False, 'name' : 'Sell', 'key' : 'Sell', 'value': response['bk']},
                                 {'isColorEnabled' : False, 'name' : 'Min High - 2', 'key' : 'Min_High', 'value': response['min.HP.2']},],
-                    'table' : [{'isColorEnabled' : False, 'name' : 'Close', 'value': self.curValues['CP']},
-                                {'isColorEnabled' : False, 'name' : 'High', 'value': self.curValues['HP']},
-                                {'isColorEnabled' : False, 'name' : 'Low', 'value': self.curValues['LP']},
-                                {'isColorEnabled' : True, 'name' : 'AVG', 'value': response['ar']},
-                                {'isColorEnabled' : True, 'name' : 'EMA 5', 'value': ema5},
-                                {'isColorEnabled' : True, 'name' : 'EMA 20', 'value': ema20},
-                                {'isColorEnabled' : True, 'name' : 'EMA 50', 'value': ema50},
-                                {'isColorEnabled' : False, 'name' : 'RSI', 'value': response['cr']},
-                                {'isColorEnabled' : True, 'name' : 'Support', 'key' : 'Support', 'value': response['bj']},
-                                {'isColorEnabled' : True, 'name' : 'MH - 3', 'value': response['min.HP.3']},
-                                {'isColorEnabled' : True, 'name' : 'MH - 2', 'key' : 'Min_High', 'value': response['min.HP.2']},
-                                {'isColorEnabled' : False, 'name' : 'Trend', 'value': response['bn']},
-                                {'isColorEnabled' : True, 'name' : 'MH - F', 'value': response['min.HP.f']},
-                                ]},
+                    'table' : { 'Close': {'name' : 'Close', 'value': self.curValues['CP']},
+                                'High': {'name' : 'High', 'value': self.curValues['HP']},
+                                'Low': {'name' : 'Low', 'value': self.curValues['LP']},
+                                'AVG': {'name' : 'AVG', 'value': response['ar']},
+                                'EMA5': {'name' : 'EMA 5', 'value': ema5},
+                                'RSI': {'name' : 'RSI', 'value': response['cr']},
+                                'EMA20': {'name' : 'EMA 20', 'value': ema20},
+                                'Trend': {'name' : 'Trend', 'value': response['bn']},
+                                'HL3': {'name' : 'HL - 3', 'value': response['min.HP.3']},
+                                'O5MT': {'name' : 'O - 5MT', 'key' : '05mt', 'value': "0.0"},
+                                'Buy': {'name' : 'Buy', 'key' : 'Buy', 'value': response['bi']},
+                                'Support': {'name' : 'Support', 'key' : 'Support', 'value': response['bj']},
+                                'Sell': {'name' : 'Sell', 'key' : 'Sell', 'value': response['bk']},
+                                }
+                            },
                 'Date' : {'isColorEnabled' : True, 'name' : 'Date', 'value': self.curValues['Date']},
                 'stocks' : [self.curValues['Date'], self.curValues['CP']]})
         return self.db

@@ -6,7 +6,7 @@ import { ConfigService } from '../../services/config.service';
 import { MatSnackBar, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 import { SharedService, ListingResponse } from '../../services/shared.service';
 import { WebSocketsService } from '../../services/web-sockets.service';
-import { StockService } from 'src/app/share/widgets/stock/stock.service';
+import { StockService } from 'src/app/shared/services/stock.service';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 

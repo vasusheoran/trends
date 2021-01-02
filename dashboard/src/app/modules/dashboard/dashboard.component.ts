@@ -3,7 +3,8 @@ import { IListing } from 'src/app/shared/models/listing';
 import { UpdateResponse, IUpdateResponse } from 'src/app/shared/models/listing-response';
 import { WebSocketsService } from 'src/app/shared/services/web-sockets.service';
 import { SharedService } from 'src/app/shared/services/shared.service';
-import { StockService } from 'src/app/share/widgets/stock/stock.service';
+import { StockService } from 'src/app/shared/services/stock.service';
+
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -14,7 +15,6 @@ import { Subscription } from 'rxjs';
 export class DashboardComponent implements OnInit {
 
   cards:any;
-  values:any;
   isEnabled:any;
   plotLines:[];
   subscription: Subscription;
@@ -30,8 +30,7 @@ export class DashboardComponent implements OnInit {
     this.subscription=  this._shared.sharedUpdateResponse.subscribe(resp =>{
       // debugger;
       if(typeof resp != "function"){
-        this.cards = resp['cards'];
-        this.values = resp['table'];
+        this.cards = resp['table'];
       }
     });
 
@@ -42,16 +41,13 @@ export class DashboardComponent implements OnInit {
     this._stockHelper.toggleClickableFields(key, this.isEnabled);
   }
 
-  toggleClass(value, isColorEnabled){
-    if (isColorEnabled == true){
-      if (isColorEnabled && this.values[0].value > value){
-        return 'green'
+  toggleClass(color1, color2, value){
+      if (this.cards.Close.value > value){
+        return color1
       }
       else{
-        return 'red'
+        return color2
       }
-
-    }
   }
 
 }

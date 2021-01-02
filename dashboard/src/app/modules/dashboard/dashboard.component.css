@@ -1,29 +1,34 @@
-.bg-custom{
-    background-color: #e976d8;
-}
-
-.bg-green{
-    background-color: #74992e;
-}
 
 .green{
-    color: #74992e;
-}
-
-.bg-red{
-    background-color: #ff0000b8;
+    color:green
 }
 
 .red{
-    color: #ff0000b8;
+    color:red
 }
 
-.bg-blue{
-    background-color: #0000ff7a;
+.darkblue {
+    color:darkblue
 }
 
-.bg-grey{
-    background-color: grey;
+.gold {
+    color:rgb(155, 132, 0);
+}
+
+.violet {
+    color:violet;
+}
+
+.magenta {
+    color:magenta;
+}
+
+.purple {
+    color:purple;
+}
+
+.margin-right{
+    margin-right: -5px;
 }
 
 .cursor{
