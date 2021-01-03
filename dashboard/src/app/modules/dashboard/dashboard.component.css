@@ -20,11 +20,15 @@
 }
 
 .magenta {
-    color:magenta;
+    color:rgb(15, 38, 112);
 }
 
 .purple {
     color:purple;
+}
+
+.coral {
+    color:coral
 }
 
 .margin-right{
