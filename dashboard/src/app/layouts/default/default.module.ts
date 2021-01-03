@@ -22,7 +22,7 @@ import { FormsModule, ReactiveFormsModule  } from '@angular/forms';
 import { MatSnackBarModule, MAT_SNACK_BAR_DEFAULT_OPTIONS } from '@angular/material/snack-bar';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { HistoricalDataComponent } from 'src/app/modules/historical-data/historical-data.component';
-import { SettingsComponent } from 'src/app/modules/settings/settings.component';
+// import { SettingsComponent } from 'src/app/modules/settings/settings.component';
 import { SymbolsComponent } from 'src/app/modules/symbols/symbols.component';
 
 const materialModules = [
@@ -50,7 +50,7 @@ const materialModules = [
     DefaultComponent,
     DashboardComponent,
     HistoricalDataComponent,
-    SettingsComponent,
+    // SettingsComponent,
     SymbolsComponent
   ],
   imports: [

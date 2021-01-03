@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { DefaultComponent } from './layouts/default/default.component';
 import { DashboardComponent } from './modules/dashboard/dashboard.component';
 import { HistoricalDataComponent } from './modules/historical-data/historical-data.component';
-import { SettingsComponent } from './modules/settings/settings.component';
+// import { SettingsComponent } from './modules/settings/settings.component';
 import { SymbolsComponent } from 'src/app/modules/symbols/symbols.component';
 
 
@@ -12,10 +12,7 @@ const routes: Routes = [{
   component: DefaultComponent,
   children:[{
     path: '',
-    component: SettingsComponent
-  },{
-    path: 'settings',
-    component: SettingsComponent
+    component: SymbolsComponent
   },{
     path: 'historical',
     component: HistoricalDataComponent
