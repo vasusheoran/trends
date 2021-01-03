@@ -34,15 +34,3 @@ class Symbol:
         symbols = self.db.get_listings_df()
         symbols = symbols[symbols['Symbol'] != sid]
         self.db.set_listings(symbols)
-        
-
-# Symbol -- key
-def post(symbol): 
-    symbols = db.get_listings_df()
-    symbols = symbols.append(symbol, ignore_index=True)
-    db.set_listings(symbols)
-    
-def delete(sid):
-    symbols = db.get_listings_df()
-    symbols[symbols['Symbol'] != sid]
-    db.set_listings(symbols)

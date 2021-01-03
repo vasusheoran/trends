@@ -29,5 +29,3 @@ def reset_columns(data):
     
     filtered_dates = data.loc[valid_dates]
     return filtered_dates
-
-#data = get_historical_data("nse", "1y", "1mo", "in")

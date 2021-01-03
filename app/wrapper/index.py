@@ -54,7 +54,7 @@ class Index:
         
         index = symbol['SAS'] 
         self.db = DB(listing=index)
-        historical_data = self.db.get_historical_data()
+        historical_data = self.db.get_historical_data_list()
         
         try:
             if not historical_data:
@@ -135,6 +135,16 @@ class Index:
             response = jsonify({'message': repr(err)})
             response.status_code = 400
             return response
+
+    def refresh(self):
+        symbol = self.index_map[self.index]['symbol']
+        
+        logger.info("Removing hashed data")
+        del self.index_map[self.index]
+
+
+        logger.info("Calculate new index ..")
+        self.post(symbol)
         
         
     def post_freeze(self, stock_data):           
@@ -167,6 +177,9 @@ class Index:
         
     def name(self):
         return self.index
+
+    def symbol(self):
+        return self.index_map[self.index]['symbol']
     
     def get_df(self):
         if self.__is_index_present():
