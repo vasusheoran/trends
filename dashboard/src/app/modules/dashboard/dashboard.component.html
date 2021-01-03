@@ -24,21 +24,21 @@
         <div fxFlex="16">
             <div fxFlex="100" class="margin-right">
                 <h3>{{ cards.AVG.name }}</h3>            
-                <span class="total">{{ cards.AVG.value  | number : '1.2-2'}}</span>
+                <span class="total" [ngClass]="toggleClass('green', 'red', cards.AVG.value)">{{ cards.AVG.value  | number : '1.2-2'}}</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>            
         </div>
         <div fxFlex="16">
             <div fxFlex="100" class="margin-right">
                 <h3>{{ cards.EMA5.name }}</h3>            
-                <span class="total">{{ cards.EMA5.value  | number : '1.2-2'}}</span>
+                <span class="total" [ngClass]="toggleClass('green', 'red', cards.EMA5.value)">{{ cards.EMA5.value  | number : '1.2-2'}}</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>            
         </div>
         <div fxFlex="16">
             <div fxFlex="100" class="margin-right">
                 <h3>{{ cards.RSI.name }}</h3>            
-                <span class="total" >{{ cards.RSI.value  | number : '1.2-2'}}</span>
+                <span class="total" [ngClass]="toggleRSIClass(cards.RSI.value)">{{ cards.RSI.value  | number : '1.2-2'}}</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>            
         </div>
@@ -66,7 +66,7 @@
         <div fxFlex="16">
             <div fxFlex="100" class="margin-right">
                 <h3>{{ cards.Open.name }}</h3>            
-                <span class="total"  [ngClass]="toggleClass('green', 'red', cards.O5MT.value)">TBD</span>
+                <span class="total"  [ngClass]="toggleClass('green', 'red', cards.Open.value)">TBD</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>            
         </div>

@@ -50,4 +50,14 @@ export class DashboardComponent implements OnInit {
       }
   }
 
+  toggleRSIClass(value){
+    if (value >=70 ){
+      return 'darkblue'
+    }else if(value >=50){
+      return 'green'
+    }else{
+      return 'red'
+    }
+  }
+
 }
