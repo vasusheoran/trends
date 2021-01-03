@@ -43,6 +43,7 @@ const materialModules = [
   ReactiveFormsModule,
   MatFormFieldModule,
   MatDialogModule,
+  FlexLayoutModule,
 ]
 
 @NgModule({

@@ -32,6 +32,7 @@ import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { DialogComponent } from './widgets/dialog/dialog.component';
 import { SymbolsDataDialog } from './widgets/dialog/symbols/symbols-dialog.component';
 import { CountdownSnackbarComponent } from './widgets/countdown-snackbar/countdown-snackbar.component';
+import { HistoricalDialogComponent } from './widgets/dialog/historical/historical-dialog.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +45,8 @@ import { CountdownSnackbarComponent } from './widgets/countdown-snackbar/countdo
     AutocompleteComponent,
     DialogComponent,
     SymbolsDataDialog,
-    CountdownSnackbarComponent
+    CountdownSnackbarComponent,
+    HistoricalDialogComponent
   ],
   imports: [
     CommonModule,

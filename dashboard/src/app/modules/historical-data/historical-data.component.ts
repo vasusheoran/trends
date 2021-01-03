@@ -2,9 +2,12 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatTableDataSource} from '@angular/material/table'
 import { ConfigService } from 'src/app/shared/services/config.service';
-import { SharedService } from 'src/app/shared/services/shared.service';
-import { MatSnackBar, MatSnackBarRef, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { FormBuilder, Validators  } from '@angular/forms';
+import { HistoricalDialogComponent } from 'src/app/shared/widgets/dialog/historical/historical-dialog.component';
+
 
 @Component({
   selector: 'app-historical-data',
@@ -13,16 +16,16 @@ import { Router } from '@angular/router';
 })
 export class HistoricalDataComponent implements OnInit {
 
+  dialogData;
   page:number;
   size:number;
-  displayedColumns: string[] = ['Date', 'CP', 'HP', 'LP'];
+  displayedColumns: string[] = ['Date', 'CP', 'HP', 'LP', 'Actions'];
   dataSource:MatTableDataSource<ResponseData>;
-  // dataSource = new MatTableDataSource<PeriodicElement>(ELEMENT_DATA);
 
   @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
 
   ngOnInit() { 
-    this._config.fetchHistoricalData(1, 10).subscribe((resp:ResponseData[]) => {
+    this._config.getHistories().subscribe((resp:ResponseData[]) => {
 
       if(resp.length ==0){
         this.openSnackBar("Please set the symbol to continue.");
@@ -45,7 +48,9 @@ export class HistoricalDataComponent implements OnInit {
 
   constructor(private _config : ConfigService,
     private _route : Router,
-    private _snack : MatSnackBar) { 
+    private _snack : MatSnackBar,
+    public dialog: MatDialog,
+    private formBuilder : FormBuilder) { 
       this.dataSource = null; 
   }
   
@@ -60,6 +65,25 @@ export class HistoricalDataComponent implements OnInit {
       duration: 3000,
       horizontalPosition: this.horizontalPosition,
       verticalPosition: this.verticalPosition,
+    });
+  }
+
+  // openDailog(action, element) {
+  //   console.log(action + " : : " + element)
+  //   this.dialog.open(HistoricalDialogComponent, {
+  //     data: {
+  //       'symbol': element,
+  //       'action': action
+  //     }
+  //   });
+  // }
+  openDailog(action, element) {
+    console.log(action + " : : " + element)
+    this.dialog.open(HistoricalDialogComponent, {
+      data: {
+        'history': element,
+        'action': action
+      }
     });
   }
 }
