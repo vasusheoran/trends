@@ -153,6 +153,7 @@ class DB:
         for item in li:
             logger.info(f"Removing file : {item}")
             os.remove(item)
+        df = df.sort_values(by='Date')
         df.to_csv(self.path_to_historical_csv, index=False)  
         
     def reset(self, symbols):
