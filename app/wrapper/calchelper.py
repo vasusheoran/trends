@@ -103,7 +103,8 @@ def find_ao(row ,df):
     return find_ae(row, df) - find_ae(row+1, df)  
     
 
-def find_BI(db, frozen, df , freeze = False):
+def find_BI(db, frozen, df , freeze = False):  
+    global values 
     ai, af, u = find_ai_af(df)   
     ao = find_ao(1, df)    
     temp1 = af-ai
@@ -124,12 +125,21 @@ def find_BI(db, frozen, df , freeze = False):
     
     # find_AR(df)
     find_CR(df)
-    find_BN(df)
+
+    # Trend
+    bn, ar2 = find_BN_Row(df, 2)
+    values.update({'trend': df.at[2,'CP'] - bn, 'ar': ar2})
+
+    # Moment
+    bn, ar2 = find_BN_Row(df, 1)
+    values.update({'moment': bn})
+
+    # Moment2
+    # bn, ar2 = find_BN_Row(df, 3)
+    # values.update({'moment2': df.at[2,'CP'] - bn})
     
     minHP2 = min(df.at[3,'HP'], df.at[4,'HP'])
-    
-     
-    global values    
+       
     values.update({'bi' : bi, 
                    'frozen.bi': frozen_bi, 
                    'ao': ao, 
@@ -171,12 +181,23 @@ def find_CR(df):
         # values.update({'cr' : val})
         # return
     
-def find_BN(df):    
-    global values    
-    ar2 = float(find_AR(df, 2))
-    ar3 = float(find_AR(df, 3))
+# def find_BN(df):    
+#     global values    
+#     ar2 = float(find_AR(df, 2))
+#     ar3 = float(find_AR(df, 3))
     
-    bn = (df.at[2,'emaCP5'] - ar2) - (df.at[3,'emaCP5'] - ar3)
-    values.update({'bn' : bn, 'ar' : ar2 })
+#     bn = (df.at[2,'emaCP5'] - ar2) - (df.at[3,'emaCP5'] - ar3)
+#     values.update({'bn' : bn, 'ar' : ar2, 'trend': df.at[2,'CP'] - bn, 'Close': df.at[2,'CP']})
+#     return bn, ar2
+    
+def find_BN_Row(df, row):    
+    global values   
+    first_index = row
+    second_index = row + 1
+    ar2 = float(find_AR(df, first_index))
+    ar3 = float(find_AR(df, second_index))
+    
+    bn = (df.at[first_index,'emaCP5'] - ar2) - (df.at[second_index,'emaCP5'] - ar3)
+    return bn, ar2
     
     

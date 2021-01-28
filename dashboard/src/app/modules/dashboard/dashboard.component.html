@@ -37,22 +37,15 @@
         </div>
         <div fxFlex="16">
             <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.EMA20.name }}</h3>            
+                <span class="total" [ngClass]="toggleClass('coral', 'red', cards.EMA5.value)">{{ cards.EMA20.value  | number : '1.2-2'}}</span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
                 <h3>{{ cards.RSI.name }}</h3>            
                 <span class="total" [ngClass]="toggleRSIClass(cards.RSI.value)">{{ cards.RSI.value  | number : '1.2-2'}}</span>
-            </div>
-            <mat-divider [vertical]="true"></mat-divider>            
-        </div>
-        <div fxFlex="16">
-            <div fxFlex="100" class="margin-right">
-                <h3>{{ cards.EMA20.name }}</h3>            
-                <span class="total" [ngClass]="toggleClass('coral', 'red', cards.EMA5.value)"><b>{{ cards.EMA20.value  | number : '1.2-2'}}</b></span>
-            </div>
-            <mat-divider [vertical]="true"></mat-divider>            
-        </div>
-        <div fxFlex="16">
-            <div fxFlex="100" class="margin-right">
-                <h3>{{ cards.Trend.name }}</h3>            
-                <span class="total"  [ngClass]="toggleClass('gold', 'red', cards.EMA20.value)">{{ cards.Trend.value  | number : '1.2-2'}}</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>            
         </div>
@@ -65,11 +58,25 @@
         </div>
         <div fxFlex="16">
             <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.Trend.name }}</h3>            
+                <span class="total"  [ngClass]="toggleClass('gold', 'red', cards.EMA20.value)">{{ cards.Trend.value  | number : '1.2-2'}}</span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.Moment.name }}</h3>            
+                <span class="total"  [ngClass]="toggleClass('gold', 'red', cards.EMA20.value)">{{ cards.Moment.value  | number : '1.2-2'}}</span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <!-- <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
                 <h3>{{ cards.Open.name }}</h3>            
                 <span class="total"  [ngClass]="toggleClass('green', 'red', cards.Open.value)">TBD</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>            
-        </div>
+        </div> -->
         <div fxFlex="16">
             <div fxFlex="100" class="margin-right">
                 <h3>{{ cards.Buy.name }}</h3>            
@@ -87,7 +94,7 @@
         <div fxFlex="16">
             <div fxFlex="100" class="margin-right">
                 <h3>{{ cards.Sell.name }}</h3>            
-                <span class="total"  [ngClass]="toggleClass('darkblue', 'red', cards.Sell.value)"><b>{{ cards.Sell.value  | number : '1.2-2'}}</b></span>
+                <span class="total"  [ngClass]="toggleClass('darkblue', 'red', cards.Sell.value)">{{ cards.Sell.value  | number : '1.2-2'}}</span>
             </div>           
         </div>
     </mat-card>
