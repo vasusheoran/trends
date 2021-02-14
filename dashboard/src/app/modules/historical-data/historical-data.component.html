@@ -1,4 +1,13 @@
-<div class="mat-elevation-z8" *ngIf="dataSource">
+<div fxLayout="row" fxLayoutGap="10px">
+    <mat-form-field>
+        <mat-label>Merge Date</mat-label>
+        <input type="date" matInput [(ngModel)]="megedDate" [formControl]="dt" required>
+        <mat-error *ngIf="dt.invalid">You must enter a value</mat-error>
+    </mat-form-field> 
+    <button mat-button color="primary" (click)="mergeHistories()" [disabled]="!megedDate" >Merge</button>
+</div>
+
+<div class="mat-elevation-z8">
     <table mat-table [dataSource]="dataSource">
         <!-- Date Column -->
         <ng-container matColumnDef="Date">

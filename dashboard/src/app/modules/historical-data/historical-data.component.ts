@@ -5,7 +5,7 @@ import { ConfigService } from 'src/app/shared/services/config.service';
 import { MatSnackBar, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { FormBuilder, Validators  } from '@angular/forms';
+import { FormBuilder, Validators, FormControl  } from '@angular/forms';
 import { HistoricalDialogComponent } from 'src/app/shared/widgets/dialog/historical/historical-dialog.component';
 
 
@@ -22,9 +22,16 @@ export class HistoricalDataComponent implements OnInit {
   displayedColumns: string[] = ['Date', 'CP', 'HP', 'LP', 'Actions'];
   dataSource:MatTableDataSource<ResponseData>;
 
+  dt = new FormControl('', [Validators.required]);
+  megedDate:any;
+
   @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
 
   ngOnInit() { 
+    this.getHistories()
+  }
+
+  getHistories(){
     this._config.getHistories().subscribe((resp:ResponseData[]) => {
 
       if(resp.length ==0){
@@ -44,6 +51,7 @@ export class HistoricalDataComponent implements OnInit {
           
       this._route.navigateByUrl('symbols');
     });
+
   }
 
   constructor(private _config : ConfigService,
@@ -68,15 +76,6 @@ export class HistoricalDataComponent implements OnInit {
     });
   }
 
-  // openDailog(action, element) {
-  //   console.log(action + " : : " + element)
-  //   this.dialog.open(HistoricalDialogComponent, {
-  //     data: {
-  //       'symbol': element,
-  //       'action': action
-  //     }
-  //   });
-  // }
   openDailog(action, element) {
     console.log(action + " : : " + element)
     this.dialog.open(HistoricalDialogComponent, {
@@ -84,6 +83,19 @@ export class HistoricalDataComponent implements OnInit {
         'history': element,
         'action': action
       }
+    });
+  }
+
+  mergeHistories(){
+    console.log(this.megedDate)
+
+    this._config.mergeHistories(this.megedDate).subscribe((resp) => {
+
+      this.openSnackBar("Successfully merged historical data with " + this.megedDate + ".");
+      this.getHistories()
+    
+    },err =>{
+        this.openSnackBar("File unavailable...");  
     });
   }
 }

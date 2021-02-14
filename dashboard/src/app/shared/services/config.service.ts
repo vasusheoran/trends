@@ -62,6 +62,10 @@ export class ConfigService {
     return this._http.get(this.history).pipe(map(data => data));
   }
 
+  mergeHistories(date) {
+    return this._http.patch(this.history, {'date': date}).pipe(map(data => data));
+  }
+
   postHistories(his:IHistorical) {
     return this._http.post(this.history, his).pipe(map(data => data));
   }
