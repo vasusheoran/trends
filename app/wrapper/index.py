@@ -2,6 +2,7 @@
 
 from .utilities import get_logger, Utilities
 from .calculate import Calculate
+from datetime import datetime
 from .database import DB
 from .finance import *
 from flask import jsonify, abort
@@ -117,9 +118,9 @@ class Index:
             if 'options' in self.index_map[self.index]:
                 options = self.index_map[self.index]['options']
                 
-                strike_filename = util.combine_dict_values(options)
+                strike_filename = self.utils.combine_dict_values(options)
                 
-                expiry_filename = util.combine_dict_values({'symbol' : options['symbol'],
+                expiry_filename = self.utils.combine_dict_values({'symbol' : options['symbol'],
                                                             'instrument' : options['instrument']})
                 li.append(expiry_filename)
                 li.append(strike_filename)

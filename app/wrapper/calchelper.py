@@ -132,7 +132,7 @@ def find_BI(db, frozen, df , freeze = False):
 
     # Moment
     bn, ar2 = find_BN_Row(df, 1)
-    values.update({'moment': bn})
+    values.update({'moment': df.at[2,'CP'] - bn})
 
     # Moment2
     # bn, ar2 = find_BN_Row(df, 3)

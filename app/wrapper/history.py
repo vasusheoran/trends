@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-
+import datetime
+import pandas as pd
 
 from .utilities import get_logger
 from .database import DB
@@ -37,10 +38,22 @@ class History:
         his = his.append(history, ignore_index=True)
         self.db.set_historical_data(his)
         index.refresh()
-        
+
     def delete(self, sid):
         logger.info("Handlling delete")
         his = self.db.get_historical_data_csv()
         his = his[his['Date'] != sid]
         self.db.set_historical_data(his)
+        index.refresh()
+
+    def patch(self, date):
+        logger.info("Handlling patch")
+
+        self.symbol = index.symbol()
+        self.db = DB(listing=self.symbol['SAS'])
+
+        his_today = self.db.get()
+        his_old = self.db.get(date)
+        result = pd.concat([his_old, his_today]).drop_duplicates().reset_index(drop=True)
+        self.db.set_historical_data(result)
         index.refresh()

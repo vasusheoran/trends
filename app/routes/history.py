@@ -21,15 +21,21 @@ def get():
 def post():    
     data = request.get_json() 
     his.post(data)
-    return { 'status' : 'success'}
+    return {'status': 'success'}
     
 @history.route('/<hid>', methods = ['PUT'])
 def put(hid):
     data = request.get_json() 
     his.put(data, hid)
-    return { 'status' : 'success'}
-    
+    return {'status': 'success'}
+
 @history.route('/<hid>', methods = ['DELETE'])
 def delete(hid):
     his.delete(hid)
-    return { 'status' : 'success'}
+    return {'status': 'success'}
+
+@history.route('/', methods = ['PATCH'])
+def patch():
+    data = request.get_json()
+    his.patch(data['date'])
+    return {'status': 'success'}

@@ -70,7 +70,8 @@ class DB:
             os.makedirs(base_path_historical)
         
     def __get_formatted_date(self, date):
-        return date.strftime("%m-%d-%Y")
+        # return date.strftime("%m-%d-%Y")
+        return date.strftime("%Y-%m-%d")
     
     def get_path_to_real_time_data(self):
         return self.path_to_real_time_csv
@@ -147,7 +148,24 @@ class DB:
             return csv
         else:
             return pd.DataFrame()
-        
+
+    def get(self, date=None):
+        if date is None:
+            date = self.__get_formatted_date(datetime.today())
+
+        path_to_historical_csv = self.base_historical_path + self.cur_index + os.sep + date + ".csv"
+        logger.info(f"Fetching historical data  {path_to_historical_csv}")
+
+        try:
+            csv = pd.read_csv(path_to_historical_csv)
+            return csv
+        except FileNotFoundError as ex:
+            logger.error(f"File not found - {self.path_to_real_time_csv}")
+            raise
+
+
+
+
     def set_historical_data(self, df):
         li = glob.glob(self.pattern_to_historical_data)
         for item in li:
