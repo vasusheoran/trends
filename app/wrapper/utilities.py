@@ -5,7 +5,7 @@ Created on Mon Mar 23 19:16:30 2020
 @author: vsheoran
 """
 
-import logging, os
+import logging, os, sys
 from datetime import datetime, timedelta
 from logging import handlers
 
@@ -16,28 +16,30 @@ min_freeze_time =  max_freeze_time + timedelta(seconds=1)
 
 def get_logger(filename):
     global base_path
-    # log_format = "[%(levelname)s]   | [%(name)s]    | %(asctime)s | %(filename)s    | Line : %(lineno)d | %(message)s"
-    log_format = "[%(levelname)s] | %(asctime)s | %(thread)s | Line : %(lineno)d | [%(name)s] | %(message)s"
-    
+    log_format = logging.Formatter('[%(levelname)s] | %(asctime)s | %(thread)s | Line : %(lineno)d | [%(name)s] | %(message)s')
+
     logger = logging.getLogger(str(filename))
     logger.handlers = []
     
     # To override the default severity of logging
     logger.setLevel('DEBUG')
-    
+
     # Use FileHandler() to log to a file
     # file_handler = logging.FileHandler(base_path + "app.log")
-    file_handler = handlers.RotatingFileHandler(base_path + "app.log", 
-                                                        mode='a', 
-                                                        maxBytes=5*1024*1024,
-                                                        backupCount=5, 
-                                                        encoding=None, 
-                                                        delay=0)
-    formatter = logging.Formatter(log_format)
-    file_handler.setFormatter(formatter)
-    
+    # file_handler = handlers.RotatingFileHandler(base_path + "app.log",
+    #                                                     mode='a',
+    #                                                     maxBytes=5*1024*1024,
+    #                                                     backupCount=5,
+    #                                                     encoding=None,
+    #                                                     delay=0)
+    # formatter = logging.Formatter(log_format)
+    # file_handler.setFormatter(formatter)
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.DEBUG)
+    handler.setFormatter(log_format)
+
     # Don't forget to add the file handler
-    logger.addHandler(file_handler)
+    logger.addHandler(handler)
     
     return logger
 

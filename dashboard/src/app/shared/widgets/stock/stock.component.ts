@@ -6,7 +6,7 @@ import { ConfigService } from '../../services/config.service';
 import { MatSnackBar, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 import { SharedService, ListingResponse } from '../../services/shared.service';
 import { WebSocketsService } from '../../services/web-sockets.service';
-import { StockService } from 'src/app/share/widgets/stock/stock.service';
+import { StockService } from 'src/app/shared/services/stock.service';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 
@@ -46,11 +46,11 @@ export class StockComponent implements OnInit, OnDestroy {
         this.updateUI = this._socket.listen('updateui')
 
         this._shared.sharedIsChartEnabled.subscribe(resp =>{
-            if (resp){
-                if (this.updateUISub != undefined) {
-                    this.updateUISub.unsubscribe();
-                }
+            if (this.updateUISub != undefined) {
+                this.updateUISub.unsubscribe();
+            }
 
+            if (resp){
                 console.log("Updating cards and chart");
                 this.updateUISub = this.updateUI.subscribe((resp) =>{
                     this._shared.nextUpdateResponse(resp['dashboard']);
@@ -59,7 +59,6 @@ export class StockComponent implements OnInit, OnDestroy {
             }
             else{
                 console.log("Updating cards only");
-                this.updateUISub.unsubscribe();
                 this.updateUISub = this.updateUI.subscribe((resp) =>{
                     this._shared.nextUpdateResponse(resp['dashboard']);
                 });
@@ -77,7 +76,7 @@ export class StockComponent implements OnInit, OnDestroy {
         }, (err) => {     
             if(err.status == 200 || err.status == 500){
                 this.openSnackBar("Please set the Symbol to continue...");
-                this._route.navigateByUrl('settings');
+                this._route.navigateByUrl('symbols');
             }
             else
                 this.openSnackBar("Server unavailable...");
@@ -86,7 +85,9 @@ export class StockComponent implements OnInit, OnDestroy {
     
     ngOnDestroy(): void {
         this._stockHelper.destroyChart();
-        this.updateUISub.unsubscribe();
+        if (this.updateUISub != undefined ){
+            this.updateUISub.unsubscribe();
+        }
     }
     
     horizontalPosition: MatSnackBarHorizontalPosition = 'end';

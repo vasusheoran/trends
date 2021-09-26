@@ -12,7 +12,7 @@
 #   sudo docker run -d -p 80:4200 --network isolated_network --name dash -v $(pwd):/var/www -w "/var/www" node npm start
 
 ### STAGE 1: Build ###
-FROM        node:alpine as build-stage
+FROM        node:1.21.3-alpine as build-stage
 LABEL       AUTHOR="Vasu Sheoran"  
 
 ## Storing node modules on a separate layer will prevent unnecessary npm installs at each build
@@ -20,7 +20,8 @@ RUN         mkdir /ng-app
 WORKDIR     /ng-app
 
 COPY        package.json /ng-app
-RUN         npm install -g @angular/cli@7.3.9 && npm install
+RUN         npm install @angular/cli@7.3.9 
+RUN         npm install
 
 ## Build the angular app in production mode and store the artifacts in dist folder
 COPY        . /ng-app
@@ -28,7 +29,7 @@ RUN         ng build --output-path=dist
 
 
 ### STAGE 2: Setup ###
-FROM        nginx:alpine
+FROM        nginx:1.21.3-alpine
 RUN         rm -rf /usr/share/nginx/html/*
 
 COPY        default.conf /etc/nginx/conf.d/default.conf

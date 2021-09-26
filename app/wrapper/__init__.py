@@ -10,5 +10,6 @@ from .thread import AsyncUpdateRealTimeTask, DailyCleanup, FlushToDatabase
 from .utilities import get_logger
 from .symbols import Symbol
 from .index import index
+from .history import History
 
-__all__ = ["Symbol", "index", "fetch_expires", "fetch_strike_prices", "get_logger", "set_up_socketio",  "AsyncUpdateRealTimeTask", "DailyCleanup", "FlushToDatabase", "update_values", "push_notifications", "paginate"]
+__all__ = ["History", "Symbol", "index", "fetch_expires", "fetch_strike_prices", "get_logger", "set_up_socketio",  "AsyncUpdateRealTimeTask", "DailyCleanup", "FlushToDatabase", "update_values", "push_notifications", "paginate"]

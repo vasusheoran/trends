@@ -2,6 +2,7 @@
 
 from . import Ticker
 from .util import get_logger
+import pandas as pd
 from .yahoo import historical_data
 
 logger = get_logger('fin-wrapper.py')
@@ -22,5 +23,6 @@ def reset(df):
 def history(ticker, period = "2y", interval = "1d"):
     logger.info("Inside history")
     df = historical_data(listing = ticker, period = period, interval = interval)
+    # df=pd.read_csv("/Users/vasusheoran/git/trends/app/data/daily/Nifty 50/2021-09-01.csv")
     logger.info("Exiting history")
     return df

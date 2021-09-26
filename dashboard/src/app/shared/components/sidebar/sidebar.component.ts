@@ -41,7 +41,7 @@ export class SidebarComponent implements OnInit {
     this.toggleDashBoardTools = true;
     this.toggleHistoricDataTools = false;
     this.dialogData = {};
-    this.isChartEnabled = true;
+    this.isChartEnabled = false;
     
   }
 
@@ -74,28 +74,6 @@ export class SidebarComponent implements OnInit {
     });
   }
 
-  addRow(result){
-    this._config.addNewRow(result).subscribe((res) => {
-      this._router.navigate['/'];
-      this.snackBarRef = this._snack.open('Row Added successfully.','Close',{
-        duration:4000
-      });
-    },(err) =>{
-      this.snackBarRef = this._snack.open('Error in adding row.','Close',{
-        duration:4000
-      });
-    });
-  }
-
-  deleteRow(){
-    this._config.deleteRow().subscribe((res) => {
-      this._router.navigate['/'];
-      this.snackBarRef = this._snack.open('Row Deleter successfully.','Close');
-    },(err) =>{
-      this.snackBarRef = this._snack.open('Error in deleteing row.','Close');
-    });
-  }
-
   openDailog(task, isFreeze): void {
 
     if(this.listing ==null || this.listing.SAS == null){
@@ -123,10 +101,8 @@ export class SidebarComponent implements OnInit {
           }
           result['index'] = this.listing.SAS;
 
-          if(isFreeze)
-            this.updateFreezeTime(result);
-          else
-            this.addRow(result);
+          
+          this.updateFreezeTime(result);
       });
     }
   }

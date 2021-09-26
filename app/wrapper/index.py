@@ -2,11 +2,11 @@
 
 from .utilities import get_logger, Utilities
 from .calculate import Calculate
+from datetime import datetime
 from .database import DB
 from .finance import *
 from flask import jsonify, abort
 import pandas as pd
-
 
 logger = get_logger("index.py")
 
@@ -23,11 +23,15 @@ class Index:
         self.utils = Utilities()
         
     def get(self):
-        try: 
+        try:
+            calc = self.index_map[self.index]['calc']
+            val = calc.fetch_values()
+
             if self.__is_index_present():
                 return {'values' : self.index_map[self.index]['values'],
                         'symbol' : self.index_map[self.index]['symbol'],
-                        'data' : self.db.get_real_time_data()}
+                        'data' : self.db.get_real_time_data(),
+                        }
             else:
                 abort(500, description="The server encountered an internal error and was unable to complete your request. Try setting the listing again.")
 
@@ -54,7 +58,7 @@ class Index:
         
         index = symbol['SAS'] 
         self.db = DB(listing=index)
-        historical_data = self.db.get_historical_data()
+        historical_data = self.db.get_historical_data_list()
         
         try:
             if not historical_data:
@@ -117,9 +121,9 @@ class Index:
             if 'options' in self.index_map[self.index]:
                 options = self.index_map[self.index]['options']
                 
-                strike_filename = util.combine_dict_values(options)
+                strike_filename = self.utils.combine_dict_values(options)
                 
-                expiry_filename = util.combine_dict_values({'symbol' : options['symbol'],
+                expiry_filename = self.utils.combine_dict_values({'symbol' : options['symbol'],
                                                             'instrument' : options['instrument']})
                 li.append(expiry_filename)
                 li.append(strike_filename)
@@ -135,6 +139,16 @@ class Index:
             response = jsonify({'message': repr(err)})
             response.status_code = 400
             return response
+
+    def refresh(self):
+        symbol = self.index_map[self.index]['symbol']
+        
+        logger.info("Removing hashed data")
+        del self.index_map[self.index]
+
+
+        logger.info("Calculate new index ..")
+        self.post(symbol)
         
         
     def post_freeze(self, stock_data):           
@@ -167,6 +181,9 @@ class Index:
         
     def name(self):
         return self.index
+
+    def symbol(self):
+        return self.index_map[self.index]['symbol']
     
     def get_df(self):
         if self.__is_index_present():

@@ -1,0 +1,27 @@
+<h1 fxLayout="row" fxLayoutGap="10px" mat-dialog-title>{{ data.action }}</h1>
+<div  mat-dialog-content fxLayoutGap="20px"  *ngIf="data.action != 'Delete'">
+    <mat-form-field>
+        <mat-label>Date</mat-label>
+        <input type="date" matInput [(ngModel)]="data.history.Date" [formControl]="dt" required>
+        <mat-error *ngIf="dt.invalid">You must enter a value</mat-error>
+    </mat-form-field>
+    <mat-form-field>
+        <mat-label>CP</mat-label>
+        <input type="number" matInput [(ngModel)]="data.history.CP" [formControl]="cp" required>
+        <mat-error *ngIf="cp.invalid">You must enter a value</mat-error>
+    </mat-form-field>
+    <mat-form-field>
+        <mat-label>HP</mat-label>
+        <input type="number" matInput [(ngModel)]="data.history.HP" [formControl]="hp" required>
+        <mat-error *ngIf="hp.invalid">You must enter a value</mat-error>
+    </mat-form-field>
+    <mat-form-field>
+        <mat-label>LP</mat-label>
+        <input type="number" matInput [(ngModel)]="data.history.LP" [formControl]="lp" required>
+        <mat-error *ngIf="lp.invalid">You must enter a value</mat-error>
+    </mat-form-field>
+</div>
+<div mat-dialog-actions fxLayoutAlign="right">
+<button mat-button (click)="onNoClick()">No Thanks</button>
+<button mat-button (click)="onClick()" cdkFocusInitial>Ok</button>
+</div>

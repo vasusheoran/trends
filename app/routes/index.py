@@ -49,7 +49,7 @@ def name():
 
 @index_route.route('/expiry/<symbol>/<instrument>', methods = ['GET'])
 def expiry(symbol, instrument): 
-    return jsonify(fetch_expires({'symbol' : symbol, 'instument' :instrument}))
+    return jsonify(fetch_expires({'symbol' : symbol, 'instrument' :instrument}))
     
 @index_route.route('/strike/<symbol>/<instrument>/<expiry>/<optionType>', methods = ['GET'])
 def sp(symbol, instrument, expiry, optionType): 

@@ -12,6 +12,7 @@ import wrapper as mods
 from flask_socketio import SocketIO
 from routes.symbols import symbols
 from routes.index import index_route
+from routes.history import history
 
 async_task_1 = None
 
@@ -23,6 +24,7 @@ app.config['UPLOAD_FOLDER'] = os.getcwd() + os.sep + 'files'
 app.config['SECRET_KEY'] = 'secret!'
 
 app.register_blueprint(symbols)
+app.register_blueprint(history)
 app.register_blueprint(index_route)
 
 CORS(app, resources={r"/*": {"origins": "*"}})

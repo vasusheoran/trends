@@ -1,32 +1,102 @@
-<div fxLayout="row" *ngIf="cards" fxLayoutGap="5px" class="stats-cards">
-<!-- 
-    <mat-card fxFlex="9" class="bg-green cursor" (click)="toggleEnable(cards[0], 'Buy')">
-        <app-widget-card [label]="cards[0].name" [value]="cards[0].value"></app-widget-card>
-        <mat-divider class="custom-mat-divider" *ngIf="isEnabled[cards[0].key]"></mat-divider>
-    </mat-card>
-    <mat-card fxFlex="9" class="bg-blue cursor" (click)="toggleEnable(cards[1], 'Support')">
-        <app-widget-card [label]="cards[1].name" [value]="cards[1].value"></app-widget-card>
-        <mat-divider class="custom-mat-divider" *ngIf="isEnabled[cards[1].key]"></mat-divider>
-    </mat-card>
-    <mat-card fxFlex="9" [ngClass]="cards[2].value>cards[0].value?'bg-red cursor':'bg-custom cursor'"
-        (click)="toggleEnable(cards[2], 'Sell')">
-        <app-widget-card [label]="cards[2].name" [value]="cards[2].value"></app-widget-card>
-        <mat-divider class="custom-mat-divider" *ngIf="isEnabled[cards[2].key]"></mat-divider>
-    </mat-card>
-    <mat-card fxFlex="9" class="bg-custom cursor" (click)="toggleEnable(cards[3], 'Min_High')">
-        <app-widget-card [label]="cards[3].name" [value]="cards[3].value"></app-widget-card>
-        <mat-divider class="custom-mat-divider" *ngIf="isEnabled[cards[3].key]"></mat-divider>
-    </mat-card> -->
-    
+<div fxLayout="row" *ngIf="cards" fxLayoutGap="5px" class="stats-cards">    <br>
     <mat-card fxFlex="100" fxLayoutAlign="space-between center" fxLayoutGap="5px" (click)="toggleEnable(cards[3], 'High')">
-        <div fxFlex="16" *ngFor="let value of values; let i = index;">
-            <div fxFlex="100" style="margin-right: -5px;">
-                <h3>{{ value.name }}</h3>            
-                <span class="total" [ngClass]="toggleClass(value.value, value.isColorEnabled)">{{ value.value  | number : '1.2-2'}}</span>
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.Close.name }}</h3>            
+                <span class="total" ><b>{{ cards.Close.value  | number : '1.2-2'}}</b></span>
             </div>
-            <mat-divider *ngIf="i!=(values.length - 1)" [vertical]="true"></mat-divider>            
+            <mat-divider [vertical]="true"></mat-divider>            
         </div>
-        
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.High.name }}</h3>            
+                <span class="total" >{{ cards.High.value  | number : '1.2-2'}}</span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.Low.name }}</h3>            
+                <span class="total" >{{ cards.Low.value  | number : '1.2-2'}}</span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.AVG.name }}</h3>            
+                <span class="total" [ngClass]="toggleClass('green', 'red', cards.AVG.value)">{{ cards.AVG.value  | number : '1.2-2'}}</span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.EMA5.name }}</h3>            
+                <span class="total" [ngClass]="toggleClass('green', 'red', cards.EMA5.value)">{{ cards.EMA5.value  | number : '1.2-2'}}</span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.EMA20.name }}</h3>            
+                <span class="total" [ngClass]="toggleClass('coral', 'red', cards.EMA20.value)">{{ cards.EMA20.value  | number : '1.2-2'}}</span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.RSI.name }}</h3>            
+                <span class="total" [ngClass]="toggleRSIClass(cards.RSI.value)">{{ cards.RSI.value  | number : '1.2-2'}}</span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.HL3.name }}</h3>            
+                <span class="total"  [ngClass]="toggleClass('magenta', 'violet', cards.HL3.value)"><b>{{ cards.HL3.value  | number : '1.2-2'}}</b></span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.Trend.name }}</h3>            
+                <span class="total"  [ngClass]="toggleClass('green', 'red', cards.Trend.value)">{{ cards.Trend.value  | number : '1.2-2'}}</span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.Moment.name }}</h3>            
+                <span class="total"  [ngClass]="toggleClass('gold', 'red', cards.Moment.value)">{{ cards.Moment.value  | number : '1.2-2'}}</span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <!-- <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.Open.name }}</h3>            
+                <span class="total"  [ngClass]="toggleClass('green', 'red', cards.Open.value)">TBD</span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div> -->
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.Buy.name }}</h3>            
+                <span class="total"  [ngClass]="toggleClass('green', 'red', cards.Buy.value)"><b>{{ cards.Buy.value  | number : '1.2-2'}}</b></span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.Support.name }}</h3>            
+                <span class="total"  [ngClass]="toggleClass('purple', 'red', cards.Support.value)">{{ cards.Support.value  | number : '1.2-2'}}</span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>            
+        </div>
+        <div fxFlex="16">
+            <div fxFlex="100" class="margin-right">
+                <h3>{{ cards.Sell.name }}</h3>            
+                <span class="total"  [ngClass]="toggleClass('darkblue', 'red', cards.Sell.value)">{{ cards.Sell.value  | number : '1.2-2'}}</span>
+            </div>           
+        </div>
     </mat-card>
 </div>
 
