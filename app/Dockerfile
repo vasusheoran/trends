@@ -15,6 +15,8 @@ RUN pip install -r ./home/app/req.txt
 COPY . /home/app/
 WORKDIR /home/app/
 
+COPY data/Symbols.csv /home/app/data
+
 # ENV TZ=Asia/Kolkata
 # RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # EXPOSE 5000

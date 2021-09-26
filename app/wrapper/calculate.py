@@ -66,7 +66,7 @@ class Calculate:
         self.df = self.util.pos_d_rolling(self.df,'diffCP1')  
         self.df = self.util.neg_d_rolling(self.df,'diffCP1')  
         
-        self.df = self.df.drop(columns=['diffCP1' ,'diffCP1Pos', 'diffCP1Neg'])
+        # self.df = self.df.drop(columns=['diffCP1' ,'diffCP1Pos', 'diffCP1Neg'])
         
     def __set_up_new_only(self, num = 2):
         spans = [5, 20]

@@ -36,7 +36,7 @@ def find_BX(df):
     
     global values
     values.update({'bx' : final})
-    
+    # print("hp:", HP, "DEF:", DEF, "GHI:", GHI, "df.at[0, 'emaCP5']::", df.at[0, 'emaCP5'], "df.at[0, 'emaCP20']::", df.at[0, 'emaCP20'], "df.at[2,'HP']::", df.at[2,'HP'])
     return final
     
 
@@ -44,7 +44,7 @@ def find_CJ(df):
     future_ema5 = ema_future(2,5, df)
     future_ema20 = ema_future(2,20,df)
     cj=(df.at[0,'CP']+df.at[0,'CP']+((((future_ema5+(future_ema5+(future_ema20-future_ema5)/2))/2)+((df.at[0,'CP']+(df.at[0,'CP']+(((future_ema5+(future_ema5+(future_ema20-future_ema5)/2))/2)-df.at[0,'CP'])/2))/2))/2))/3
-    
+    # print("future_ema5", future_ema5, "future_ema20", future_ema20, "df.at[0,'CP']", df.at[0,'CP'])
     global values
     values.update({'cj' : cj})
     return cj

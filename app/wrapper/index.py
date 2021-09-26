@@ -8,7 +8,6 @@ from .finance import *
 from flask import jsonify, abort
 import pandas as pd
 
-
 logger = get_logger("index.py")
 
 class Index:    
@@ -24,11 +23,15 @@ class Index:
         self.utils = Utilities()
         
     def get(self):
-        try: 
+        try:
+            calc = self.index_map[self.index]['calc']
+            val = calc.fetch_values()
+
             if self.__is_index_present():
                 return {'values' : self.index_map[self.index]['values'],
                         'symbol' : self.index_map[self.index]['symbol'],
-                        'data' : self.db.get_real_time_data()}
+                        'data' : self.db.get_real_time_data(),
+                        }
             else:
                 abort(500, description="The server encountered an internal error and was unable to complete your request. Try setting the listing again.")
 
