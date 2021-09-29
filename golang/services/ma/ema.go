@@ -2,77 +2,80 @@ package ma
 
 import (
 	"math"
+	"strings"
+	"unicode"
 
 	"github.com/go-kit/kit/log"
 )
 
-type EMAData struct {
-	window int
-	decay  float64
-	value  float64
-	count  int
+type emaData struct {
+	value float64
+	count int
 }
 
 type ExponentialMovingAverage struct {
-	logger log.Logger
-	data   map[string]*EMAData
+	logger  log.Logger
+	windows map[string]int
+	decays  map[string]float64
+	data    map[string]*emaData
 }
 
-func NewExponentialMovingAverage(logger log.Logger, keys []string, windows []int) ExponentialMovingAverage {
-	ema := ExponentialMovingAverage{
-		logger: logger,
-		data:   map[string]*EMAData{},
+func (ma *ExponentialMovingAverage) Add(key, col string, value float64) {
+	var st *emaData
+	var ok bool
+	if st, ok = ma.data[ma.hashCode(key, col)]; !ok {
+		st = &emaData{}
+		ma.data[ma.hashCode(key, col)] = st
 	}
-
-	for i, key := range keys {
-
-		ema.data[key] = &EMAData{
-			window: windows[i],
-			decay:  2 / (float64(windows[i]) + 1),
-		}
-
-	}
-
-	return ema
-}
-
-func (ma *ExponentialMovingAverage) Add(key string, value float64) {
-	ema := ma.data[key]
-	ema.count++
+	st.count++
 	switch {
-	case ema.count < ema.window:
-		ema.value += math.Round(value*100) / 100
-	case ema.count == ema.window:
-		ema.value += value
-		ema.value = math.Round((ema.value/float64(ema.window))*100) / 100
-	case ema.count > ema.window:
-		ema.value = math.Round(((value*ema.decay)+(ema.value*(1-ema.decay)))*100) / 100
-	default:
-		ema.value = (value * ema.decay) + (ema.value * (1 - ema.decay))
+	case st.count < ma.windows[col]:
+		st.value += math.Round(value*100) / 100
+	case st.count == ma.windows[col]:
+		st.value += value
+		st.value = math.Round((st.value/float64(ma.windows[col]))*100) / 100
+	case st.count > ma.windows[col]:
+		st.value = math.Round(((value*ma.decays[col])+(st.value*(1-ma.decays[col])))*100) / 100
 	}
 }
 
-func (ma *ExponentialMovingAverage) Value(key string) float64 {
-	return ma.data[key].value
-}
-
-func (ma *ExponentialMovingAverage) AddArray(key string, array []float64) float64 {
-	var tempValue float64
-	tempValue = ma.data[key].value
-	for _, value := range array {
-		tempValue = (value * ma.data[key].decay) + (tempValue * (1 - ma.data[key].decay))
-	}
-
-	return tempValue
-}
-
-func (ma *ExponentialMovingAverage) AddArrayAndGet(key string, array []float64) []float64 {
+func (ma *ExponentialMovingAverage) AddArray(key, col string, array []float64) []float64 {
+	st := ma.data[ma.hashCode(key, col)]
 	var result []float64
-	tempValue := ma.data[key].value
+	tempValue := st.value
 	for _, value := range array {
-		tempValue = (value * ma.data[key].decay) + (tempValue * (1 - ma.data[key].decay))
+		tempValue = (value * ma.decays[col]) + (tempValue * (1 - ma.decays[col]))
 		result = append(result, tempValue)
 	}
 
 	return result
+}
+
+func (ma *ExponentialMovingAverage) Value(key, col string) float64 {
+	return ma.data[ma.hashCode(key, col)].value
+}
+
+func (ma *ExponentialMovingAverage) hashCode(key, col string) string {
+	return strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r) {
+			return -1
+		}
+		return r
+	}, key+"-"+col)
+}
+
+func NewExponentialMovingAverage(logger log.Logger, cols []string, windows []int) ExponentialMovingAverage {
+	ema := ExponentialMovingAverage{
+		logger:  logger,
+		data:    map[string]*emaData{},
+		windows: map[string]int{},
+		decays:  map[string]float64{},
+	}
+
+	for i, col := range cols {
+		ema.windows[col] = windows[i]
+		ema.decays[col] = 2 / (float64(windows[i]) + 1)
+	}
+
+	return ema
 }

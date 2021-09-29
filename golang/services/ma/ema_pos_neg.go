@@ -6,60 +6,54 @@ import (
 	"github.com/go-kit/kit/log"
 )
 
-type EMAPosNegData struct {
-	window int
-	factor int
-	count  int
-	value  float64
-}
-
 type EMAPosNegService struct {
-	logger log.Logger
-	data   map[string]*EMAPosNegData
+	logger  log.Logger
+	windows map[string]int
+	factors map[string]int
+	counts  map[string]int
+	values  map[string]float64
 }
 
-func NewEMAPosNeg(logger log.Logger, keys []string, windows []int) EMAPosNegService {
+func NewEMAPosNeg(logger log.Logger, cols []string, windows []int) EMAPosNegService {
 	ema := EMAPosNegService{
-		logger: logger,
-		data:   map[string]*EMAPosNegData{},
+		logger:  logger,
+		windows: map[string]int{},
+		factors: map[string]int{},
+		counts:  map[string]int{},
+		values:  map[string]float64{},
 	}
 
-	for i, key := range keys {
-
-		ema.data[key] = &EMAPosNegData{
-			window: windows[i],
-			factor: windows[i] - 1,
-		}
-
+	for i, col := range cols {
+		ema.windows[col] = windows[i]
+		ema.factors[col] = windows[i] - 1
 	}
 
 	return ema
 }
 
 func (ma *EMAPosNegService) Add(key string, value float64) {
-	ema := ma.data[key]
-	ema.count++
+	ma.counts[key]++
 	switch {
-	case ema.count < ema.window:
-		ema.value += math.Round(value*100) / 100
-	case ema.count == ema.window:
-		ema.value += value
-		ema.value = math.Round((ema.value/float64(ema.window))*100) / 100
-	case ema.count > ema.window:
-		ema.value = math.Round((((ema.value*float64(ema.factor-1))+value)/float64(ema.factor))*100) / 100
+	case ma.counts[key] < ma.windows[key]:
+		ma.values[key] += math.Round(value*100) / 100
+	case ma.counts[key] == ma.windows[key]:
+		ma.values[key] += value
+		ma.values[key] = math.Round((ma.values[key]/float64(ma.windows[key]))*100) / 100
+	case ma.counts[key] > ma.windows[key]:
+		ma.values[key] = math.Round((((ma.values[key]*float64(ma.factors[key]-1))+value)/float64(ma.factors[key]))*100) / 100
 	}
 }
 
 func (ma *EMAPosNegService) Value(key string) float64 {
-	return ma.data[key].value
+	return ma.values[key]
 }
 
 func (ma *EMAPosNegService) AddArray(key string, array []float64) []float64 {
 	var result []float64
 	var tempValue float64
-	tempValue = ma.data[key].value
+	tempValue = ma.values[key]
 	for _, value := range array {
-		tempValue = (tempValue*float64(ma.data[key].factor-1) + value) / float64(ma.data[key].factor)
+		tempValue = (tempValue*float64(ma.factors[key]-1) + value) / float64(ma.factors[key])
 		result = append(result, tempValue)
 	}
 

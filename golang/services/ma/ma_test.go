@@ -34,7 +34,7 @@ func TestMovingAverage(t *testing.T) {
 			for _, val := range tc.values {
 				ma.Add(key, val)
 			}
-			assert.Equal(t, expected[len(expected)-1], ma.Get(key))
+			assert.Equal(t, expected[len(expected)-1], ma.Value(key))
 		})
 	}
 }
