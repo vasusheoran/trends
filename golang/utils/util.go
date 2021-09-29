@@ -17,7 +17,7 @@ func InitializeDefaultLogger() log.Logger {
 }
 
 func WriteToFile(logger log.Logger, data interface{}, filename string) {
-	jsonData, _ := json.MarshalIndent(data, "", "\t")
+	jsonData, _ := json.MarshalIndent(&data, "", "\t")
 	err := ioutil.WriteFile(filename, jsonData, 0644)
 	if err != nil {
 		level.Error(logger).Log("err", err.Error())

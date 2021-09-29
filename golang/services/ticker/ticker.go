@@ -19,7 +19,7 @@ type ticker struct {
 	emaPosNegSvc   ma.EMAPosNegService
 }
 
-func (s *ticker) Init(key string, candles []contracts.Candle) (contracts.TickerInfo, error) {
+func (s *ticker) Init(key string, candles []contracts.Candle) error {
 	previousCP := 0.0
 	nextCP := candles[0].CP
 	for _, val := range candles {
@@ -54,7 +54,7 @@ func (s *ticker) Init(key string, candles []contracts.Candle) (contracts.TickerI
 	s.data.LP = candles[lastIndex].LP
 
 	s.setNextValues(s.data.CP, s.data.HP, s.data.LP)
-	return s.data, nil
+	return nil
 }
 
 func (s *ticker) Update(key string, stock contracts.Stock) error {

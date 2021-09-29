@@ -2,7 +2,6 @@ package ticker
 
 import (
 	"testing"
-	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
@@ -17,40 +16,31 @@ var (
 )
 
 const (
-	Path = "/Users/vasusheoran/Downloads/^NSEI.csv"
+	historicalData = "../../data/case1.csv"
+	testCase       = "../../data/case1.json"
 )
 
 func TestTicker_Init(t *testing.T) {
 	logger = utils.InitializeDefaultLogger()
 
-	//st := contracts.Stock{
-	//	Close:     14254,
-	//	High:      14237.95,
-	//	Low:       13928.30,
-	//	Time:      time.Now(),
-	//	SASSymbol: "Nifty 50",
-	//}
-	st := contracts.Stock{
-		Close:     17772.00,
-		High:      17782,
-		Low:       17608.15,
-		Time:      time.Now(),
-		SASSymbol: "Nifty 50",
+	type InJSON struct {
+		Op contracts.Summary `json:"op"`
+		In contracts.Stock   `json:"in"`
 	}
+
+	var exp InJSON
+	utils.ReadFromFile(logger, testCase, &exp)
+
 	db := database.NewDatabase(logger)
-	candles, _ := db.Read(Path)
+	candles, _ := db.Read(historicalData)
 
 	cardsSvc := cards.New(logger)
 	ticker := NewTicker(logger, cardsSvc)
-	ticker.Init(st.SASSymbol, candles)
+	ticker.Init(exp.In.SASSymbol, candles)
 
-	ticker.Update(st.SASSymbol, st)
+	ticker.Update(exp.In.SASSymbol, exp.In)
 
-	res, _ := ticker.Get(st.SASSymbol)
+	res, _ := ticker.Get(exp.In.SASSymbol)
 
-	var exp contracts.Summary
-	utils.ReadFromFile(logger, "^NSEI-summary.json", &exp)
-
-	//utils.WriteToFile(logger, res, "^NSEI-summary.json")
-	assert.Equal(t, exp, res)
+	assert.Equal(t, exp.Op, res)
 }
