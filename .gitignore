@@ -189,4 +189,4 @@ Thumbs.db
 app/data/**
 scripts/*
 dev*.dockerfile
-*.json
+.json
