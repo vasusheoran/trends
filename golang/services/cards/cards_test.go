@@ -15,7 +15,7 @@ var (
 
 func TestNew(t *testing.T) {
 	logger = utils.InitializeDefaultLogger()
-	testDataPath := "../ticker/^NSEI.json"
+	testDataPath := "../ticker/^NSEI-2.json"
 
 	var data contracts.TickerInfo
 	utils.ReadFromFile(logger, testDataPath, &data)
@@ -27,5 +27,5 @@ func TestNew(t *testing.T) {
 	res := cardService.Get(data)
 
 	assert.Equal(t, exp, res)
-	//utils.WriteToFile(logger, res, "^NSEI-result.json")
+	utils.WriteToFile(logger, res, "^NSEI-2.json")
 }

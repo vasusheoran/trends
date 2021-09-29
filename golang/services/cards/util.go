@@ -61,6 +61,14 @@ func bk(hpAt2, prevBI float64) float64 {
 	return prevBI + (hpAt2-prevBI)/2 + (hpAt2-(prevBI+(hpAt2-prevBI)/2))/2
 }
 
+func br(brsh, bj float64) float64 {
+	return brsh - (brsh-bj)/2
+}
+
+func barish(lpAt0, br float64) float64 {
+	return lpAt0 + ((br - lpAt0) / 2)
+}
+
 func bj(curBI, bk float64) float64 {
 	return (curBI + bk) / 2
 }
@@ -85,4 +93,8 @@ func bn(arAtRow, arAtRowPlus1, emaCP5AtRow, emaCP5AtRowPlus1 float64) float64 {
 func bi(ai, af, ao, lpAt2 float64) float64 {
 	afaiDiff := af - ai
 	return math.Max((ai+(af+(afaiDiff)/2))/2, ((lpAt2-ao)+(af+(afaiDiff)/2))/2)
+}
+
+func trend(cpAt0, bn float64) float64 {
+	return cpAt0 - bn
 }

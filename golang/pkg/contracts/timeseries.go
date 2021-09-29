@@ -1,6 +1,7 @@
 package contracts
 
 type TickerInfo struct {
+	IsBuyFrozen  bool
 	Future       FutureData
 	CP           float64
 	HP           float64
@@ -9,6 +10,7 @@ type TickerInfo struct {
 	EmaCP20      float64
 	MinHP2       float64
 	MinHP3       float64
+	MinLP2       float64
 	AverageCp50  float64
 	AverageCp10  float64
 	MeanCp50     []float64
@@ -27,12 +29,9 @@ type FutureData struct {
 	NextEMACPHP20 []float64
 	NextEMACP5    []float64
 	NextEMACP20   []float64
-	EmaCp5        float64
-	EmaCP20       float64
-	MinHP2        float64 // TODO
-	MinHP3        float64 // TODO
-	AverageCp50   float64
-	AverageCp10   float64
+	MinHP2        float64
+	MinHP4        float64
+	MinLP3        float64
 	EmaDiffCpPos  float64
 	EmaDiffCpNeg  float64
 }
