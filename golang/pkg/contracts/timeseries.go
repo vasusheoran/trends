@@ -2,6 +2,7 @@ package contracts
 
 type TickerInfo struct {
 	IsBuyFrozen  bool
+	BI           float64
 	Future       FutureData
 	CP           float64
 	HP           float64

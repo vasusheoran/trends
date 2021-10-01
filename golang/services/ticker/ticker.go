@@ -1,6 +1,7 @@
 package ticker
 
 import (
+	"errors"
 	"math"
 
 	"github.com/go-kit/kit/log"
@@ -14,38 +15,68 @@ type ticker struct {
 	logger         log.Logger
 	data           map[string]*contracts.TickerInfo
 	cardService    api.CardsAPI
+	dbSvc          api.Database
 	emaService     ma.ExponentialMovingAverage
 	averageService ma.MovingAverage
 	emaPosNegSvc   ma.EMAPosNegService
 }
 
+func (s *ticker) Freeze(key string, st contracts.Stock) error {
+	if _, ok := s.data[key]; !ok {
+		return errors.New("ticker has not been initialized")
+	}
+
+	err := s.Update(key, st)
+	if err != nil {
+		return err
+	}
+
+	sum, err := s.Get(key)
+	if err != nil {
+		return err
+	}
+
+	s.data[key].IsBuyFrozen = true
+	s.data[key].BI = sum.Buy
+
+	return nil
+}
+
 func (s *ticker) Update(key string, stock contracts.Stock) error {
-	s.setNextValues(key, stock.Close, stock.High, stock.Low)
+	if _, ok := s.data[key]; !ok {
+		return errors.New("ticker has not been initialized")
+	}
+	s.setNextValues(key, stock.CP, stock.HP, stock.LP)
 	return nil
 }
 
 func (s *ticker) Get(key string) (contracts.Summary, error) {
+	if _, ok := s.data[key]; !ok {
+		return contracts.Summary{}, errors.New("ticker has not been initialized")
+	}
+
 	card := s.cardService.Get(*s.data[key])
 
 	return contracts.Summary{
-		Close:   s.data[key].Future.NextCP[0],
-		High:    s.data[key].Future.NextHP[0],
-		Low:     s.data[key].Future.NextLP[0],
-		Average: card.AR,
-		Ema20:   s.data[key].Future.NextEMACP20[0],
-		MinLP3:  s.data[key].Future.MinLP3,
-		Ema5:    s.data[key].Future.NextEMACP5[0],
-		RSI:     card.CR,
-		HL3:     s.data[key].Future.MinHP2,
-		Barish:  card.Barish,
-		Support: card.BJ,
-		Trend:   card.Trend,
-		Bullish: card.BK,
-		Buy:     card.BI,
+		Close:       s.data[key].Future.NextCP[0],
+		High:        s.data[key].Future.NextHP[0],
+		Low:         s.data[key].Future.NextLP[0],
+		Average:     card.AR,
+		Ema20:       s.data[key].Future.NextEMACP20[0],
+		MinLP3:      s.data[key].Future.MinLP3,
+		Ema5:        s.data[key].Future.NextEMACP5[0],
+		RSI:         card.CR,
+		HL3:         s.data[key].Future.MinHP2,
+		Barish:      card.Barish,
+		Support:     card.BJ,
+		Trend:       card.Trend,
+		Bullish:     card.BK,
+		Buy:         card.BI,
+		PreviousBuy: card.PreviousBI,
 	}, nil
 }
 
-func (s *ticker) Init(key string, candles []contracts.Candle) error {
+func (s *ticker) Init(key string, candles []contracts.Stock) error {
 	var st *contracts.TickerInfo
 	var ok bool
 	if st, ok = s.data[key]; !ok {
@@ -128,11 +159,12 @@ func (s *ticker) setNextValues(key string, cp, hp, lp float64) {
 
 }
 
-func NewTicker(logger log.Logger, cardsSvc api.CardsAPI) api.TickerAPI {
+func NewTicker(logger log.Logger, cardsSvc api.CardsAPI, dbSvc api.Database) api.TickerAPI {
 	return &ticker{
 		logger:         logger,
 		data:           map[string]*contracts.TickerInfo{},
 		cardService:    cardsSvc,
+		dbSvc:          dbSvc,
 		emaService:     ma.NewExponentialMovingAverage(logger, []string{"CP5", "CP20"}, []int{5, 20}),
 		averageService: ma.NewMovingAverage(logger, []string{"CP10", "CP50"}, []int{10, 50}),
 		emaPosNegSvc:   ma.NewEMAPosNeg(logger, []string{constants.KeyDiffCpPos, constants.KeyDiffCpNeg}, []int{15, 15}),

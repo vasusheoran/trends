@@ -35,7 +35,7 @@ func TestTicker_Init(t *testing.T) {
 	candles, _ := db.Read(historicalData)
 
 	cardsSvc := cards.New(logger)
-	ticker := NewTicker(logger, cardsSvc)
+	ticker := NewTicker(logger, cardsSvc, db)
 	ticker.Init(exp.In.SASSymbol, candles)
 
 	ticker.Update(exp.In.SASSymbol, exp.In)

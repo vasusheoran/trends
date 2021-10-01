@@ -10,7 +10,13 @@ const (
 	KeyDiffCpNeg = "DiffCpNeg"
 	KeyDiffCpPos = "DiffCpPos"
 
-	BaseDir                = "data"
-	BaseHistoricalDataPath = BaseDir + string(os.PathSeparator) + "hd"
-	BaseRTDataPath         = BaseDir + string(os.PathSeparator) + "rt"
+	BaseDir            = "data"
+	HistoricalDataPath = BaseDir + string(os.PathSeparator) + "hd"
+	RTDataPath         = BaseDir + string(os.PathSeparator) + "rt"
+	SymbolsFilePath    = BaseDir + string(os.PathSeparator) + "symbols.csv"
+
+	HeaderContentTypeKey  = "Content-Type"
+	HeaderContentTypeJSON = "application/json"
+
+	DateFormat = "2006-01-02"
 )

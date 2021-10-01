@@ -1,20 +1,21 @@
 package contracts
 
 type Summary struct {
-	Close   float64 `json:"close"`
-	High    float64 `json:"high"`
-	Low     float64 `json:"low"`
-	Average float64 `json:"average"`
-	MinLP3  float64 `json:"min_lp_3"`
-	Ema5    float64 `json:"ema_5"`
-	Ema20   float64 `json:"ema_20"`
-	RSI     float64 `json:"rsi"`
-	HL3     float64 `json:"hl_3"`
-	Trend   float64 `json:"trend"`
-	Buy     float64 `json:"buy"`
-	Support float64 `json:"support"`
-	Bullish float64 `json:"sell"`
-	Barish  float64 `json:"barish"`
+	Close       float64 `json:"close"`
+	High        float64 `json:"high"`
+	Low         float64 `json:"low"`
+	Average     float64 `json:"average"`
+	MinLP3      float64 `json:"min_lp_3"`
+	Ema5        float64 `json:"ema_5"`
+	Ema20       float64 `json:"ema_20"`
+	RSI         float64 `json:"rsi"`
+	HL3         float64 `json:"hl_3"`
+	Trend       float64 `json:"trend"`
+	Buy         float64 `json:"buy"`
+	Support     float64 `json:"support"`
+	Bullish     float64 `json:"sell"`
+	Barish      float64 `json:"barish"`
+	PreviousBuy float64 `json:"prev_buy"`
 }
 
 type Card struct {

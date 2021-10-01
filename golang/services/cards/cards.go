@@ -31,19 +31,21 @@ func (r *cards) Get(ts contracts.TickerInfo) contracts.Card {
 	card.AE2 = ae(ts.HP, card.CO0, card.COLastDay, ts.Future.NextEMACPHP5[0], ts.EmaCp5)
 	card.AO = ao(card.AE1, card.AE2)
 	card.BI = bi(card.AI, card.AF, card.AO, ts.Future.NextLP[0])
+
+	card.PreviousBI = card.BI
+	if ts.IsBuyFrozen {
+		card.PreviousBI = ts.BI
+	}
+
 	card.AR = ar(ts.MeanCp10[0], ts.MeanCp50[0])
 	card.BN = bn(card.AR, ar(ts.AverageCp10, ts.AverageCp50), ts.Future.NextEMACP5[0], ts.EmaCp5)
 	card.CR = cr(ts.Future.EmaDiffCpPos, ts.Future.EmaDiffCpNeg)
-	card.BK = bk(ts.Future.NextHP[0], card.BI)
+	card.BK = bk(ts.Future.NextHP[0], card.PreviousBI)
 	card.BJ = bj(card.BI, card.BK)
-	card.BRSH = bk(ts.Future.NextLP[0], card.BI)
+	card.BRSH = bk(ts.Future.NextLP[0], card.PreviousBI)
 	card.BR = br(card.BRSH, card.BJ)
 	card.Barish = barish(ts.Future.NextLP[0], card.BR)
 	card.Trend = trend(ts.Future.NextCP[0], card.BN)
-
-	if !ts.IsBuyFrozen {
-		card.PreviousBI = card.BI
-	}
 
 	return card
 }

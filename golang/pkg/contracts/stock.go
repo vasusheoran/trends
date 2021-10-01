@@ -3,9 +3,10 @@ package contracts
 import "time"
 
 type Stock struct {
-	Close     float64   `json:"close"`
-	High      float64   `json:"high"`
-	Low       float64   `json:"low"`
-	Time      time.Time `json:"time"`
-	SASSymbol string    `json:"sas_symbol"`
+	CP   float64   `json:"CP"`
+	HP   float64   `json:"HP"`
+	LP   float64   `json:"LP"`
+	Date string    `json:"Date,omitempty"`
+	Time time.Time `json:"-"`
+	//SASSymbol string    `json:"sas_symbol"`
 }

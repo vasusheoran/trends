@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/vsheoran/trends/pkg/constants"
 )
 
 func InitializeDefaultLogger() log.Logger {
@@ -34,4 +35,12 @@ func ReadFromFile(logger log.Logger, filename string, res interface{}) {
 	if err != nil {
 		level.Error(logger).Log("err", err.Error())
 	}
+}
+
+func HistoricalFilePath(sasSymbol string) string {
+	return constants.HistoricalDataPath + string(os.PathSeparator) + sasSymbol + ".csv"
+}
+
+func SymbolsFilePath() string {
+	return constants.SymbolsFilePath
 }
