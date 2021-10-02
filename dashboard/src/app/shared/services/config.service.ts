@@ -28,11 +28,11 @@ export class ConfigService {
 
   constructor(private _http: HttpClient) {
     this.baseUrl = environment.apiUrl + "/api/";
-    this.symbol = this.baseUrl + '/symbol';
-    this.history = this.baseUrl + '/history';
-    this.freeze = this.baseUrl + '/index/freeze';
-    this.expiry = this.baseUrl + '/index/expiry';
-    this.strike = this.baseUrl + '/index/strike';
+    this.symbol = this.baseUrl + 'symbol';
+    this.history = this.baseUrl + 'history';
+    this.freeze = this.baseUrl + 'index/freeze';
+    this.expiry = this.baseUrl + 'index/expiry';
+    this.strike = this.baseUrl + 'index/strike';
   }
 
   getIndexURL(sas: string) {

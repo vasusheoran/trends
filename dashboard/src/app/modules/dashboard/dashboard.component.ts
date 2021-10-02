@@ -7,6 +7,9 @@ import { MatSnackBar, MatSnackBarRef, MatSnackBarHorizontalPosition, MatSnackBar
 import { ActivatedRoute } from '@angular/router';
 import { WebSocketsService } from '../../shared/services/web-sockets.service';
 
+import { TickerClient, ResponseStream } from '../../generated/ticker_pb_service'
+import { SummaryRequest, SummaryReply } from '../../generated/ticker_pb'
+
 import { Observable, Subscription } from 'rxjs';
 
 @Component({
@@ -23,25 +26,32 @@ export class DashboardComponent implements OnInit {
   subscription: Subscription;
   updateUI: Observable<any>;
   updateUISub: Subscription;
+  tickerClient: TickerClient;
+  summaryResponseStream: ResponseStream<SummaryReply>;
 
   constructor(private _config: ConfigService,
     private _shared: SharedService,
+    private _route: Router,
     private activatedRoute: ActivatedRoute,
     private _snack: MatSnackBar,
-    private _socket: WebSocketsService,
     private _stockHelper: StockService) {
     this.isEnabled = this._stockHelper.isPlotLineEnabled;
+    this.tickerClient = new TickerClient("http://localhost:8080");
   }
 
   ngOnInit(): void {
     this.activatedRoute.params.subscribe(params => {
       this.sas = params['sas'];
 
-      debugger;
       if (this.sas == null || this.sas == "") {
         this.openSnackBar("Please set the symbol to continue.");
+        this._route.navigateByUrl('symbols')
       } else {
-        // this._socket.enable()
+        // this._socket.enable()Ticker
+        var req = new SummaryRequest();
+        // req.setSas("1");
+        req.setSas(this.sas);
+        this.summaryResponseStream = this.tickerClient.getSummary(req);
       }
     })
 
@@ -49,22 +59,16 @@ export class DashboardComponent implements OnInit {
       this.cards = resp['summary']
     })
 
+    this.summaryResponseStream.on("data", (message) => {
+      console.log(message)
+      this.cards = message.toObject()
+    })
+    // this.summaryResponseStream.on('data', (message: SummaryReply) => {
+    //   console.log(message)
+    // })
 
-    // this._socket.listen('updateui')
-
-    // this._shared.sharedIsChartEnabled.subscribe(resp => {
-    //   if (this.updateUISub != undefined) {
-    //     this.updateUISub.unsubscribe();
-    //   }
-
-    //   if (resp) {
-    //     console.log("Updating cards");
-    //     this.updateUISub = this.updateUI.subscribe((resp) => {
-    //       this._shared.nextUpdateResponse(resp['dashboard']);
-    //     });
-    //   }
-    // });
-
+  }
+  getSummaries() {
   }
 
   toggleEnable(card, key) {

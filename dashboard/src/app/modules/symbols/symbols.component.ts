@@ -142,7 +142,6 @@ export class SymbolsComponent implements OnInit {
       this.openSnackBar('Please Wait...');
       this._config.setListing(this.listing).subscribe(resp => {
         this.openSnackBar(resp['msg']);
-        debugger;
         this._route.navigateByUrl('dashboard/' + this.listing.SAS);
       }, err => {
         console.log(err)
