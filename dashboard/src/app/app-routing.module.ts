@@ -8,19 +8,19 @@ import { SymbolsComponent } from 'src/app/modules/symbols/symbols.component';
 
 
 const routes: Routes = [{
-  path : '',
+  path: '',
   component: DefaultComponent,
-  children:[{
+  children: [{
     path: '',
     component: SymbolsComponent
-  },{
+  }, {
     path: 'historical',
     component: HistoricalDataComponent
-  },{
+  }, {
     path: 'symbols',
     component: SymbolsComponent
-  },{
-    path: 'dashboard',
+  }, {
+    path: 'dashboard/:sas',
     component: DashboardComponent
   }]
 }];

@@ -8,16 +8,19 @@ import { Observable } from 'rxjs';
 })
 export class WebSocketsService {
 
-  constructor() { 
+
+  socket: any;
+  readonly uri: string = "";
+
+  constructor() {
     this.uri = environment.apiUrl;
+  }
+
+  public enable() {
     this.socket = io(this.uri);
   }
 
-  socket:any;
-  readonly uri:string = "";
-
-  
-  public listen(eventName:string){
+  public listen(eventName: string) {
     return new Observable(sub => {
       this.socket.on(eventName, (message) => {
         sub.next(message);
@@ -25,15 +28,15 @@ export class WebSocketsService {
     });
   }
 
-  public emit(eventName: string, data:any){
+  public emit(eventName: string, data: any) {
     this.socket.emit(eventName, data)
   }
 
-  public disconnet(){
+  public disconnet() {
     this.socket.disconnect();
   }
 
-  public connect(){
+  public connect() {
     this.socket.connect();
   }
 }
