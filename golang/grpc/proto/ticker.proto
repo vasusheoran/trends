@@ -6,7 +6,7 @@ option go_package = "github.com/vsheoran/trends/grpc/client;client";
 // The ticker service definition.
 service Ticker {
   rpc UpdateStock(StockRequest) returns (StockResponse) {}
-  rpc GetSummary (SummaryRequest) returns (stream SummaryReply) {}
+  rpc GetSummary (stream SummaryRequest) returns (stream SummaryResponse) {}
 }
 
 // The request message containing the stock info
@@ -25,6 +25,15 @@ message StockResponse {}
 // The request message containing the user's name.
 message SummaryRequest {
   string sas = 1;
+}
+
+message SummaryResponse {
+  oneof message{
+    // RateResponse returns the exchange rate when updated
+    SummaryReply reply = 1;
+    // status returns rich error messages to the client
+    string error = 2;
+  }
 }
 
 // The response message containing the greetings

@@ -19,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TickerClient interface {
 	UpdateStock(ctx context.Context, in *StockRequest, opts ...grpc.CallOption) (*StockResponse, error)
-	GetSummary(ctx context.Context, in *SummaryRequest, opts ...grpc.CallOption) (Ticker_GetSummaryClient, error)
+	GetSummary(ctx context.Context, opts ...grpc.CallOption) (Ticker_GetSummaryClient, error)
 }
 
 type tickerClient struct {
@@ -39,23 +39,18 @@ func (c *tickerClient) UpdateStock(ctx context.Context, in *StockRequest, opts .
 	return out, nil
 }
 
-func (c *tickerClient) GetSummary(ctx context.Context, in *SummaryRequest, opts ...grpc.CallOption) (Ticker_GetSummaryClient, error) {
+func (c *tickerClient) GetSummary(ctx context.Context, opts ...grpc.CallOption) (Ticker_GetSummaryClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Ticker_ServiceDesc.Streams[0], "/proto.Ticker/GetSummary", opts...)
 	if err != nil {
 		return nil, err
 	}
 	x := &tickerGetSummaryClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
 	return x, nil
 }
 
 type Ticker_GetSummaryClient interface {
-	Recv() (*SummaryReply, error)
+	Send(*SummaryRequest) error
+	Recv() (*SummaryResponse, error)
 	grpc.ClientStream
 }
 
@@ -63,8 +58,12 @@ type tickerGetSummaryClient struct {
 	grpc.ClientStream
 }
 
-func (x *tickerGetSummaryClient) Recv() (*SummaryReply, error) {
-	m := new(SummaryReply)
+func (x *tickerGetSummaryClient) Send(m *SummaryRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *tickerGetSummaryClient) Recv() (*SummaryResponse, error) {
+	m := new(SummaryResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -76,7 +75,7 @@ func (x *tickerGetSummaryClient) Recv() (*SummaryReply, error) {
 // for forward compatibility
 type TickerServer interface {
 	UpdateStock(context.Context, *StockRequest) (*StockResponse, error)
-	GetSummary(*SummaryRequest, Ticker_GetSummaryServer) error
+	GetSummary(Ticker_GetSummaryServer) error
 	mustEmbedUnimplementedTickerServer()
 }
 
@@ -87,7 +86,7 @@ type UnimplementedTickerServer struct {
 func (UnimplementedTickerServer) UpdateStock(context.Context, *StockRequest) (*StockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateStock not implemented")
 }
-func (UnimplementedTickerServer) GetSummary(*SummaryRequest, Ticker_GetSummaryServer) error {
+func (UnimplementedTickerServer) GetSummary(Ticker_GetSummaryServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetSummary not implemented")
 }
 func (UnimplementedTickerServer) mustEmbedUnimplementedTickerServer() {}
@@ -122,15 +121,12 @@ func _Ticker_UpdateStock_Handler(srv interface{}, ctx context.Context, dec func(
 }
 
 func _Ticker_GetSummary_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(SummaryRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(TickerServer).GetSummary(m, &tickerGetSummaryServer{stream})
+	return srv.(TickerServer).GetSummary(&tickerGetSummaryServer{stream})
 }
 
 type Ticker_GetSummaryServer interface {
-	Send(*SummaryReply) error
+	Send(*SummaryResponse) error
+	Recv() (*SummaryRequest, error)
 	grpc.ServerStream
 }
 
@@ -138,8 +134,16 @@ type tickerGetSummaryServer struct {
 	grpc.ServerStream
 }
 
-func (x *tickerGetSummaryServer) Send(m *SummaryReply) error {
+func (x *tickerGetSummaryServer) Send(m *SummaryResponse) error {
 	return x.ServerStream.SendMsg(m)
+}
+
+func (x *tickerGetSummaryServer) Recv() (*SummaryRequest, error) {
+	m := new(SummaryRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // Ticker_ServiceDesc is the grpc.ServiceDesc for Ticker service.
@@ -159,6 +163,7 @@ var Ticker_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "GetSummary",
 			Handler:       _Ticker_GetSummary_Handler,
 			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "ticker.proto",
