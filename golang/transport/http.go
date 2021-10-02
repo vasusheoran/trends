@@ -31,12 +31,9 @@ var logger log.Logger
 
 var svc Services
 
-func MakeServices(s Services) {
-	svc = s
-}
-
-func ServeHTTP(l log.Logger, router *mux.Router) {
+func ServeHTTP(l log.Logger, router *mux.Router, services Services) {
 	logger = log.With(l, "method", "ServeHTTP")
+	svc = services
 
 	router.HandleFunc(HealthAPI, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
