@@ -4,7 +4,7 @@ services:
     environment: 
       - TZ=Asia/Kolkata
     build: 
-      context: ./dashboard
+      context: dashboard
       dockerfile: prod.dockerfile
     image: h20180061/dashboard:${WEB_TAG}
     ports:
@@ -12,18 +12,36 @@ services:
     container_name: web
     depends_on:
       - app
+    volumes:
+      - ./golang/data:/home/app/data
     networks:
         - network1
 
+  envoy:
+    build:
+      context: envoy
+      dockerfile: ./Dockerfile
+    image: h20180061/envoy:${APP_TAG}
+    ports:
+      - "12001:12001"
+      - "12002:12002"
+      - "9901:9901"
+    links:
+      - app
+    depends_on:
+      - app
+    networks:
+        - network1
   app:
     environment: 
       - TZ=Asia/Kolkata
     build: 
-      context: ./app
+      context: golang
       dockerfile: Dockerfile
     image: h20180061/trends:${APP_TAG}
     ports:
       - "5000:5000"
+      - "5001:5001"
     container_name: app
     volumes:
       - ./app/data:/home/app/data

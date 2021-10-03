@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarRef, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import { WebSocketsService } from '../../shared/services/web-sockets.service';
+import { environment } from 'src/environments/environment';
 
 import { TickerClient, ResponseStream } from '../../generated/ticker_pb_service'
 import { SummaryRequest, SummaryReply } from '../../generated/ticker_pb'
@@ -36,7 +37,7 @@ export class DashboardComponent implements OnInit {
     private _snack: MatSnackBar,
     private _stockHelper: StockService) {
     this.isEnabled = this._stockHelper.isPlotLineEnabled;
-    this.tickerClient = new TickerClient("http://localhost:8080");
+    this.tickerClient = new TickerClient(environment.grpcURL);
   }
 
   ngOnInit(): void {
@@ -49,7 +50,6 @@ export class DashboardComponent implements OnInit {
       } else {
         // this._socket.enable()Ticker
         var req = new SummaryRequest();
-        // req.setSas("1");
         req.setSas(this.sas);
         this.summaryResponseStream = this.tickerClient.getSummary(req);
       }
@@ -57,7 +57,11 @@ export class DashboardComponent implements OnInit {
 
     this._config.fetchIndex(this.sas).subscribe(resp => {
       this.cards = resp['summary']
-    })
+
+    }, err => {
+      this._snack.open("Failed to fetch symbol. Please upload csv.");
+      this._route.navigateByUrl('symbols')
+    });
 
     this.summaryResponseStream.on("data", (message) => {
       console.log(message)

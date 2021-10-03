@@ -11,6 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { SymbolsDataDialog } from 'src/app/shared/widgets/dialog/symbols/symbols-dialog.component';
 import { MatSort } from '@angular/material/sort';
 import * as _moment from 'moment';
+import { SharedService } from 'src/app/shared/services/shared.service';
 
 interface Period {
   value: string;
@@ -28,7 +29,6 @@ interface Instrument {
 })
 export class SymbolsComponent implements OnInit {
 
-  isSymbolSelected: boolean;
   page: number;
   size: number;
   displayedColumns: string[] = ['Company', 'Symbol', 'SAS', 'Series', 'Actions'];
@@ -45,8 +45,8 @@ export class SymbolsComponent implements OnInit {
     private formBuilder: FormBuilder,
     private _route: Router,
     private _snack: MatSnackBar,
+    private _shared: SharedService,
     public dialog: MatDialog) {
-    this.isSymbolSelected = false;
 
     this.symbolForm = this.formBuilder.group({
       period: [{ value: '' }, Validators.required],
@@ -58,16 +58,15 @@ export class SymbolsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.refreshSymbols("Done fetching symbols",)
+    this.refreshSymbols()
   }
 
-  refreshSymbols(msg): void {
+  refreshSymbols(): void {
     this._config.getSymbols().subscribe((resp: IListing[]) => {
       this.dataSource = new MatTableDataSource<IListing>(resp);
       // setTimeout(() => this.dataSource.paginator = this.paginator);
       this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
-      this.openSnackBar(msg)
     }, (err) => {
       this.openSnackBar("Unable to fetch symbols...")
     })
@@ -89,6 +88,15 @@ export class SymbolsComponent implements OnInit {
     });
   }
 
+  handleFileSelect(sas: string, files: FileList) {
+    this._config.uploadFile(sas, files[0]).subscribe(resp => {
+      this.openSnackBar("Uploaded file successfully");
+    }, err => {
+      console.log(err.error);
+      this.openSnackBar("Failed to upload file");
+    })
+  }
+
   openSnackBar(msg?: string, actionName?: string) {
     if (!msg)
       msg = "Unknown Error.";
@@ -105,49 +113,18 @@ export class SymbolsComponent implements OnInit {
   isDerivative: boolean = false;
   symbolForm;
 
-  periods: Period[] = [
-    { value: 'day', viewValue: '1 Day' },
-    { value: '7days', viewValue: '7 Days' },
-    { value: 'week', viewValue: '1 Week' },
-    { value: '2weeks', viewValue: '2 Weeks' },
-    { value: 'month', viewValue: '1 Month' },
-    { value: '3months', viewValue: '3 Months' }
-  ];
-
-  intstruments: Instrument[] = [
-    { value: 'FUTCUR', viewValue: 'Future Currency' },
-    { value: 'OPTCUR', viewValue: 'Options Currency' }
-  ];
-
-  expiries;
-  isExpiryEnabled: boolean = false;
-
-  options = [
-    { value: 'CE', viewValue: 'Call' },
-    { value: 'PE', viewValue: 'Put' }];
-
-  strikePrices;
-
 
   setSelectedListing(event) {
     this.listing = event;
-    if (this.listing.Series == "Derivative") {
-      this.isDerivative = true;
-
-      this.symbolForm.get('period').setValue('3months');
-      this.symbolForm.get('instrument').setValue('FUTCUR');
-      this.onInstrumentChange({ 'value': 'FUTCUR' })
-
-    } else {
-      this.openSnackBar('Please Wait...');
-      this._config.setListing(this.listing).subscribe(resp => {
-        this.openSnackBar(resp['msg']);
-        this._route.navigateByUrl('dashboard/' + this.listing.SAS);
-      }, err => {
-        console.log(err)
-        this.openSnackBar(err.message);
-      });
-    }
+    this.openSnackBar('Please Wait...');
+    this._config.setListing(this.listing).subscribe(resp => {
+      this.openSnackBar(resp['msg']);
+      this._shared.nextListing(this.listing);
+      this._route.navigateByUrl('dashboard/' + this.listing.SAS);
+    }, err => {
+      console.log(err)
+      this.openSnackBar(err.message);
+    });
   }
 
   onSubmit(data) {
@@ -163,54 +140,7 @@ export class SymbolsComponent implements OnInit {
     });
   }
 
-  onInstrumentChange(event) {
-
-    this.symbolForm.get('expiry').setValue(null);
-    this.symbolForm.get('expiry').disable();
-    this._config.fetchExpiry(event.value, this.listing['Symbol']).subscribe((resp) => {
-      this.expiries = resp;
-      this.symbolForm.get('expiry').enable();
-    }, err => {
-      this._snack.open(err.message);
-    });
-
-  }
-
-  onExpiryChange() {
-    this.symbolForm.get('option').setValue(null);
-    if (this.symbolForm.get('instrument').value == "OPTCUR") {
-      this.symbolForm.get('option').enable();
-    } else {
-      this.symbolForm.get('option').disable();
-    }
-  }
-
-  onOptionTypeChange(event) {
-    this._snack.open("Fetching strike prices ...");
-    this.symbolForm.get('strikePrice').setValue(null);
-    this.symbolForm.get('strikePrice').disable();
-    var options = {
-      "optionType": event.value,
-      "expiry": this.symbolForm.get('expiry').value,
-      "instrument": this.symbolForm.get('instrument').value,
-      "symbol": this.listing['Symbol']
-    }
-    this._config.fetchStrikePrices(this.listing['Symbol'], this.symbolForm.get('instrument').value, this.symbolForm.get('expiry').value, event.value).subscribe(resp => {
-      this.strikePrices = resp;
-      this.symbolForm.get('strikePrice').enable();
-      this._snack.open("Done.");
-    }, err => {
-      this._snack.open(err.message);
-    });
-  }
-
   selectSymbol(element) {
-    console.log(element)
-    this.isSymbolSelected = true;
     this.setSelectedListing(element);
-  }
-
-  back() {
-    this.isSymbolSelected = false;
   }
 }

@@ -2,7 +2,7 @@
 
     <h2 matSubheader>Pages</h2>
 
-    <a mat-list-item routerLinkActive="list-item-active" [routerLink]="['/dashboard']">Dashboard</a>
+    <!-- <a mat-list-item routerLinkActive="list-item-active" [routerLink]="['/dashboard']">Dashboard</a> -->
     <a mat-list-item routerLinkActive="list-item-active" [routerLink]="['/historical']">Historical</a>
     <a mat-list-item routerLinkActive="list-item-active" [routerLink]="['/symbols']">Symbols</a>
     <!-- <a mat-list-item routerLinkActive="list-item-active" [routerLink]="['/settings']">Settings</a> -->
@@ -11,15 +11,22 @@
 
     <h2 matSubheader>Tools</h2>
     <div *ngIf="listing">
-        <a (click)="openDailog('Freeze Buy', true)" routerLinkActive="list-item-active" *ngIf="toggleDashBoardTools && listing!=null" mat-list-item>
+        <a (click)="openDailog('Freeze Buy', true)" routerLinkActive="list-item-active"
+            *ngIf="toggleDashBoardTools && listing!=null" mat-list-item>
             <mat-icon>pause</mat-icon>
             Freeze Buy
         </a>
-        <a (click)="toggleChart()" routerLinkActive="list-item-active" *ngIf="toggleDashBoardTools && listing!=null" mat-list-item>
-            <span *ngIf="isChartEnabled"><mat-icon>stop</mat-icon>Disable Chart</span>
-            <span *ngIf="!isChartEnabled"><mat-icon>play_arrow</mat-icon>Enable Chart</span>
-        </a>
-        <a (click)="openDailog('Add current day.', false)" routerLinkActive="list-item-active" *ngIf="toggleHistoricDataTools && listing!=null" mat-list-item>
+        <!-- <a (click)="toggleChart()" routerLinkActive="list-item-active" *ngIf="toggleDashBoardTools && listing!=null"
+            mat-list-item>
+            <span *ngIf="isChartEnabled">
+                <mat-icon>stop</mat-icon>Disable Chart
+            </span>
+            <span *ngIf="!isChartEnabled">
+                <mat-icon>play_arrow</mat-icon>Enable Chart
+            </span>
+        </a> -->
+        <a (click)="openDailog('Add current day.', false)" routerLinkActive="list-item-active"
+            *ngIf="toggleHistoricDataTools && listing!=null" mat-list-item>
             <mat-icon>library_add</mat-icon>
             Add Current Day
         </a>

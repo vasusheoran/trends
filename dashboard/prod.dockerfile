@@ -25,7 +25,7 @@
 
 # ## Build the angular app in production mode and store the artifacts in dist folder
 # COPY        . /ng-app
-# RUN         ng build --output-path=dist
+# RUN         npm run build:prod
 
 
 ### STAGE 2: Setup ###
@@ -34,6 +34,7 @@ RUN         rm -rf /usr/share/nginx/html/*
 
 COPY        default.conf /etc/nginx/conf.d/default.conf
 COPY        dist /usr/share/nginx/html
+# COPY        --from=build-stage dist /usr/share/nginx/html
 
 EXPOSE 4200 80
 
