@@ -11,6 +11,10 @@ import (
 )
 
 func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+
 	params := mux.Vars(r)
 	sasSymbol := params[sasSymbolKey]
 
@@ -29,14 +33,8 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodPost {
 		var summary contracts.Summary
-
-		stocks := svc.HistoryService.Read(sasSymbol)
 		if err == nil {
-			err = svc.TickerService.Init(sasSymbol, stocks)
-		}
-
-		if err == nil {
-			summary, err = svc.TickerService.Get(sasSymbol)
+			summary, err = svc.TickerService.Init(sasSymbol)
 		}
 
 		if err == nil {

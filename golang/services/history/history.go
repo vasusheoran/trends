@@ -1,7 +1,11 @@
 package history
 
 import (
+	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/go-kit/kit/log"
@@ -23,16 +27,48 @@ type history struct {
 	dbSvc  api.Database
 }
 
-func (s *history) Read(sasSymbol string) []contracts.Stock {
+func (s *history) UploadFile(symbol string, r *http.Request) error {
+	file, handler, err := r.FormFile("file_name")
+	fileName := r.FormValue("file")
+	if err != nil {
+		level.Error(s.logger).Log("err", err.Error())
+		return err
+	}
+	defer file.Close()
+
+	level.Info(s.logger).Log("msg", "file uploaded successfully", "handler", handler.Filename, "symbol")
+	f, err := os.OpenFile(utils.HistoricalFilePath(symbol), os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		level.Error(s.logger).Log("err", err.Error())
+		return err
+	}
+
+	defer f.Close()
+
+	_, err = io.Copy(f, file)
+	if err != nil {
+		level.Error(s.logger).Log("err", err.Error())
+		return err
+	}
+
+	level.Info(s.logger).Log("msg", "file uploaded successfully", "name", fileName)
+	return nil
+}
+
+func (s *history) Read(sasSymbol string) ([]contracts.Stock, error) {
 	data, err := s.dbSvc.Read(utils.HistoricalFilePath(sasSymbol))
 	if err != nil {
 		level.Error(s.logger).Log("msg", "failed to retieve listings", "err", err.Error())
+		return nil, err
 	}
 
-	return s.parseData(data)
+	return s.parseData(data), nil
 }
 
 func (s *history) Write(sasSymbol string, st []contracts.Stock) error {
+	if st == nil {
+		return errors.New("failed to write nil history")
+	}
 	var data [][]string
 
 	data = append(data, []string{"Date", "CP", "HP", "LP"})

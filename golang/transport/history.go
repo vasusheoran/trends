@@ -5,7 +5,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/vsheoran/trends/pkg/constants"
-	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/utils"
 )
 
@@ -21,7 +20,7 @@ func HistoryHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	if r.Method == http.MethodGet {
-		history := svc.HistoryService.Read(sasSymbol)
+		history, err := svc.HistoryService.Read(sasSymbol)
 		if err == nil {
 			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 			w.WriteHeader(http.StatusOK)
@@ -30,11 +29,15 @@ func HistoryHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodPost {
-		var his []contracts.Stock
-		utils.Decode(r.Body, &his)
-		err = svc.HistoryService.Write(sasSymbol, his)
+		err := svc.HistoryService.UploadFile(sasSymbol, r)
 		if err == nil {
 			w.WriteHeader(http.StatusNoContent)
 		}
+	}
+
+	if err != nil {
+		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
+		w.WriteHeader(http.StatusInternalServerError)
+		utils.Encode(w, ErrorResponse{Error: err.Error()})
 	}
 }

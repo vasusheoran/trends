@@ -7,7 +7,7 @@ import (
 
 const (
 	ListingExist        = "Symbol %s exists."
-	ListingDoesNotExist = "Symbol %s exists. Add symbol to continue."
+	ListingDoesNotExist = "Symbol %s exists. Put symbol to continue."
 	FailedToReadData    = "Failed to read data from database: %s."
 )
 

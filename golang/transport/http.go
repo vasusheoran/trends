@@ -16,6 +16,7 @@ const (
 	FreezeAPI    = IndexAPI + "/freeze"
 	HistoryAPI   = "/history/{sasSymbol}"
 	SymbolsAPI   = "/symbol"
+	SymbolAPI    = "/symbol/{sasSymbol}"
 	sasSymbolKey = "sasSymbol"
 	freezeKey    = "freeze"
 )
@@ -45,5 +46,6 @@ func ServeHTTP(l log.Logger, router *mux.Router, services Services) {
 	router.Path(FreezeAPI).HandlerFunc(TickerHandleFunc).Methods(http.MethodPatch, http.MethodOptions)
 	router.Path(HistoryAPI).HandlerFunc(HistoryHandlerFunc).Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
 	router.Path(SymbolsAPI).HandlerFunc(ListingsHandlerFunc).Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
+	router.Path(SymbolAPI).HandlerFunc(ListingsHandlerFunc).Methods(http.MethodPatch, http.MethodPut, http.MethodDelete, http.MethodOptions)
 
 }

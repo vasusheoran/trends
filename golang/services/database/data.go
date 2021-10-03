@@ -14,6 +14,11 @@ type DB struct {
 }
 
 func (d *DB) Read(file string) ([][]string, error) {
+	var _, err = os.Stat(file)
+	if err != nil {
+		level.Error(d.logger).Log("msg", "file does not exist", "err", err.Error())
+		return nil, err
+	}
 	return d.csvReader(file)
 }
 

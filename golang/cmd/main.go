@@ -52,9 +52,9 @@ func initServer(g *run.Group) {
 
 	db := database.NewDatabase(logger)
 	cs := cards.New(logger)
-	ts := ticker.NewTicker(logger, cs, db)
-	ls := listing.New(logger, db)
 	hs := history.New(logger, db)
+	ts := ticker.NewTicker(logger, cs, hs)
+	ls := listing.New(logger, db)
 
 	services := transport.Services{
 		TickerService:   ts,
@@ -96,14 +96,15 @@ func initGRPC(g *run.Group, services transport.Services) {
 func initHTTP(g *run.Group, services transport.Services) {
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{http.MethodPatch, http.MethodPut, http.MethodDelete, http.MethodOptions, http.MethodGet, http.MethodPost},
 	})
 
 	router := mux.NewRouter()
-	subRouter := router.PathPrefix("/api").Subrouter()
-	transport.ServeHTTP(logger, subRouter, services)
+	handler := c.Handler(router)
 
-	handler := c.Handler(subRouter)
+	subRouter := router.PathPrefix("/api").Subrouter()
+
+	transport.ServeHTTP(logger, subRouter, services)
 
 	srv := &http.Server{
 		Handler: handler,

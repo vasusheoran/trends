@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/log/level"
 	"github.com/vsheoran/trends/pkg/api"
 	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
@@ -16,7 +17,7 @@ type ticker struct {
 	data           map[string]*contracts.TickerInfo
 	summary        map[string]*contracts.Summary
 	cardService    api.CardsAPI
-	dbSvc          api.Database
+	historyService api.HistoryAPI
 	emaService     ma.ExponentialMovingAverage
 	averageService ma.MovingAverage
 	emaPosNegSvc   ma.EMAPosNegService
@@ -70,7 +71,17 @@ func (s *ticker) Get(key string) (contracts.Summary, error) {
 	return *summary, nil
 }
 
-func (s *ticker) Init(key string, candles []contracts.Stock) error {
+func (s *ticker) Init(key string) (contracts.Summary, error) {
+	candles, err := s.historyService.Read(key)
+	if err != nil {
+		level.Error(s.logger).Log("failed to read history from database", "sasSymbol", key)
+		return contracts.Summary{}, errors.New("error fetching data")
+	}
+	if candles == nil {
+		level.Error(s.logger).Log("failed to parse history from database", "sasSymbol", key)
+		return contracts.Summary{}, errors.New("error fetching data")
+	}
+
 	var st *contracts.TickerInfo
 	var ok bool
 	if st, ok = s.data[key]; !ok {
@@ -112,7 +123,7 @@ func (s *ticker) Init(key string, candles []contracts.Stock) error {
 	s.data[key].LP = candles[lastIndex].LP
 
 	s.setNextValues(key, s.data[key].CP, s.data[key].HP, s.data[key].LP)
-	return nil
+	return s.Get(key)
 }
 
 func (s *ticker) setNextValues(key string, cp, hp, lp float64) {
@@ -173,13 +184,13 @@ func (s *ticker) updateSummaryMap(key string, card contracts.Card) {
 	}
 }
 
-func NewTicker(logger log.Logger, cardsSvc api.CardsAPI, dbSvc api.Database) api.TickerAPI {
+func NewTicker(logger log.Logger, cardsSvc api.CardsAPI, hs api.HistoryAPI) api.TickerAPI {
 	return &ticker{
 		logger:         logger,
 		data:           map[string]*contracts.TickerInfo{},
 		summary:        map[string]*contracts.Summary{},
 		cardService:    cardsSvc,
-		dbSvc:          dbSvc,
+		historyService: hs,
 		emaService:     ma.NewExponentialMovingAverage(logger, []string{"CP5", "CP20"}, []int{5, 20}),
 		averageService: ma.NewMovingAverage(logger, []string{"CP10", "CP50"}, []int{10, 50}),
 		emaPosNegSvc:   ma.NewEMAPosNeg(logger, []string{constants.KeyDiffCpPos, constants.KeyDiffCpNeg}, []int{15, 15}),

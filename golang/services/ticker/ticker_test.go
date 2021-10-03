@@ -8,6 +8,7 @@ import (
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/services/cards"
 	"github.com/vsheoran/trends/services/database"
+	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/utils"
 )
 
@@ -32,15 +33,18 @@ func TestTicker_Init(t *testing.T) {
 	utils.ReadFromFile(logger, testCase, &exp)
 
 	db := database.NewDatabase(logger)
-	candles, _ := db.Read(historicalData)
+	hs := history.New(logger, db)
 
 	cardsSvc := cards.New(logger)
-	ticker := NewTicker(logger, cardsSvc, db)
-	ticker.Init(exp.In.SASSymbol, candles)
+	ticker := NewTicker(logger, cardsSvc, hs)
+	summary, err := ticker.Init("case1")
 
-	ticker.Update(exp.In.SASSymbol, exp.In)
+	assert.Nil(t, err)
+	assert.NotNil(t, summary)
 
-	res, _ := ticker.Get(exp.In.SASSymbol)
+	ticker.Update("case1", exp.In)
+
+	res, _ := ticker.Get("case1")
 
 	assert.Equal(t, exp.Op, res)
 }
