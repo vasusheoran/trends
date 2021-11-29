@@ -49,4 +49,25 @@ Function TestSAS(rngRef As Range)
     
 End Function
 
+'VBA function to make multiple replacements in a template string:
+
+Function TemplateReplace$(template$, ParamArray replacements())
+    Dim c&, s$, t$, e
+    s = template
+    For Each e In replacements
+        c = c + 1
+        t = "|%" & c & "|"
+        If InStrB(e, "~~") Then e = Replace(e, "~~", Chr(34))
+        If InStrB(s, t) Then s = Replace(s, t, e)
+    Next
+    TemplateReplace = s
+End Function
+
+'--------------------------------------------------------------------
+
+'./main --server localhost:5001 --date 10-2-1 --high 17782 --close 17772.00 --low 17608.15 --symbol 1
+Const TEMPLATE = "SELECT * FROM |%1| WHERE (survived = |%2|)"
+MsgBox TemplateReplace$(TEMPLATE, "titanic", "~~true~~")
+
+'Displays: SELECT * FROM titanic WHERE (survived = "true")
 

@@ -123,7 +123,7 @@ export class SymbolsComponent implements OnInit {
       this._route.navigateByUrl('dashboard/' + this.listing.SAS);
     }, err => {
       console.log(err)
-      this.openSnackBar(err.message);
+      this.openSnackBar(err.error);
     });
   }
 
@@ -136,7 +136,8 @@ export class SymbolsComponent implements OnInit {
       this.openSnackBar(resp['msg']);
       this._route.navigateByUrl('dashboard');
     }, err => {
-      this.openSnackBar(err.error.message);
+      console.log(err)
+      this.openSnackBar(err.error);
     });
   }
 

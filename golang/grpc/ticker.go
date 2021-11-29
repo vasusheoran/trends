@@ -22,7 +22,6 @@ type TickerServer struct {
 	subscribers map[client.Ticker_GetSummaryServer][]*client.SummaryRequest
 	ch          chan string
 	ts          api.TickerAPI
-	ds          api.Database
 	client.UnimplementedTickerServer
 }
 
@@ -167,11 +166,10 @@ func (t TickerServer) handleUpdates() {
 	}
 }
 
-func NewTickerServer(logger log.Logger, ts api.TickerAPI, ds api.Database) client.TickerServer {
+func NewTickerServer(logger log.Logger, ts api.TickerAPI) client.TickerServer {
 	srv := &TickerServer{
 		logger:      logger,
 		ts:          ts,
-		ds:          ds,
 		subscribers: map[client.Ticker_GetSummaryServer][]*client.SummaryRequest{},
 		summary:     map[string]contracts.Stock{},
 		ch:          make(chan string),

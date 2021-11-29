@@ -12,7 +12,7 @@ import (
 
 func InitializeDefaultLogger() log.Logger {
 	logger := log.NewJSONLogger(log.NewSyncWriter(os.Stderr))
-	logger = log.WithPrefix(logger, "scs_ts", log.DefaultTimestampUTC)
+	logger = log.WithPrefix(logger, "ts", log.DefaultTimestampUTC)
 	logger = log.With(logger, "caller", log.DefaultCaller)
 	return logger
 }

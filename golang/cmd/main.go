@@ -72,8 +72,8 @@ func initGRPC(g *run.Group, services transport.Services) {
 	gs := grpc.NewServer()
 	reflection.Register(gs)
 
-	tickerServer := grpc2.NewTickerServer(logger, services.TickerService, services.DatabaseService)
-	client.RegisterTickerServer(gs, tickerServer)
+	srvr := grpc2.NewTickerServer(logger, services.TickerService)
+	client.RegisterTickerServer(gs, srvr)
 
 	//reflection.Register(gs)
 	l, err := net.Listen("tcp", ":5001")
