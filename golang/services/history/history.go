@@ -29,7 +29,6 @@ type history struct {
 
 func (s *history) UploadFile(symbol string, r *http.Request) error {
 	file, handler, err := r.FormFile("file_name")
-	fileName := r.FormValue("file")
 	if err != nil {
 		level.Error(s.logger).Log("err", err.Error())
 		return err
@@ -51,7 +50,7 @@ func (s *history) UploadFile(symbol string, r *http.Request) error {
 		return err
 	}
 
-	level.Info(s.logger).Log("msg", "file uploaded successfully", "name", fileName)
+	level.Info(s.logger).Log("msg", "file uploaded successfully", "handler_filename", handler.Filename, "path", utils.HistoricalFilePath(symbol))
 	return nil
 }
 

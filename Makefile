@@ -5,6 +5,9 @@ SERVICE_LANG = ts
 
 .PHONY: all build run
 
+trends-client-build: 
+	cd golang && go build -o grpc-client-app/trends-client-app grpc-client-app/main.go
+
 ui-build:
 	${NPM_DR_LINUX} "${NPM_BUILD_CMD}"
 
