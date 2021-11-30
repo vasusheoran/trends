@@ -1,25 +1,51 @@
 version: "3.3"
 services:
   web:
-    image: h20180061/dashboard:${WEB_TAG}
     environment: 
-      - TIME_ZONE=Asia/Kolkata
+      - TZ=Asia/Kolkata
+    build: 
+      context: ./dashboard
+      dockerfile: prod.dockerfile
+    image: h20180061/dashboard:${WEB_TAG}
     ports:
       - "80:80"
     container_name: web
     depends_on:
       - app
+    volumes:
+      - ./golang/data:/home/app/data
     networks:
         - network1
+
+  envoy:
+    build:
+      context: envoy
+      dockerfile: ./Dockerfile
+    image: h20180061/envoy:${APP_TAG}
+    ports:
+      - "12001:12001"
+      - "12002:12002"
+      - "9901:9901"
+    links:
+      - app
+    depends_on:
+      - app
+    networks:
+        - network1
+        
   app:
-    image: h20180061/trends:${APP_TAG}
     environment: 
-      - TIME_ZONE=Asia/Kolkata
+      - TZ=Asia/Kolkata
+    build: 
+      context: ./app
+      dockerfile: Dockerfile
+    image: h20180061/trends:${APP_TAG}
     ports:
       - "5000:5000"
+      - "5001:5001"
     container_name: app
     volumes:
-      - /d/wsl/data/trends:/home/app/data
+      - ./golang/data:/home/app/data
     networks:
         - network1
  

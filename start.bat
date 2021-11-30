@@ -4,10 +4,10 @@
 echo "Starting ..."
 
 
-docker-compose down
+docker-compose -f trends.docker-compose.yml down
 
-docker-compose pull 
+docker-compose -f trends.docker-compose.yml pull 
 
-docker-compose up -d
+docker-compose -f trends.docker-compose.yml up -d
 
-start http://localhost/
+@REM start http://localhost/
