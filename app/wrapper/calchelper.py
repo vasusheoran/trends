@@ -10,11 +10,10 @@ values = dict()
 def ema_future(n, span ,df):
     last_row = df.iloc[0].to_dict()
     prev_ema = last_row['emaCP' + str(span)]
-    
-#        print(str(prev_ema) +  ' :: ' + str(last_row['CP']))
-    for i in range(n):   
+    # print("span", span, "prevema", prev_ema, "lastrowcp", last_row['CP'] )
+    for i in range(n):
         prev_ema = ((2/(span+1)) * (last_row['CP'] - prev_ema)) + prev_ema
-#        print(str(prev_ema))
+#     print("span", span, "prevema", prev_ema)
     return prev_ema
 
 #def find_ema(spans, cols ,df):
@@ -36,17 +35,20 @@ def find_BX(df):
     
     global values
     values.update({'bx' : final})
-    # print("hp:", HP, "DEF:", DEF, "GHI:", GHI, "df.at[0, 'emaCP5']::", df.at[0, 'emaCP5'], "df.at[0, 'emaCP20']::", df.at[0, 'emaCP20'], "df.at[2,'HP']::", df.at[2,'HP'])
+    # print("bx:", final, "hp:", HP, "DEF:", DEF, "GHI:", GHI, "df.at[0, 'emaCP5']::", df.at[0, 'emaCP5'], "df.at[0, 'emaCP20']::", df.at[0, 'emaCP20'], "df.at[2,'HP']::", df.at[2,'HP'])
     return final
     
 
 def find_CJ(df):    
     future_ema5 = ema_future(2,5, df)
     future_ema20 = ema_future(2,20,df)
-    cj=(df.at[0,'CP']+df.at[0,'CP']+((((future_ema5+(future_ema5+(future_ema20-future_ema5)/2))/2)+((df.at[0,'CP']+(df.at[0,'CP']+(((future_ema5+(future_ema5+(future_ema20-future_ema5)/2))/2)-df.at[0,'CP'])/2))/2))/2))/3
-    # print("future_ema5", future_ema5, "future_ema20", future_ema20, "df.at[0,'CP']", df.at[0,'CP'])
+    cpAt0= df.at[0,'CP']
+    cj = (cpAt0 + cpAt0 + ((((future_ema5 + (future_ema5 + (future_ema20 - future_ema5) / 2)) / 2) + ((cpAt0 + (
+                cpAt0 + (((future_ema5 + (
+                    future_ema5 + (future_ema20 - future_ema5) / 2)) / 2) - cpAt0) / 2)) / 2)) / 2)) / 3
+    print("future_ema5", future_ema5, "future_ema20", future_ema20, "cpAt0", cpAt0, "cj",  cj)
     global values
-    values.update({'cj' : cj})
+    values.update({'cj': cj})
     return cj
 
 def find_U(df):        
@@ -56,6 +58,8 @@ def find_U(df):
 #    db.update({'u' : {'cq' : cq , 'cj' : cj, 'val' : u}})
     global values
     values.update({'u' : u})
+
+    print("cj", cj, "cq", cq, "u", u, "df.at[0,'minHP3']", df.at[0,'minHP3'])
     return u
 
 def find_co(row ,df):
@@ -64,6 +68,8 @@ def find_co(row ,df):
     # co = (cv_av_1)/2-((cv_av_1)/2*(((cv_av_1)/2-(((((cv_av_1)/2-((cv_av_1)/2*0.01))+(((cv_av_1)/2-((cv_av_1)/2*0.01))*0.025))+(cv_av_1)/2)/2))/(cv_av_1)/2*100/2)/100)
     cv_av_1 = df.at[row,'avCP_CI_HP10'] + df.at[row,'avCP_CI_HP50']
     co = (cv_av_1)/2-((cv_av_1)/2*(((cv_av_1)/2-(((((cv_av_1)/2-((cv_av_1)/2*0.01))+(((cv_av_1)/2-((cv_av_1)/2*0.01))*0.025))+(cv_av_1)/2)/2))/(cv_av_1)/2*100/2)/100)
+
+    print("row", row, "co", co ,"cv_av_1", cv_av_1, " df.at[row,'avCP_CI_HP10'] ",  df.at[row,'avCP_CI_HP10'], "df.at[row,'avCP_CI_HP50']", df.at[row,'avCP_CI_HP50'] )
     return co
 
 def find_cp(row ,df):
@@ -78,6 +84,7 @@ def find_ae(row ,df):
                  'cp' : {'1' : find_cp(row, df) , '2': find_cp(row+1, df)}
                  })
     ae=df.at[row+1,'HP']-((ae_dict['cp']['1']-ae_dict['co']['1'])-(ae_dict['cp']['2']-ae_dict['co']['2']))
+    print("row", row, "ae", ae, "df.at[row+1,'HP']", df.at[row+1,'HP'] ,"ae_dict['cp']['1']",ae_dict['cp']['1'], "ae_dict['co']['1']", ae_dict['co']['1'],"ae_dict['cp']['2']",ae_dict['cp']['2'], "ae_dict['co']['2']", ae_dict['co']['2'])
     global values
     ae_dict.update({'value' : ae})
     values.update({'ae-'+str(row) : ae_dict})
@@ -91,9 +98,9 @@ def find_ai_af(df):
     # min_HP = min(df.at[2,'HP'], df.at[3,'HP'])
     min_HP = min(df.at[3,'HP'], df.at[2,'HP'])    
     ai=(( df.at[2,'LP'] + ( df.at[2,'HP'] + (u - df.at[2,'HP'] )/2 + min_HP + ((q) - min_HP)/2)/2)/2)
-        
     af = df.at[2,'LP'] + ( ai-df.at[2,'LP'])/2   
-     
+
+    print("ai", ai, "af", af , "u", u)
     global values    
     values.update({'ai' : ai,'af' : af,'q' : q})
     
@@ -112,6 +119,8 @@ def find_BI(db, frozen, df , freeze = False):
     temp3 = ((df.at[2,'LP']-ao)+(af+(temp1)/2))/2
     
     bi = max(temp2,temp3)
+
+    print("ao", ao, "bi",bi)
     
     if freeze:
         return bi
@@ -155,6 +164,7 @@ def find_BK(old_bi ,df, bi):
     bj = (bi + bk)/2 
     global values   
     values.update({'bk' : bk, 'bj' : bj})
+    print("bk", bk, "bj", bj, "old_bi", old_bi)
     
 def find_AR(df, row):
     # global values     
@@ -164,22 +174,29 @@ def find_AR(df, row):
     av = cp_av_10 + cp_av_50    # Sum
     ar = ((av)/2)-((av)/2*(((av)/2-(((((av)/2-((av)/2*0.01))+(((av)/2-((av)/2*0.01))*0.025))+(av)/2)/2))/(av)/2*100/2)/100)
     # values.update({'ar' : float(ar)})
+    print("ar", ar, "cp_av_10", cp_av_10, "cp_av_50", cp_av_50)
     return ar
 
 def find_CR(df):    
     # global values 
     ema_d = df.at[2, 'ema_diffCP1Pos']
     ema_e = df.at[2, 'ema_diffCP1Neg']
+
+    print("df.at[2, 'ema_diffCP1Pos']", df.at[2, 'ema_diffCP1Pos'], "df.at[2, 'ema_diffCP1Neg']", df.at[2, 'ema_diffCP1Neg'])
     
     if ema_e == 0:
+        print("cr", 100)
         return 100.0
         # values.update({'cr' : 100.0})
         # return
     else:
         val = 100 - (100/(1+(ema_d)/ema_e))
+        print("cr", val)
         return val
         # values.update({'cr' : val})
         # return
+
+
     
 # def find_BN(df):    
 #     global values    
@@ -197,7 +214,11 @@ def find_BN_Row(df, row):
     ar2 = float(find_AR(df, first_index))
     ar3 = float(find_AR(df, second_index))
     
-    bn = (df.at[first_index,'emaCP5'] - ar2) - (df.at[second_index,'emaCP5'] - ar3)
+    bn = (df.at[2,'emaCP5'] - ar2) - (df.at[3,'emaCP5'] - ar3)
+    values.update({'bn' : bn, 'ar' : ar2 })
+
+    print("bn", bn, "ar", ar2, "ar3", ar3, "df.at[2,'emaCP5']", df.at[2,'emaCP5'], "df.at[3,'emaCP5']", df.at[3,'emaCP5'])
+
     return bn, ar2
     
     
