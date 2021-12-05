@@ -6,7 +6,7 @@ SERVICE_LANG = ts
 .PHONY: all build run
 
 trends-client-build: 
-	cd golang && go build -o grpc-client-app/trends-client-app grpc-client-app/main.go
+	cd golang && go build -o client-app/trends-client-app client-app/http/main.go
 
 go-app-build:
 	cd golang && GOOS=linux GOARCH=amd64 go build -o main cmd/main.go

@@ -52,7 +52,7 @@ export class DashboardComponent implements OnInit {
         this.openSnackBar("Please set the symbol to continue.");
         this._route.navigateByUrl('symbols')
       } else {
-        this.socketClient.enable("ws://127.0.0.1:5000/api/ws/" + this.sas);
+        this.socketClient.enable(environment.socketUrl + this.sas);
       }
     });
     var sub: Subscription;

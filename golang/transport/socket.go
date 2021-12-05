@@ -42,7 +42,7 @@ func SocketHandleFunc(w http.ResponseWriter, r *http.Request) {
 
 		if err == nil {
 			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-			w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusNoContent)
 		}
 	}
 
