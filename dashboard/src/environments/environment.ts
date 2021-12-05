@@ -4,6 +4,7 @@
 
 export const environment = {
   production: false,
+  socketUrl: "ws://localhost:5000",
   apiUrl: 'http://localhost:5000',
   grpcURL: 'http://localhost:12002'
 };

@@ -16,10 +16,10 @@ type TickerUpdateStock = {
 type TickerGetSummary = {
   readonly methodName: string;
   readonly service: typeof Ticker;
-  readonly requestStream: false;
+  readonly requestStream: true;
   readonly responseStream: true;
   readonly requestType: typeof ticker_pb.SummaryRequest;
-  readonly responseType: typeof ticker_pb.SummaryReply;
+  readonly responseType: typeof ticker_pb.SummaryResponse;
 };
 
 export class Ticker {
@@ -69,6 +69,6 @@ export class TickerClient {
     requestMessage: ticker_pb.StockRequest,
     callback: (error: ServiceError|null, responseMessage: ticker_pb.StockResponse|null) => void
   ): UnaryResponse;
-  getSummary(requestMessage: ticker_pb.SummaryRequest, metadata?: grpc.Metadata): ResponseStream<ticker_pb.SummaryReply>;
+  getSummary(metadata?: grpc.Metadata): BidirectionalStream<ticker_pb.SummaryRequest, ticker_pb.SummaryResponse>;
 }
 

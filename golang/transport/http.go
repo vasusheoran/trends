@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"github.com/vsheoran/trends/services/socket"
 	"net/http"
 
 	"github.com/go-kit/kit/log"
@@ -19,6 +20,7 @@ const (
 	SymbolAPI    = "/symbol/{sasSymbol}"
 	sasSymbolKey = "sasSymbol"
 	freezeKey    = "freeze"
+	SocketAPI    = "/ws/{sasSymbol}"
 )
 
 type Services struct {
@@ -26,6 +28,7 @@ type Services struct {
 	DatabaseService api.Database
 	ListingService  api.ListingsAPI
 	HistoryService  api.HistoryAPI
+	HubService      *socket.Hub
 }
 
 var logger log.Logger
@@ -47,5 +50,6 @@ func ServeHTTP(l log.Logger, router *mux.Router, services Services) {
 	router.Path(HistoryAPI).HandlerFunc(HistoryHandlerFunc).Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
 	router.Path(SymbolsAPI).HandlerFunc(ListingsHandlerFunc).Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
 	router.Path(SymbolAPI).HandlerFunc(ListingsHandlerFunc).Methods(http.MethodPatch, http.MethodPut, http.MethodDelete, http.MethodOptions)
+	router.Path(SocketAPI).HandlerFunc(SocketHandleFunc).Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 
 }

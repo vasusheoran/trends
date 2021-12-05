@@ -75,6 +75,41 @@ export namespace SummaryRequest {
   }
 }
 
+export class SummaryResponse extends jspb.Message {
+  hasReply(): boolean;
+  clearReply(): void;
+  getReply(): SummaryReply | undefined;
+  setReply(value?: SummaryReply): void;
+
+  hasError(): boolean;
+  clearError(): void;
+  getError(): string;
+  setError(value: string): void;
+
+  getMessageCase(): SummaryResponse.MessageCase;
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): SummaryResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: SummaryResponse): SummaryResponse.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: SummaryResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): SummaryResponse;
+  static deserializeBinaryFromReader(message: SummaryResponse, reader: jspb.BinaryReader): SummaryResponse;
+}
+
+export namespace SummaryResponse {
+  export type AsObject = {
+    reply?: SummaryReply.AsObject,
+    error: string,
+  }
+
+  export enum MessageCase {
+    MESSAGE_NOT_SET = 0,
+    REPLY = 1,
+    ERROR = 2,
+  }
+}
+
 export class SummaryReply extends jspb.Message {
   getClose(): number;
   setClose(value: number): void;

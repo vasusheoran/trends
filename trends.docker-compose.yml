@@ -1,9 +1,9 @@
 version: "3.3"
 services:
   web:
-    environment: 
+    environment:
       - TZ=Asia/Kolkata
-    build: 
+    build:
       context: ./dashboard
       dockerfile: prod.dockerfile
     image: h20180061/dashboard:${WEB_TAG}
@@ -15,28 +15,12 @@ services:
     volumes:
       - ./golang/data:/home/app/data
     networks:
-        - network1
+      - network1
 
-  envoy:
-    build:
-      context: envoy
-      dockerfile: ./Dockerfile
-    image: h20180061/envoy:${APP_TAG}
-    ports:
-      - "12001:12001"
-      - "12002:12002"
-      - "9901:9901"
-    links:
-      - app
-    depends_on:
-      - app
-    networks:
-        - network1
-        
   app:
-    environment: 
+    environment:
       - TZ=Asia/Kolkata
-    build: 
+    build:
       context: ./app
       dockerfile: Dockerfile
     image: h20180061/trends:${APP_TAG}
@@ -47,8 +31,7 @@ services:
     volumes:
       - ./golang/data:/home/app/data
     networks:
-        - network1
- 
+      - network1
 
 networks:
-  network1:
+  network1: null

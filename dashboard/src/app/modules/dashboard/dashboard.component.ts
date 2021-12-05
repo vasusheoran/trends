@@ -8,8 +8,8 @@ import { ActivatedRoute } from '@angular/router';
 import { WebSocketsService } from '../../shared/services/web-sockets.service';
 import { environment } from 'src/environments/environment';
 
-import { TickerClient, ResponseStream } from '../../generated/ticker_pb_service'
-import { SummaryRequest, SummaryReply } from '../../generated/ticker_pb'
+import { TickerClient, BidirectionalStream } from '../../generated/ticker_pb_service'
+import { SummaryRequest, SummaryResponse } from '../../generated/ticker_pb'
 
 import { Observable, Subscription } from 'rxjs';
 
@@ -27,8 +27,8 @@ export class DashboardComponent implements OnInit {
   subscription: Subscription;
   updateUI: Observable<any>;
   updateUISub: Subscription;
-  tickerClient: TickerClient;
-  summaryResponseStream: ResponseStream<SummaryReply>;
+  socketClient: WebSocketsService;
+  summaryResponseStream1: BidirectionalStream<SummaryRequest, SummaryResponse>;
 
   constructor(private _config: ConfigService,
     private _shared: SharedService,
@@ -37,7 +37,11 @@ export class DashboardComponent implements OnInit {
     private _snack: MatSnackBar,
     private _stockHelper: StockService) {
     this.isEnabled = this._stockHelper.isPlotLineEnabled;
-    this.tickerClient = new TickerClient(environment.grpcURL);
+    this.socketClient = new WebSocketsService();
+  }
+
+  public ngOnDestroy() {
+    this.socketClient.close();
   }
 
   ngOnInit(): void {
@@ -48,12 +52,23 @@ export class DashboardComponent implements OnInit {
         this.openSnackBar("Please set the symbol to continue.");
         this._route.navigateByUrl('symbols')
       } else {
-        // this._socket.enable()Ticker
-        var req = new SummaryRequest();
-        req.setSas(this.sas);
-        this.summaryResponseStream = this.tickerClient.getSummary(req);
+        this.socketClient.enable("ws://127.0.0.1:5000/api/ws/" + this.sas);
       }
-    })
+    });
+    var sub: Subscription;
+    this.socketClient.getEventListener().subscribe(event => {
+      if (event.type == "message") {
+        if (event.data != null && event.data != undefined && event.data["summary"] != null) {
+          this.cards = event.data["summary"];
+        }
+      }
+      if (event.type == "close") {
+        console.info("The socket connection has been closed");
+      }
+      if (event.type == "open") {
+        console.info("The socket connection has been opened");
+      }
+    });
 
     this._config.fetchIndex(this.sas).subscribe(resp => {
       this.cards = resp['summary']
@@ -62,17 +77,6 @@ export class DashboardComponent implements OnInit {
       this._snack.open("Failed to fetch symbol. Please upload csv.");
       this._route.navigateByUrl('symbols')
     });
-
-    this.summaryResponseStream.on("data", (message) => {
-      console.log(message)
-      this.cards = message.toObject()
-    })
-    // this.summaryResponseStream.on('data', (message: SummaryReply) => {
-    //   console.log(message)
-    // })
-
-  }
-  getSummaries() {
   }
 
   toggleEnable(card, key) {

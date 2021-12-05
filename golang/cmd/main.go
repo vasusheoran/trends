@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/vsheoran/trends/services/socket"
 	"net"
 	"net/http"
 	"os"
@@ -55,16 +56,18 @@ func initServer(g *run.Group) {
 	hs := history.New(logger, db)
 	ts := ticker.NewTicker(logger, cs, hs)
 	ls := listing.New(logger, db)
+	hb := socket.NewHub(logger, ts)
 
 	services := transport.Services{
 		TickerService:   ts,
 		DatabaseService: db,
 		ListingService:  ls,
 		HistoryService:  hs,
+		HubService:      hb,
 	}
 
 	initHTTP(g, services)
-	initGRPC(g, services)
+	//initGRPC(g, services)
 
 }
 

@@ -22,10 +22,10 @@ Ticker.UpdateStock = {
 Ticker.GetSummary = {
   methodName: "GetSummary",
   service: Ticker,
-  requestStream: false,
+  requestStream: true,
   responseStream: true,
   requestType: ticker_pb.SummaryRequest,
-  responseType: ticker_pb.SummaryReply
+  responseType: ticker_pb.SummaryResponse
 };
 
 exports.Ticker = Ticker;
@@ -66,37 +66,43 @@ TickerClient.prototype.updateStock = function updateStock(requestMessage, metada
   };
 };
 
-TickerClient.prototype.getSummary = function getSummary(requestMessage, metadata) {
+TickerClient.prototype.getSummary = function getSummary(metadata) {
   var listeners = {
     data: [],
     end: [],
     status: []
   };
-  var client = grpc.invoke(Ticker.GetSummary, {
-    request: requestMessage,
+  var client = grpc.client(Ticker.GetSummary, {
     host: this.serviceHost,
     metadata: metadata,
-    transport: this.options.transport,
-    debug: this.options.debug,
-    onMessage: function (responseMessage) {
-      listeners.data.forEach(function (handler) {
-        handler(responseMessage);
-      });
-    },
-    onEnd: function (status, statusMessage, trailers) {
-      listeners.status.forEach(function (handler) {
-        handler({ code: status, details: statusMessage, metadata: trailers });
-      });
-      listeners.end.forEach(function (handler) {
-        handler({ code: status, details: statusMessage, metadata: trailers });
-      });
-      listeners = null;
-    }
+    transport: this.options.transport
   });
+  client.onEnd(function (status, statusMessage, trailers) {
+    listeners.status.forEach(function (handler) {
+      handler({ code: status, details: statusMessage, metadata: trailers });
+    });
+    listeners.end.forEach(function (handler) {
+      handler({ code: status, details: statusMessage, metadata: trailers });
+    });
+    listeners = null;
+  });
+  client.onMessage(function (message) {
+    listeners.data.forEach(function (handler) {
+      handler(message);
+    })
+  });
+  client.start(metadata);
   return {
     on: function (type, handler) {
       listeners[type].push(handler);
       return this;
+    },
+    write: function (requestMessage) {
+      client.send(requestMessage);
+      return this;
+    },
+    end: function () {
+      client.finishSend();
     },
     cancel: function () {
       listeners = null;
