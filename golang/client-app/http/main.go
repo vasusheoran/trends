@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/vsheoran/trends/pkg/contracts"
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	"github.com/vsheoran/trends/pkg/contracts"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -74,8 +75,12 @@ func initStub() {
 	client := http.Client{}
 	resp, err := client.Do(request)
 	if err != nil || resp.StatusCode != http.StatusNoContent {
+		if resp == nil || resp.Body == nil {
+			level.Error(logger).Log("err", "failed to update stock", "symbol", symbol, "time", req.Date)
+			return
+		}
 		body, _ := ioutil.ReadAll(resp.Body)
-		level.Error(logger).Log("err", "failed to create update request", "symbol", symbol, "time", req.Date, "response", string(body))
+		level.Error(logger).Log("err", "failed to update stock", "symbol", symbol, "time", req.Date, "response", string(body))
 		return
 	}
 
