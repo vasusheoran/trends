@@ -13,7 +13,7 @@ services:
     depends_on:
       - app
     volumes:
-      - ./golang/data:/home/app/data
+      - ./data:/home/app/data
     networks:
       - network1
 
@@ -29,7 +29,7 @@ services:
       - "5001:5001"
     container_name: app
     volumes:
-      - ./golang/data:/home/app/data
+      - ./data:/home/app/data
     networks:
       - network1
 

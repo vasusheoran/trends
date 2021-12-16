@@ -99,7 +99,7 @@ export class SymbolsComponent implements OnInit {
 
   openSnackBar(msg?: string, actionName?: string) {
     if (!msg)
-      msg = "Unknown Error.";
+      msg = "Unknown Error 1.";
 
     this._snack.open(msg, actionName, {
       duration: 3000,
@@ -118,23 +118,9 @@ export class SymbolsComponent implements OnInit {
     this.listing = event;
     this.openSnackBar('Please Wait...');
     this._config.setListing(this.listing).subscribe(resp => {
-      this.openSnackBar(resp['msg']);
+      this.openSnackBar("Symbol '" + this.listing.SAS + "' set successfully.");
       this._shared.nextListing(this.listing);
       this._route.navigateByUrl('dashboard/' + this.listing.SAS);
-    }, err => {
-      console.log(err)
-      this.openSnackBar(err.error);
-    });
-  }
-
-  onSubmit(data) {
-    this.openSnackBar('Please Wait...');
-    // Setting symbol as SAS
-    data['symbol'] = this.listing['Symbol']
-    this.listing['options'] = data;
-    this._config.setListing(this.listing).subscribe(resp => {
-      this.openSnackBar(resp['msg']);
-      this._route.navigateByUrl('dashboard');
     }, err => {
       console.log(err)
       this.openSnackBar(err.error);

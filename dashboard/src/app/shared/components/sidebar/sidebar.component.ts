@@ -49,18 +49,10 @@ export class SidebarComponent implements OnInit {
     this._shared.sharedListing.subscribe((resp) => {
       if (typeof resp != 'function') {
         this.listing = resp;
-        this.fetchFreezeValues();
       }
     });
 
     this._shared.nextIsChartEnabled(this.isChartEnabled);
-  }
-
-  fetchFreezeValues() {
-    // TODO: implement Previous Buy
-    // this._config.fetchFrozenValues().subscribe((resp) =>{
-    //   this.dialogData = resp
-    // });
   }
 
   updateFreezeTime(result) {

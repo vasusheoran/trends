@@ -10,7 +10,7 @@ trends-client-build:
 
 go-app-build:
 	cd golang && GOOS=linux GOARCH=amd64 go build -o main cmd/main.go
-	# docker run --rm --net=host -e GOOS=linux -e GOARCH=amd64 -e GOGC="" -v /Users/vasusheoran/go/darwin_amd64/go:/go -v /Users/vasusheoran/go/darwin_amd64/go_cache:/root/.cache/go-build -v /Users/vasusheoran/git/trends:/app -w /app/golang golang:1.17 /bin/bash -c CGO_ENABLED=0 go build -ldflags '-w -s -extldflags -static' -o main cmd/main.go
+	docker run --rm --net=host -e GOOS=linux -e GOARCH=amd64 -e GOGC="" -v /Users/vasusheoran/go/darwin_amd64/go:/go -v /Users/vasusheoran/go/darwin_amd64/go_cache:/root/.cache/go-build -v /Users/vasusheoran/git/trends:/app -w /app/golang golang:1.17 /bin/bash -c CGO_ENABLED=0 go build -ldflags '-w -s -extldflags -static' -o main cmd/main.go
 
 image-app-build: 
 	
