@@ -12,6 +12,7 @@ type TickerInfo struct {
 	MinHP2       float64
 	MinHP3       float64
 	MinLP2       float64
+	MinLP3       float64
 	AverageCp50  float64
 	AverageCp10  float64
 	MeanCp50     []float64

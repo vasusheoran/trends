@@ -34,6 +34,11 @@ export class ConfigService {
     return `${environment.apiUrl}/api/index/${sas}`
   }
 
+  getFreezeURL(sas: string) {
+    return `${environment.apiUrl}/api/index/${sas}/freeze`
+  }
+
+
   getSymbolURL(sas: string) {
     return `${this.symbol}/${sas}`
   }
@@ -76,8 +81,8 @@ export class ConfigService {
     return this._http.get(this.getHistoryURL(sas)).pipe(map(data => data));
   }
 
-  freezeBI(data) {
-    return this._http.post(this.freeze, data).pipe(map(data => data));
+  freezeBI(sas: string, data) {
+    return this._http.patch(this.getFreezeURL(sas), data).pipe(map(data => data));
   }
 
   // fetchFrozenValues() {

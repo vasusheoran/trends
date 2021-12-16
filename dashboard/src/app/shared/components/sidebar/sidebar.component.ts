@@ -64,7 +64,16 @@ export class SidebarComponent implements OnInit {
   }
 
   updateFreezeTime(result) {
-    this._config.freezeBI(result).subscribe((res) => {
+
+    var stock = {
+      'CP': result['CP'],
+      'HP': result['HP'],
+      'LP': result['LP'],
+      'Date': result['Date'],
+    };
+    debugger;
+
+    this._config.freezeBI(result['index'], stock).subscribe((res) => {
       this.snackBarRef = this._snack.open("Buy forzen successfully. Updating Values");
       // this.fetchFreezeValues();
       this.dialogData = res

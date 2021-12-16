@@ -2,6 +2,7 @@ package ticker
 
 import (
 	"errors"
+	"fmt"
 	"math"
 
 	"github.com/go-kit/kit/log"
@@ -25,7 +26,8 @@ type ticker struct {
 
 func (s *ticker) Freeze(key string, st contracts.Stock) error {
 	if _, ok := s.data[key]; !ok {
-		return errors.New("ticker has not been initialized")
+		msg := fmt.Sprintf("ticker '%s' has not been initialized", key)
+		return errors.New(msg)
 	}
 
 	err := s.Update(key, st)
@@ -46,7 +48,8 @@ func (s *ticker) Freeze(key string, st contracts.Stock) error {
 
 func (s *ticker) Update(key string, stock contracts.Stock) error {
 	if _, ok := s.data[key]; !ok {
-		return errors.New("ticker has not been initialized")
+		msg := fmt.Sprintf("ticker '%s' has not been initialized", key)
+		return errors.New(msg)
 	}
 	s.setNextValues(key, stock.CP, stock.HP, stock.LP)
 
@@ -60,7 +63,8 @@ func (s *ticker) Get(key string) (contracts.Summary, error) {
 	var summary *contracts.Summary
 	var ok bool
 	if _, ok = s.data[key]; !ok {
-		return contracts.Summary{}, errors.New("ticker has not been initialized")
+		msg := fmt.Sprintf("ticker '%s' has not been initialized", key)
+		return contracts.Summary{}, errors.New(msg)
 	}
 	if summary, ok = s.summary[key]; !ok {
 		card := s.cardService.Get(*s.data[key])
@@ -118,6 +122,7 @@ func (s *ticker) Init(key string) (contracts.Summary, error) {
 	s.data[key].MinHP2 = math.Min(candles[lastIndex].HP, candles[lastIndex-1].HP)
 	s.data[key].MinHP3 = math.Min(s.data[key].MinHP2, candles[lastIndex-2].HP)
 	s.data[key].MinLP2 = math.Min(candles[lastIndex].LP, candles[lastIndex-1].LP)
+	s.data[key].MinLP3 = math.Min(s.data[key].MinLP2, candles[lastIndex-2].LP)
 	s.data[key].CP = candles[lastIndex].CP
 	s.data[key].HP = candles[lastIndex].HP
 	s.data[key].LP = candles[lastIndex].LP
