@@ -1,12 +1,5 @@
 <div fxLayout="row" *ngIf="cards" fxLayoutGap="5px" class="stats-cards"> <br>
     <mat-card fxFlex="100" fxLayoutAlign="space-between center" fxLayoutGap="5px">
-        <!-- <div fxFlex="10">
-            <div fxFlex="94" class="margin-right">
-                <h3>{{item.key}}</h3>
-                <span class="total">{{ item.value | number : '1.2-2'}}</span>
-            </div>
-            <mat-divider [vertical]="true"></mat-divider>
-        </div> -->
         <div fxFlex="10">
             <div fxFlex="94" class="margin-right">
                 <h3>Close</h3>
@@ -39,15 +32,16 @@
         <div fxFlex="10">
             <div fxFlex="94" class="margin-right">
                 <h3>EMA 20</h3>
-                <span class="total" [ngClass]="toggleClass('coral', 'red', cards.ema_20)">{{ cards.ema_20 | number
+                <!-- [ngClass]="toggleClass('coral', 'red', cards.ema_20)" -->
+                <span class="total">{{ cards.ema_20 | number
                     : '1.2-2'}}</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>
         </div>
         <div fxFlex="10">
             <div fxFlex="94" class="margin-right">
-                <h3>Lower L</h3>
-                <span class="total" [ngClass]="toggleClass('gold', 'red', cards.min_lp_3)">{{ cards.min_lp_3 |
+                <h3>Trend</h3>
+                <span class="total" [ngClass]="toggleClass('green', 'red', cards.trend)">{{ cards.trend |
                     number : '1.2-2'}}</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>
@@ -63,16 +57,25 @@
         <div fxFlex="10">
             <div fxFlex="94" class="margin-right">
                 <h3>HL - 3</h3>
-                <span class="total" [ngClass]="toggleClass('magenta', 'violet', cards.hl_3)"><b>{{ cards.hl_3
-                        | number : '1.2-2'}}</b></span>
+                <span class="total" [ngClass]="toggleClass('magenta', 'violet', cards.hl_3)">{{ cards.hl_3
+                    | number : '1.2-2'}}</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>
         </div>
         <div fxFlex="10">
             <div fxFlex="94" class="margin-right">
                 <h3>RSI</h3>
-                <span class="total" [ngClass]="toggleRSIClass(cards.rsi)">{{ cards.rsi | number :
-                    '1.2-2'}}</span>
+                <span class="total" [ngClass]="toggleRSIClass(cards.rsi)"><b>{{ cards.rsi | number :
+                        '1.2-2'}}</b></span>
+            </div>
+            <mat-divider [vertical]="true"></mat-divider>
+        </div>
+        <div fxFlex="10">
+            <div fxFlex="94" class="margin-right">
+                <h3>Lower L</h3>
+                <!-- [ngClass]="toggleClass('gold', 'red', cards.lower_l)" -->
+                <span class="total">{{ cards.lower_l |
+                    number : '1.2-2'}}</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>
         </div>
@@ -94,24 +97,16 @@
         </div>
         <div fxFlex="10">
             <div fxFlex="94" class="margin-right">
-                <h3>Trend</h3>
-                <span class="total" [ngClass]="toggleClass('green', 'red', cards.trend)">{{ cards.trend |
-                    number : '1.2-2'}}</span>
-            </div>
-            <mat-divider [vertical]="true"></mat-divider>
-        </div>
-        <div fxFlex="10">
-            <div fxFlex="94" class="margin-right">
                 <h3>Bullish</h3>
-                <span class="total" [ngClass]="toggleClass('darkblue', 'red', cards.sell)">{{ cards.sell |
-                    number : '1.2-2'}}</span>
+                <span class="total" [ngClass]="toggleClass('darkblue', 'red', cards.sell)"><b>{{ cards.sell |
+                        number : '1.2-2'}}</b></span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>
         </div>
         <div fxFlex="10">
             <div fxFlex="94" class="margin-right">
                 <h3>Prev-Buy</h3>
-                <span class="total"><b>{{ cards.prev_buy | number : '1.2-2'}}</b></span>
+                <span class="total">{{ cards.prev_buy | number : '1.2-2'}}</span>
             </div>
         </div>
     </mat-card>

@@ -5,6 +5,7 @@ type Summary struct {
 	High        float64 `json:"high"`
 	Low         float64 `json:"low"`
 	Average     float64 `json:"average"`
+	LowerL      float64 `json:"lower_l"`
 	MinLP3      float64 `json:"min_lp_3"`
 	Ema5        float64 `json:"ema_5"`
 	Ema20       float64 `json:"ema_20"`
