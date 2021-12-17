@@ -24,7 +24,7 @@
         <div fxFlex="10">
             <div fxFlex="94" class="margin-right">
                 <h3>Average</h3>
-                <span class="total" [ngClass]="toggleClass('green', 'red', cards.average)">{{ cards.average | number :
+                <span class="total">{{ cards.average | number :
                     '1.2-2'}}</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>
@@ -73,8 +73,7 @@
         <div fxFlex="10">
             <div fxFlex="94" class="margin-right">
                 <h3>Lower L</h3>
-                <!-- [ngClass]="toggleClass('gold', 'red', cards.lower_l)" -->
-                <span class="total">{{ cards.lower_l |
+                <span class="total" [ngClass]="toggleClass('green', 'red', cards.average)">{{ cards.lower_l |
                     number : '1.2-2'}}</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>

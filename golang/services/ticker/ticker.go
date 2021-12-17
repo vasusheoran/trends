@@ -123,7 +123,7 @@ func (s *ticker) Init(key string) (contracts.Summary, error) {
 	s.data[key].MinHP3 = math.Min(s.data[key].MinHP2, candles[lastIndex-2].HP)
 	s.data[key].MinLP2 = math.Min(candles[lastIndex].LP, candles[lastIndex-1].LP)
 	s.data[key].MinLP3 = math.Min(s.data[key].MinLP2, candles[lastIndex-2].LP)
-	s.data[key].LowerL = candles[lastIndex-1].LP
+	s.data[key].LowerL = candles[lastIndex].LP
 	s.data[key].CP = candles[lastIndex].CP
 	s.data[key].HP = candles[lastIndex].HP
 	s.data[key].LP = candles[lastIndex].LP
@@ -181,7 +181,7 @@ func (s *ticker) updateSummaryMap(key string, card contracts.Card) {
 		LowerL:      s.data[key].LowerL,
 		Ema5:        s.data[key].Future.NextEMACP5[0],
 		RSI:         card.CR,
-		HL3:         s.data[key].Future.MinHP2,
+		HL3:         s.data[key].MinHP3,
 		Barish:      card.Barish,
 		Support:     card.BJ,
 		Trend:       card.Trend,
