@@ -27,7 +27,7 @@
     "@improbable-eng/grpc-web": "^0.14.1",
     "google-protobuf": "^3.18.0",
     "grpc-web": "^1.2.1",
-    "highcharts": "^8.0.4",
+    "highcharts": "^9.0.0",
     "highcharts-angular": "^2.4.0",
     "moment": "^2.24.0",
     "rxjs": "~6.5.4",
