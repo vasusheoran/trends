@@ -93,6 +93,18 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  toggleEMA5(greaterThenCloseClr: string, greaterThenAvgClr: string, lessThenCloseClr: string) {
+    debugger;
+
+    if (this.cards.close > this.cards.ema_5) {
+      return greaterThenCloseClr
+    } else if (this.cards.close > this.cards.average) {
+      return greaterThenAvgClr
+    } else {
+      return lessThenCloseClr
+    }
+  }
+
   toggleRSIClass(value) {
     if (value >= 70) {
       return 'darkblue'

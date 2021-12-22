@@ -49,7 +49,7 @@
         <div fxFlex="10">
             <div fxFlex="94" class="margin-right">
                 <h3>EMA 5</h3>
-                <span class="total" [ngClass]="toggleClass('green', 'red', cards.ema_5)">{{ cards.ema_5 | number :
+                <span class="total" [ngClass]="toggleEMA5('green', 'blue', 'red')">{{ cards.ema_5 | number :
                     '1.2-2'}}</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>
@@ -73,7 +73,7 @@
         <div fxFlex="10">
             <div fxFlex="94" class="margin-right">
                 <h3>Lower L</h3>
-                <span class="total" [ngClass]="toggleClass('green', 'red', cards.average)">{{ cards.lower_l |
+                <span class="total" [ngClass]="toggleClass('green', 'red', cards.lower_l)">{{ cards.lower_l |
                     number : '1.2-2'}}</span>
             </div>
             <mat-divider [vertical]="true"></mat-divider>
