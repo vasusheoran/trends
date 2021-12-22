@@ -2,6 +2,6 @@
 
 echo Stopping running apps ...
 
-docker-compose -f trends.docker-compose.yml down
+docker-compose -f docker-compose.yml down
 
 pause
