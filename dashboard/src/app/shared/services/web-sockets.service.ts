@@ -1,39 +1,48 @@
-import { Injectable } from '@angular/core';
-import * as io from 'socket.io-client';
-import { environment } from 'src/environments/environment';
-import { Observable } from 'rxjs';
+import { Injectable, EventEmitter } from '@angular/core';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class WebSocketsService {
 
-  constructor() { 
-    this.uri = environment.apiUrl;
-    this.socket = io(this.uri);
+  private socket: WebSocket;
+  private listener: EventEmitter<any> = new EventEmitter();
+
+  public constructor() { }
+
+  public enable(uri: string) {
+    this.socket = new WebSocket(uri);
+    this.socket.onopen = event => {
+      this.listener.emit({ "type": "open", "data": event });
+    }
+    this.socket.onclose = event => {
+      this.listener.emit({ "type": "close", "data": event });
+    }
+    this.socket.onmessage = event => {
+      this.listener.emit({ "type": "message", "data": JSON.parse(event.data) });
+    }
   }
 
-  socket:any;
-  readonly uri:string = "";
-
-  
-  public listen(eventName:string){
-    return new Observable(sub => {
-      this.socket.on(eventName, (message) => {
-        sub.next(message);
-      });
-    });
+  public send(data: string) {
+    if (this.socket == null || this.socket == undefined) {
+      console.error("socket is not enabled");
+      return
+    }
+    this.socket.send(data);
   }
 
-  public emit(eventName: string, data:any){
-    this.socket.emit(eventName, data)
+  public close() {
+    if (this.socket == null || this.socket == undefined) {
+      console.error("socket is not enabled");
+      return
+    }
+    this.socket.close();
   }
 
-  public disconnet(){
-    this.socket.disconnect();
+  public getEventListener() {
+    if (this.socket == null || this.socket == undefined) {
+      console.error("socket is not enabled");
+      return
+    }
+    return this.listener;
   }
 
-  public connect(){
-    this.socket.connect();
-  }
 }

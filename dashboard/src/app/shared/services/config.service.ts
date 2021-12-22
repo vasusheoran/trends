@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { IListing } from '../models/listing';
+import { IListing, Listing } from '../models/listing';
 import { IHistorical } from '../models/historical';
 
 interface StringConstructor {
@@ -14,119 +14,82 @@ interface StringConstructor {
 })
 export class ConfigService {
 
-  private baseUrl:string = "";
+  private baseUrl: string = "";
 
-  private index:string;
-  private fetchIndexUrl:string;
-  private symbol:string;
-  private history:string;
-  private freeze:string;
-  private downloadLogUrl:string;
-  private expiry:string;
+  private index: string;
+  private fetchIndexUrl: string;
+  private symbol: string;
+  private history: string;
+  private freeze: string;
+  private downloadLogUrl: string;
+  private expiry: string;
   private strike: any;
 
 
-  constructor(private _http: HttpClient) { 
-    this.baseUrl = environment.apiUrl;
-    this.index = this.baseUrl  + 'index';   
-    this.symbol = this.baseUrl  + 'symbol'; 
-    this.history = this.baseUrl  + 'history';
-    this.freeze = this.baseUrl  + 'index/freeze'; 
-    this.expiry = this.baseUrl  + 'index/expiry';
-    this.strike = this.baseUrl  + 'index/strike';
+  constructor(private _http: HttpClient) {
+    this.symbol = `${environment.apiUrl}/api/symbol`
   }
 
-  fetchIndex() {
-    return this._http.get(this.index).pipe(map(data => data));
+  getIndexURL(sas: string) {
+    return `${environment.apiUrl}/api/index/${sas}`
+  }
+
+  getFreezeURL(sas: string) {
+    return `${environment.apiUrl}/api/index/${sas}/freeze`
+  }
+
+
+  getSymbolURL(sas: string) {
+    return `${this.symbol}/${sas}`
+  }
+
+  getHistoryURL(sas: string) {
+    return `${environment.apiUrl}/api/history/${sas}`
+  }
+
+  setListing(listing: Listing) {
+    return this._http.post(this.getIndexURL(listing.SAS), null).pipe(map(data => data));
+  }
+
+  fetchIndex(sas: string) {
+    return this._http.get(this.getIndexURL(sas)).pipe(map(data => data));
   }
 
   getSymbols() {
     return this._http.get(this.symbol).pipe(map(data => data));
   }
 
-  postSymbols(symbol:IListing) {
-    return this._http.post(this.symbol, symbol).pipe(map(data => data));
+  putSymbols(sas: string, symbol: IListing) {
+    return this._http.put(this.getSymbolURL(sas), symbol).pipe(map(data => data));
   }
 
-  putSymbols(sid:string, symbol:IListing) {
-    var url = this.symbol + "/" + sid;
-    return this._http.put(url, symbol).pipe(map(data => data));
+  patchSymbols(sas: string, symbol: IListing) {
+    return this._http.patch(this.getSymbolURL(sas), symbol).pipe(map(data => data));
   }
 
-  deleteSymbols(sid:string) {
-    var url = this.symbol + "/" + sid;
-    return this._http.delete(url).pipe(map(data => data));
+  deleteSymbols(sas: string) {
+    return this._http.delete(this.getSymbolURL(sas)).pipe(map(data => data));
   }
 
-  getHistories() {
-    return this._http.get(this.history).pipe(map(data => data));
+  uploadFile(sas: string, file: File) {
+    const formData: FormData = new FormData();
+    formData.append('file_name', file, sas);
+    return this._http.post(this.getHistoryURL(sas), formData).pipe(map(data => data));
   }
 
-  mergeHistories(date) {
-    return this._http.patch(this.history, {'date': date}).pipe(map(data => data));
+  getHistories(sas: string) {
+    return this._http.get(this.getHistoryURL(sas)).pipe(map(data => data));
   }
 
-  postHistories(his:IHistorical) {
-    return this._http.post(this.history, his).pipe(map(data => data));
+  freezeBI(sas: string, data) {
+    return this._http.patch(this.getFreezeURL(sas), data).pipe(map(data => data));
   }
 
-  putHistories(hid:Date, symbol:IHistorical) {
-    var url = this.history + "/" + hid;
-    return this._http.put(url, symbol).pipe(map(data => data));
-  }
-
-  deleteHistories(hid:Date) {
-    var url = this.history + "/" + hid;
-    return this._http.delete(url).pipe(map(data => data));
-  }
-
-  freezeBI(data) {
-    return this._http.post(this.freeze, data).pipe(map(data => data));
-  }
-
-  fetchFrozenValues() {
-    return this._http.get(this.freeze).pipe(map(data => data));
-  }
-
-  private fetchDataByStartAndEndUrl(start:string, end:string):string
-  {
-      let query = this.baseUrl  + 'data?start={0}&end={1}';
-      return query;
-  }
-
-  setListing(selectedOption) {
-    return this._http.post(this.index, selectedOption).pipe(map(data => data));
-  }
+  // fetchFrozenValues() {
+  //   return this._http.get(this.freeze).pipe(map(data => data));
+  // }
 
   resetListing(options) {
     return this._http.delete(this.index).pipe(map(data => data));
-  }
-
-  downloadLogs(num) {
-    return this._http.get(this.downloadLogUrl + num).pipe(map(data => data));
-  }
-
-  fetchIndexIfSet(){
-    return this._http.get(this.fetchIndexUrl).pipe(map(data => data));
-  }
-  
-  checkCORS(url){
-    return this._http.get(url).pipe(map(data => data));
-  }
-
-  fetchDataByStartAndEnd(start, end){
-    // let url = this.fetchDataByStartAndEndUrl(start, end);
-    let url = this.baseUrl  + 'data?start=' + start + '&end=' + end;
-    return this._http.get(url).pipe(map(data => data));
-  }
-  
-  fetchExpiry(instrument: string, symbol:string) {
-    var url = this.expiry + "/" + symbol + "/" + instrument
-    return this._http.get(url).pipe(map(data => data));
-  }
-
-  fetchStrikePrices(symbol: string, instrument: string, expiry: string, optionType: string) {
-    var url = this.strike + "/" + symbol + "/" + instrument + "/" + expiry + "/" + optionType
-    return this._http.get(url ).pipe(map(data => data));
   }
 }

@@ -61,7 +61,7 @@ def set_up(isEnabled):
         mods.set_up_socketio(socketio)
         logger.info("Starting thread to dump data.")
         async_task_1 = mods.FlushToDatabase()
-        async_task_1.start()
+        # async_task_1.start()
         daily_task = mods.DailyCleanup()
         daily_task.start()
     else:    
@@ -71,6 +71,6 @@ def set_up(isEnabled):
     
 if __name__ == '__main__':
     # Start update server
-    set_up(True)
+    # set_up(True)
     socketio.run(app, host='0.0.0.0') 
-    set_up(False)
+    # set_up(False)

@@ -79,7 +79,7 @@ target/
 celerybeat-schedule
 
 # dotenv
-.env
+# .env
 
 # virtualenv
 venv/
@@ -189,4 +189,5 @@ Thumbs.db
 app/data/**
 scripts/*
 dev*.dockerfile
-*.json
+.json
+*npm.json

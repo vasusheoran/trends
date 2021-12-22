@@ -129,9 +129,16 @@ class DB:
         except Exception as ex:
             raise ex
     
-    def get_historical_data_list(self):
-        if os.path.isfile(self.path_to_historical_csv):
-            csv = pd.read_csv(self.path_to_historical_csv)
+    def get_historical_data(self):
+        path = '/Users/vasusheoran/Downloads/^NSEI.csv'
+        if os.path.isfile(path):
+            csv = pd.read_csv(path)
+
+            csv = csv.rename({
+                'Close': 'CP',
+                'High': 'HP',
+                'Low': 'LP',
+            }, axis='columns')
             
             if len(csv) > self.max_length:
                 csv = csv.tail(self.max_length)

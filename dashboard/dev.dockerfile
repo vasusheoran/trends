@@ -11,7 +11,7 @@
 #       docker run -d --net=isolated_network -p 80:80 --name dash gokusayon/trends-dashboard
 
 ### STAGE 1: Setup ###
-FROM        node
+FROM        node:1.21.3-alpine
 
 RUN         mkdir -p /ng-app
 WORKDIR     /ng-app

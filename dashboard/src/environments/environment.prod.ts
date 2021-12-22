@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://192.168.99.101:5000/'
+  socketUrl: "ws://localhost:5000/api/ws/",
+  apiUrl: 'http://localhost:5000',
+  grpcURL: 'http://localhost:5001'
 };

@@ -1,11 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { IListing } from 'src/app/shared/models/listing';
-import { UpdateResponse, IUpdateResponse } from 'src/app/shared/models/listing-response';
-import { WebSocketsService } from 'src/app/shared/services/web-sockets.service';
+import { ConfigService } from 'src/app/shared/services/config.service';
 import { SharedService } from 'src/app/shared/services/shared.service';
 import { StockService } from 'src/app/shared/services/stock.service';
+import { Router } from '@angular/router';
+import { MatSnackBar, MatSnackBarRef, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+import { WebSocketsService } from '../../shared/services/web-sockets.service';
+import { environment } from 'src/environments/environment';
 
-import { Subscription } from 'rxjs';
+import { TickerClient, BidirectionalStream } from '../../generated/ticker_pb_service'
+import { SummaryRequest, SummaryResponse } from '../../generated/ticker_pb'
+
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -14,50 +20,101 @@ import { Subscription } from 'rxjs';
 })
 export class DashboardComponent implements OnInit {
 
-  cards:any;
-  isEnabled:any;
-  plotLines:[];
+  sas: string
+  cards: any;
+  isEnabled: any;
+  plotLines: [];
   subscription: Subscription;
+  updateUI: Observable<any>;
+  updateUISub: Subscription;
+  socketClient: WebSocketsService;
+  summaryResponseStream1: BidirectionalStream<SummaryRequest, SummaryResponse>;
 
-  constructor(private _socket : WebSocketsService,
-    private _shared : SharedService,
-    private _stockHelper : StockService) {
-      this.isEnabled = this._stockHelper.isPlotLineEnabled;
-    }
+  constructor(private _config: ConfigService,
+    private _shared: SharedService,
+    private _route: Router,
+    private activatedRoute: ActivatedRoute,
+    private _snack: MatSnackBar,
+    private _stockHelper: StockService) {
+    this.isEnabled = this._stockHelper.isPlotLineEnabled;
+    this.socketClient = new WebSocketsService();
+  }
 
-  ngOnInit(): void { 
+  public ngOnDestroy() {
+    this.socketClient.close();
+  }
 
-    this.subscription=  this._shared.sharedUpdateResponse.subscribe(resp =>{
-      // debugger;
-      if(typeof resp != "function"){
-        this.cards = resp['table'];
+  ngOnInit(): void {
+    this.activatedRoute.params.subscribe(params => {
+      this.sas = params['sas'];
+
+      if (this.sas == null || this.sas == "") {
+        this.openSnackBar("Please set the symbol to continue.");
+        this._route.navigateByUrl('symbols')
+      } else {
+        this.socketClient.enable(environment.socketUrl + this.sas);
+      }
+    });
+    var sub: Subscription;
+    this.socketClient.getEventListener().subscribe(event => {
+      if (event.type == "message") {
+        if (event.data != null && event.data != undefined && event.data["summary"] != null) {
+          this.cards = event.data["summary"];
+        }
+      }
+      if (event.type == "close") {
+        console.info("The socket connection has been closed");
+      }
+      if (event.type == "open") {
+        console.info("The socket connection has been opened");
       }
     });
 
-  }  
+    this._config.fetchIndex(this.sas).subscribe(resp => {
+      this.cards = resp['summary']
 
-  toggleEnable(card, key){
+    }, err => {
+      this._snack.open("Failed to fetch symbol. Please upload csv.");
+      this._route.navigateByUrl('symbols')
+    });
+  }
+
+  toggleEnable(card, key) {
     this.isEnabled[key] = !this.isEnabled[key];
     this._stockHelper.toggleClickableFields(key, this.isEnabled);
   }
 
-  toggleClass(color1, color2, value){
-      if (this.cards.Close.value > value){
-        return color1
-      }
-      else{
-        return color2
-      }
+  toggleClass(color1, color2, value) {
+    if (this.cards.close > value) {
+      return color1
+    }
+    else {
+      return color2
+    }
   }
 
-  toggleRSIClass(value){
-    if (value >=70 ){
+  toggleRSIClass(value) {
+    if (value >= 70) {
       return 'darkblue'
-    }else if(value >=50){
+    } else if (value >= 50) {
       return 'green'
-    }else{
+    } else {
       return 'red'
     }
+  }
+
+  horizontalPosition: MatSnackBarHorizontalPosition = 'end';
+  verticalPosition: MatSnackBarVerticalPosition = 'bottom';
+
+  openSnackBar(msg?: string, actionName?: string) {
+    if (!msg)
+      msg = "Unknown Error.";
+
+    this._snack.open(msg, actionName, {
+      duration: 3000,
+      horizontalPosition: this.horizontalPosition,
+      verticalPosition: this.verticalPosition,
+    });
   }
 
 }

@@ -49,4 +49,70 @@ Function TestSAS(rngRef As Range)
     
 End Function
 
+'VBA function to make multiple replacements in a template string:
 
+Function TemplateReplace$(template$, ParamArray replacements())
+    Dim c&, s$, t$, e
+    s = template
+    For Each e In replacements
+        c = c + 1
+        t = "|%" & c & "|"
+        If InStrB(e, "~~") Then e = Replace(e, "~~", Chr(34))
+        If InStrB(s, t) Then s = Replace(s, t, e)
+    Next
+    TemplateReplace = s
+End Function
+
+
+Sub asd()
+ Dim RetVal
+ Const TEMPLATE = "D:\wsl\data\trends\golang\grpc-client-app\trends-client-app.exe --server localhost:5001 --date |%1| --symbol |%2| --close |%3|  --high |%4| --low |%5| "
+ RetVal = Shell(TemplateReplace$(TEMPLATE, "1", "2", "3", "4", "5"), vbHide)
+End Sub
+'--------------------------------------------------------------------
+
+'./main --server localhost:5001 --date 10-2-1 --high 17782 --close 17772.00 --low 17608.15 --symbol 1
+Const TEMPLATE = "SELECT * FROM |%1| WHERE (survived = |%2|)"
+MsgBox TemplateReplace$(TEMPLATE, "titanic", "~~true~~")
+
+Const TEMPLATE = "C:\WINDOWS\trends-client-app.exe --server localhost:5001 --date |%1| --symbol |%2| --close |%3|  --high |%4| --low |%5| "
+Format(ActiveSheet.Range("U" & Row), "m:d:yyyy h:m:s"),  ActiveSheet.Range("A" & Row).Value,  ActiveSheet.Range("B" & Row).Value,  ActiveSheet.Range("I" & Row).Value,  ActiveSheet.Range("J" & Row).Value
+
+SAS(ActiveSheet.Range("H" & Row).Value, ActiveSheet.Range("B" & Row).Value, ActiveSheet.Range("I" & Row).Value, ActiveSheet.Range("J" & Row).Value, Format(time, "m:d:yyyy h:m:s"), ActiveSheet.Range("A" & Row).Value, "")
+    
+
+MsgBox TemplateReplace$(TEMPLATE, ActiveSheet.Range("H" & Row).Value, ActiveSheet.Range("B" & Row).Value, ActiveSheet.Range("I" & Row).Value, ActiveSheet.Range("J" & Row).Value, Format(time, "m:d:yyyy h:m:s"), ActiveSheet.Range("A" & Row).Value, "")
+    
+'Const TEMPLATE = "C:\WINDOWS\trends-client-app.exe --server localhost:5001 --date |%1| --symbol |%2| --close |%3|  --high |%4| --low |%5| "
+'MsgBox TemplateReplace$(TEMPLATE, Format(ActiveSheet.Range("U" & Row), "m:d:yyyy h:m:s"), ActiveSheet.Range("A" & Row).Value, ActiveSheet.Range("B" & Row).Value, ActiveSheet.Range("I" & Row).Value, ActiveSheet.Range("J" & Row).Value)
+        
+
+'Displays: SELECT * FROM titanic WHERE (survived = "true")
+C:\WINDOWS\trends-client-app.exe --server localhost:5001 --date 10-2-1 --symbol 1 --close 2  --high 3 --low 0
+
+
+
+'-----------
+
+Function TemplateReplace$(TEMPLATE$, ParamArray replacements())
+    Dim c&, s$, t$, e
+    s = TEMPLATE
+    For Each e In replacements
+        c = c + 1
+        t = "|%" & c & "|"
+        If InStrB(e, "~~") Then e = Replace(e, "~~", Chr(34))
+        If InStrB(s, t) Then s = Replace(s, t, e)
+    Next
+    TemplateReplace = s
+End Function
+
+
+
+Sub asd()
+ Dim RetVal
+ Const TEMPLATE = "D:\wsl\data\trends\golang\grpc-client-app\trends-client-app.exe --server localhost:5001 --date |%1| --symbol |%2| --close |%3|  --high |%4| --low |%5| "
+ RetVal = Shell(TemplateReplace$(TEMPLATE, "1", "2", "3", "4", "5"), vbHide)
+End Sub
+
+
+'-----------------------

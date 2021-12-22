@@ -3,7 +3,7 @@
 ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 BASH_CMD = /bin/bash -c
 CUR_DIR = $(shell pwd)
-NODE_IMAGE = node:latest
+NODE_IMAGE = node:16
 NPM_BUILD_CMD = npm i
 NPM_PKG_STAGE_CMD = npm run start
 USER_ID := $(shell id -u)

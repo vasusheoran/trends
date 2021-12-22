@@ -1,9 +1,9 @@
 version: "3.3"
 services:
   web:
-    environment: 
+    environment:
       - TZ=Asia/Kolkata
-    build: 
+    build:
       context: ./dashboard
       dockerfile: prod.dockerfile
     image: h20180061/dashboard:${WEB_TAG}
@@ -12,23 +12,26 @@ services:
     container_name: web
     depends_on:
       - app
+    volumes:
+      - ./data:/home/app/data
     networks:
-        - network1
+      - network1
 
   app:
-    environment: 
+    environment:
       - TZ=Asia/Kolkata
-    build: 
-      context: ./app
+    build:
+      context: golang
       dockerfile: Dockerfile
     image: h20180061/trends:${APP_TAG}
     ports:
       - "5000:5000"
+      - "5001:5001"
     container_name: app
     volumes:
-      - ./app/data:/home/app/data
+      - ./data:/home/app/data
     networks:
-        - network1
+      - network1
 
 networks:
-  network1:
+  network1: null

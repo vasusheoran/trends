@@ -28,6 +28,9 @@ class Index:
             val = calc.fetch_values()
 
             if self.__is_index_present():
+                calc = self.index_map[self.index]['calc']
+                df = calc.get_dataframe()
+                df.to_csv('/Users/vasusheoran/Downloads/^NSEI-calc-df.csv', index=False)
                 return {'values' : self.index_map[self.index]['values'],
                         'symbol' : self.index_map[self.index]['symbol'],
                         'data' : self.db.get_real_time_data(),
@@ -45,6 +48,9 @@ class Index:
             calc.update(stock_data)            
             self.index_map[self.index]['values'] = calc.fetch_values()
 
+            df = calc.get_dataframe()
+            df.to_csv('/Users/vasusheoran/Downloads/^NSEI-calc-df.csv', index=False)
+
             # Updating latest buy/sell value in freeze object for open_dailogue
             self.index_map[self.index]['freeze']['Buy'] = self.index_map[self.index]['values']['dashboard']['cards'][0]['value']
             self.index_map[self.index]['freeze']['Sell'] = self.index_map[self.index]['values']['dashboard']['cards'][2]['value']
@@ -58,7 +64,7 @@ class Index:
         
         index = symbol['SAS'] 
         self.db = DB(listing=index)
-        historical_data = self.db.get_historical_data_list()
+        historical_data = self.db.get_historical_data()
         
         try:
             if not historical_data:
