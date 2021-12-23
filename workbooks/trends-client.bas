@@ -11,17 +11,24 @@ Function TemplateReplace$(TEMPLATE$, ParamArray replacements())
     TemplateReplace = s
 End Function
 
-Function GetSelection(Row As String) As String
+Function GetSelection(row)
     Dim RetVal
-    Const TEMPLATE = "D:\wsl\data\trends\golang\grpc-client-app\trends-client-app.exe --server localhost:5001 --date |%1| --symbol |%2| --close |%3|  --high |%4| --low |%5| "
-    RetVal = Shell(TemplateReplace$(TEMPLATE, "1", "2", "3", "4", "5"), vbHide)
+    Const TEMPLATE = "D:\wsl\data\trends\golang\client-app\http\trends-client-app.exe --server localhost:5000 --date ""|%1|"" --symbol ""|%2|"" --close |%3|  --high |%4| --low |%5| "
+    Cmd = TemplateReplace$(TEMPLATE, Format(ActiveSheet.Range("U" & row), "m:d:yyyy h:m:s"), ActiveSheet.Range("A" & row).Value, ActiveSheet.Range("B" & row).Value, ActiveSheet.Range("I" & row).Value, ActiveSheet.Range("J" & row).Value)
+    RetVal = Shell(Cmd, vbHide)
+    'MsgBox Cmd
 End Function
 
 Function SAS(rngRef As Range)
     If rngRef.Rows.Count < 2 Then
-        Dim MyCellRow As String
-        MyCellRow = rngRef.Row
+        MyCellRow = rngRef.row
         GetSelection (MyCellRow)
         SAS = rngRef.Value
     End If
 End Function
+
+Sub test()
+    row = "2"
+    GetSelection (row)
+End Sub
+

@@ -3,6 +3,7 @@
 
 echo "Starting ..."
 
+cd golang\client-app\http && go build -o trends-client-app.exe main.go
 
 docker-compose -f docker-compose.yml down
 
