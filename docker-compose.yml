@@ -29,7 +29,7 @@ services:
       - "5001:5001"
     container_name: app
     volumes:
-      - ./data:/home/app/data
+      - ./golang/data:/home/app/data
     networks:
       - network1
 
