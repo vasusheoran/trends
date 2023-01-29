@@ -1,2 +1,2 @@
 # trends
-Python and angular app to visualize market trends.
+Go and angular based app to visualize market trends.
