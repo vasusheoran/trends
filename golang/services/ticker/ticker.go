@@ -3,11 +3,12 @@ package ticker
 import (
 	"errors"
 	"fmt"
+	"github.com/vsheoran/trends/services/cards"
+	"github.com/vsheoran/trends/services/history"
 	"math"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/vsheoran/trends/pkg/api"
 	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/services/ma"
@@ -24,8 +25,8 @@ type ticker struct {
 	logger         log.Logger
 	data           map[string]*contracts.TickerInfo
 	summary        map[string]*contracts.Summary
-	cardService    api.CardsAPI
-	historyService api.HistoryAPI
+	cardService    cards.Cards
+	historyService history.History
 	emaService     ma.ExponentialMovingAverage
 	averageService ma.MovingAverage
 	emaPosNegSvc   ma.EMAPosNegService
@@ -198,7 +199,7 @@ func (s *ticker) updateSummaryMap(key string, card contracts.Card) {
 	}
 }
 
-func NewTicker(logger log.Logger, cardsSvc api.CardsAPI, hs api.HistoryAPI) Ticker {
+func NewTicker(logger log.Logger, cardsSvc cards.Cards, hs history.History) Ticker {
 	return &ticker{
 		logger:         logger,
 		data:           map[string]*contracts.TickerInfo{},

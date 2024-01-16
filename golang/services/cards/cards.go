@@ -2,9 +2,12 @@ package cards
 
 import (
 	"github.com/go-kit/kit/log"
-	"github.com/vsheoran/trends/pkg/api"
 	"github.com/vsheoran/trends/pkg/contracts"
 )
+
+type Cards interface {
+	Get(ts contracts.TickerInfo) contracts.Card
+}
 
 type cards struct {
 	logger log.Logger
@@ -50,7 +53,7 @@ func (r *cards) Get(ts contracts.TickerInfo) contracts.Card {
 	return card
 }
 
-func New(logger log.Logger) api.CardsAPI {
+func New(logger log.Logger) Cards {
 	return &cards{
 		logger: logger,
 	}

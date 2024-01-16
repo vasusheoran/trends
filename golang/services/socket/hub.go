@@ -7,6 +7,10 @@ import (
 	"github.com/vsheoran/trends/services/ticker"
 )
 
+type SocketAPI interface {
+	UpdateStock(symbol string, st contracts.Stock) error
+}
+
 type UnregisterClient struct {
 	Ticker string `json:"sas_symbol,omitempty"`
 	UUID   string `json:"uuid"`

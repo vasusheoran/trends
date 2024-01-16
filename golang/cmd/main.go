@@ -62,8 +62,6 @@ func initServer(g *run.Group) {
 	}
 
 	initHTTP(g, services)
-	//initGRPC(g, services)
-
 }
 
 func initHTTP(g *run.Group, services http2.Services) {

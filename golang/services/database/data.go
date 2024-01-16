@@ -6,8 +6,12 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/vsheoran/trends/pkg/api"
 )
+
+type Database interface {
+	Read(path string) ([][]string, error)
+	Write(path string, data [][]string) error
+}
 
 type DB struct {
 	logger log.Logger
@@ -58,7 +62,7 @@ func (d *DB) csvReader(path string) ([][]string, error) {
 	return csvReader.ReadAll()
 }
 
-func NewDatabase(logger log.Logger) api.Database {
+func NewDatabase(logger log.Logger) Database {
 	return &DB{logger: logger}
 }
 

@@ -3,6 +3,7 @@ package history
 import (
 	"errors"
 	"fmt"
+	"github.com/vsheoran/trends/services/database"
 	"io"
 	"net/http"
 	"os"
@@ -10,10 +11,15 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/vsheoran/trends/pkg/api"
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/utils"
 )
+
+type History interface {
+	Read(sasSymbol string) ([]contracts.Stock, error)
+	Write(sasSymbol string, listings []contracts.Stock) error
+	UploadFile(symbol string, r *http.Request) error
+}
 
 type historyDataIndex struct {
 	HP   int
@@ -24,7 +30,7 @@ type historyDataIndex struct {
 
 type history struct {
 	logger log.Logger
-	dbSvc  api.Database
+	dbSvc  database.Database
 }
 
 func (s *history) UploadFile(symbol string, r *http.Request) error {
@@ -142,7 +148,7 @@ func (s *history) parseData(records [][]string) []contracts.Stock {
 	return data
 }
 
-func New(logger log.Logger, db api.Database) api.HistoryAPI {
+func New(logger log.Logger, db database.Database) History {
 	return &history{
 		logger: logger,
 		dbSvc:  db,

@@ -2,15 +2,23 @@ package listing
 
 import (
 	"errors"
+	"github.com/vsheoran/trends/services/database"
 	"os"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/vsheoran/trends/pkg/api"
 	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/utils"
 )
+
+type Listings interface {
+	Read() []contracts.Listing
+	Write(listings []contracts.Listing) error
+	Patch(sasSymbol string, listing contracts.Listing) error
+	Put(sasSymbol string, listing contracts.Listing) error
+	Delete(sasSymbol string) error
+}
 
 type listingsIndex struct {
 	Name   int
@@ -21,7 +29,7 @@ type listingsIndex struct {
 
 type listing struct {
 	logger log.Logger
-	dbSvc  api.Database
+	dbSvc  database.Database
 }
 
 func (s *listing) Patch(sasSymbol string, listing contracts.Listing) error {
@@ -192,7 +200,7 @@ func (s *listing) parseHeaders(records [][]string, index *listingsIndex) {
 	}
 }
 
-func New(logger log.Logger, db api.Database) api.ListingsAPI {
+func New(logger log.Logger, db database.Database) Listings {
 	return &listing{
 		logger: logger,
 		dbSvc:  db,
