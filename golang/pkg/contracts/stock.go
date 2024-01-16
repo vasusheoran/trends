@@ -1,6 +1,8 @@
 package contracts
 
-import "time"
+import (
+	"time"
+)
 
 type Stock struct {
 	CP   float64   `json:"CP"`

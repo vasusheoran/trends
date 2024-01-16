@@ -13,6 +13,13 @@ import (
 	"github.com/vsheoran/trends/services/ma"
 )
 
+type Ticker interface {
+	Init(key string) (contracts.Summary, error)
+	Update(key string, stock contracts.Stock) error
+	Get(key string) (contracts.Summary, error)
+	Freeze(key string, st contracts.Stock) error
+}
+
 type ticker struct {
 	logger         log.Logger
 	data           map[string]*contracts.TickerInfo
@@ -191,7 +198,7 @@ func (s *ticker) updateSummaryMap(key string, card contracts.Card) {
 	}
 }
 
-func NewTicker(logger log.Logger, cardsSvc api.CardsAPI, hs api.HistoryAPI) api.TickerAPI {
+func NewTicker(logger log.Logger, cardsSvc api.CardsAPI, hs api.HistoryAPI) Ticker {
 	return &ticker{
 		logger:         logger,
 		data:           map[string]*contracts.TickerInfo{},

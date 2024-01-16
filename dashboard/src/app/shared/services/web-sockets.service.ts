@@ -23,7 +23,7 @@ export class WebSocketsService {
 
   public send(data: string) {
     if (this.socket == null || this.socket == undefined) {
-      console.error("socket is not enabled");
+      console.error("handlers is not enabled");
       return
     }
     this.socket.send(data);
@@ -31,7 +31,7 @@ export class WebSocketsService {
 
   public close() {
     if (this.socket == null || this.socket == undefined) {
-      console.error("socket is not enabled");
+      console.error("handlers is not enabled");
       return
     }
     this.socket.close();
@@ -39,7 +39,7 @@ export class WebSocketsService {
 
   public getEventListener() {
     if (this.socket == null || this.socket == undefined) {
-      console.error("socket is not enabled");
+      console.error("handlers is not enabled");
       return
     }
     return this.listener;

@@ -3,8 +3,8 @@ package socket
 import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/vsheoran/trends/pkg/api"
 	"github.com/vsheoran/trends/pkg/contracts"
+	"github.com/vsheoran/trends/services/ticker"
 )
 
 type UnregisterClient struct {
@@ -30,10 +30,10 @@ type Hub struct {
 	Unregister chan *UnregisterClient
 
 	// Fetches data for broadcast
-	tickerClient api.TickerAPI
+	tickerClient ticker.Ticker
 }
 
-func NewHub(log log.Logger, tc api.TickerAPI) *Hub {
+func NewHub(log log.Logger, tc ticker.Ticker) *Hub {
 	hub := &Hub{
 		log:          log,
 		broadcast:    make(chan string),

@@ -63,10 +63,10 @@ export class DashboardComponent implements OnInit {
         }
       }
       if (event.type == "close") {
-        console.info("The socket connection has been closed");
+        console.info("The handlers connection has been closed");
       }
       if (event.type == "open") {
-        console.info("The socket connection has been opened");
+        console.info("The handlers connection has been opened");
       }
     });
 

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/vsheoran/trends/services/socket"
-	"net"
+	http2 "github.com/vsheoran/trends/transport/http"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,17 +15,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/oklog/run"
 	"github.com/rs/cors"
-	grpc2 "github.com/vsheoran/trends/grpc"
-	"github.com/vsheoran/trends/grpc/client"
 	"github.com/vsheoran/trends/services/cards"
 	"github.com/vsheoran/trends/services/database"
 	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/services/listing"
 	"github.com/vsheoran/trends/services/ticker"
-	"github.com/vsheoran/trends/transport"
 	"github.com/vsheoran/trends/utils"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 var (
@@ -58,7 +53,7 @@ func initServer(g *run.Group) {
 	ls := listing.New(logger, db)
 	hb := socket.NewHub(logger, ts)
 
-	services := transport.Services{
+	services := http2.Services{
 		TickerService:   ts,
 		DatabaseService: db,
 		ListingService:  ls,
@@ -71,32 +66,7 @@ func initServer(g *run.Group) {
 
 }
 
-func initGRPC(g *run.Group, services transport.Services) {
-	gs := grpc.NewServer()
-	reflection.Register(gs)
-
-	srvr := grpc2.NewTickerServer(logger, services.TickerService)
-	client.RegisterTickerServer(gs, srvr)
-
-	//reflection.Register(gs)
-	l, err := net.Listen("tcp", ":5001")
-
-	if err != nil {
-		level.Error(logger).Log("msg", "Unable to listen", "err", err.Error())
-		os.Exit(1)
-	}
-
-	g.Add(func() error {
-		level.Info(logger).Log("transport", "http", "addr", "5001")
-		return gs.Serve(l)
-	}, func(error) {
-		level.Error(logger).Log("msg", "Http listen and Server failed to start")
-		gs.Stop()
-	})
-
-}
-
-func initHTTP(g *run.Group, services transport.Services) {
+func initHTTP(g *run.Group, services http2.Services) {
 
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{http.MethodPatch, http.MethodPut, http.MethodDelete, http.MethodOptions, http.MethodGet, http.MethodPost},
@@ -107,7 +77,7 @@ func initHTTP(g *run.Group, services transport.Services) {
 
 	subRouter := router.PathPrefix("/api").Subrouter()
 
-	transport.ServeHTTP(logger, subRouter, services)
+	http2.ServeHTTP(logger, subRouter, services)
 
 	srv := &http.Server{
 		Handler: handler,
