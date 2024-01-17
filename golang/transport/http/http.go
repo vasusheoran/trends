@@ -1,3 +1,23 @@
+// Package http Trends API.
+//
+// the purpose of this application is to provide an application
+// that is go to provide stock updates
+//
+//	 Title: Trends API
+//		Schemes: http, https
+//		Host: localhost
+//		BasePath: /v2
+//		Version: 0.0.1
+//		License: MIT http://opensource.org/licenses/MIT
+//		Contact: Sheoran, Vasu<vasusheoran92@gmail.com>
+//
+//		Consumes:
+//		- application/json
+//
+//		Produces:
+//		- application/json
+//
+// swagger:meta
 package http
 
 import (
@@ -38,19 +58,21 @@ func ServeHTTP(l log.Logger, router *mux.Router, services Services) {
 
 }
 
+// swagger:model ErrorResponse
 type ErrorResponse struct {
-	Error string `json:"err"`
+	// Error message
+	Error string `json:"err" description:"Error message"`
 }
 
-type GetIndexResponse struct {
+// swagger:model IndexResponse
+type IndexResponse struct {
+	// Summary of the index
 	Summary contracts.Summary `json:"summary"`
 }
 
-type GetHistoryResponse struct {
-	Candles []contracts.Stock `json:"candles"`
-}
-
-type GetSymbolsResponse struct {
+// swagger:model SymbolsResponse
+type SymbolsResponse struct {
+	// List of available symbols
 	Symbols []listing.Listings `json:"symbols"`
 }
 

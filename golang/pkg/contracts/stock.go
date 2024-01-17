@@ -2,12 +2,16 @@ package contracts
 
 import "time"
 
-// Stock represents information related to a stock.
+// swagger:model Stock
 type Stock struct {
-	CP   float64   `json:"CP" description:"Closing price"`
-	HP   float64   `json:"HP" description:"High price"`
-	LP   float64   `json:"LP" description:"Low price"`
-	Date string    `json:"Date,omitempty" description:"Date of the stock information"`
-	Time time.Time `json:"-"` // This field won't be included in JSON (omitempty not applicable)
-	//SASSymbol string    `json:"sas_symbol"` // If needed, uncomment and add a description
+	// Closing price
+	CP float64 `json:"CP" description:"Closing price"`
+	// High price
+	HP float64 `json:"HP" description:"High price"`
+	// Low price
+	LP float64 `json:"LP" description:"Low price"`
+	// Date of the stock information
+	Date string `json:"Date,omitempty" description:"Date of the stock information"`
+	// Time of the stock information (not included in JSON)
+	Time time.Time `json:"-"`
 }

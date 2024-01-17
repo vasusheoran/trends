@@ -27,7 +27,7 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 			w.WriteHeader(http.StatusOK)
-			utils.Encode(w, GetIndexResponse{Summary: summary})
+			utils.Encode(w, IndexResponse{Summary: summary})
 		}
 	}
 
@@ -40,7 +40,7 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 			w.WriteHeader(http.StatusOK)
-			utils.Encode(w, GetIndexResponse{Summary: summary})
+			utils.Encode(w, IndexResponse{Summary: summary})
 		}
 	}
 

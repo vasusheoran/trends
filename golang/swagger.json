@@ -1,0 +1,294 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "the purpose of this application is to provide an application\nthat is go to provide stock updates\n\nTitle: Trends API",
+    "title": "Trends API.",
+    "contact": {
+      "name": "Sheoran, Vasu",
+      "email": "vasusheoran92@gmail.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    },
+    "version": "0.0.1"
+  },
+  "host": "localhost",
+  "basePath": "/v2",
+  "paths": {
+    "/history/{sasSymbol}": {
+      "get": {
+        "tags": [
+          "history"
+        ],
+        "summary": "Gets history for a given symbol",
+        "operationId": "getHistory",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "SasSymbol",
+            "name": "sasSymbol",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HistoryResponse",
+            "schema": {
+              "$ref": "#/definitions/HistoryResponse"
+            }
+          },
+          "500": {
+            "description": "ErrorResponse",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Writes historical data for a given symbol",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "history"
+        ],
+        "operationId": "writeHistory",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "SasSymbol",
+            "name": "sasSymbol",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "file",
+            "x-go-name": "HistoricalData",
+            "description": "HistoricalData consumes a csv with historical data till date.",
+            "name": "file_name",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "500": {
+            "description": "ErrorResponse",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "err": {
+          "description": "Error message",
+          "type": "string",
+          "x-go-name": "Error"
+        }
+      },
+      "x-go-package": "github.com/vsheoran/trends/transport/http"
+    },
+    "HistoryResponse": {
+      "type": "object",
+      "properties": {
+        "candles": {
+          "description": "List of candles (historical stock data)",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Stock"
+          },
+          "x-go-name": "Candles"
+        }
+      },
+      "x-go-package": "github.com/vsheoran/trends/transport/http"
+    },
+    "IndexResponse": {
+      "type": "object",
+      "properties": {
+        "summary": {
+          "$ref": "#/definitions/Summary"
+        }
+      },
+      "x-go-package": "github.com/vsheoran/trends/transport/http"
+    },
+    "Listing": {
+      "type": "object",
+      "title": "Listing represents information related to a listing.",
+      "properties": {
+        "Company": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "SAS": {
+          "type": "string",
+          "x-go-name": "SASSymbol"
+        },
+        "Series": {
+          "type": "string"
+        },
+        "Symbol": {
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/vsheoran/trends/pkg/contracts"
+    },
+    "Listings": {
+      "type": "object",
+      "properties": {
+        "Read": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Listing"
+          }
+        }
+      },
+      "x-go-package": "github.com/vsheoran/trends/services/listing"
+    },
+    "Stock": {
+      "type": "object",
+      "properties": {
+        "CP": {
+          "description": "Closing price",
+          "type": "number",
+          "format": "double"
+        },
+        "Date": {
+          "description": "Date of the stock information",
+          "type": "string"
+        },
+        "HP": {
+          "description": "High price",
+          "type": "number",
+          "format": "double"
+        },
+        "LP": {
+          "description": "Low price",
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "x-go-package": "github.com/vsheoran/trends/pkg/contracts"
+    },
+    "Summary": {
+      "type": "object",
+      "title": "Summary represents summary information about a ticker.",
+      "properties": {
+        "average": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Average"
+        },
+        "barish": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Barish"
+        },
+        "buy": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Buy"
+        },
+        "close": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Close"
+        },
+        "ema_20": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Ema20"
+        },
+        "ema_5": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Ema5"
+        },
+        "high": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "High"
+        },
+        "hl_3": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "HL3"
+        },
+        "low": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Low"
+        },
+        "lower_l": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "LowerL"
+        },
+        "min_lp_3": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "MinLP3"
+        },
+        "prev_buy": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "PreviousBuy"
+        },
+        "rsi": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "RSI"
+        },
+        "sell": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Bullish"
+        },
+        "support": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Support"
+        },
+        "trend": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Trend"
+        }
+      },
+      "x-go-package": "github.com/vsheoran/trends/pkg/contracts"
+    },
+    "SymbolsResponse": {
+      "type": "object",
+      "properties": {
+        "symbols": {
+          "description": "List of available symbols",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Listings"
+          },
+          "x-go-name": "Symbols"
+        }
+      },
+      "x-go-package": "github.com/vsheoran/trends/transport/http"
+    }
+  }
+}
