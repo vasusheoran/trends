@@ -49,7 +49,7 @@ func HistoryHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	logger.Log("msg", "HistoryHandlerFunc", "path", r.URL.Path, "method", r.Method, "sasSymbol", sasSymbol)
 	var err error
 
-	// swagger:route GET /history/{sasSymbol} history getHistory
+	// swagger:route GET /history/{sasSymbol} History getHistory
 	//
 	// # Gets history for a given symbol
 	//
@@ -69,7 +69,7 @@ func HistoryHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// swagger:route POST /history/{sasSymbol} history writeHistory
+	// swagger:route POST /history/{sasSymbol} History writeHistory
 	//
 	// Writes historical data for a given symbol
 	//

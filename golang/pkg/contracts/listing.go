@@ -1,6 +1,7 @@
 package contracts
 
-// Listing represents information related to a listing.
+// Listing
+// swagger:model Listing
 type Listing struct {
 	Name      string `json:"Company" description:"Company name"`
 	Symbol    string `json:"Symbol" description:"Listing symbol"`

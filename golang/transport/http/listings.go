@@ -9,6 +9,13 @@ import (
 	"github.com/vsheoran/trends/utils"
 )
 
+// swagger:parameters deleteListing replaceListing updateListing
+type getListingsParams struct {
+	// in: path
+	// required: true
+	SasSymbol string `json:"sasSymbol"`
+}
+
 func ListingsHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	// Stop here if its Preflighted OPTIONS request
 
@@ -18,6 +25,13 @@ func ListingsHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	logger.Log("msg", "ListingsHandlerFunc", "path", r.URL.Path, "method", r.Method)
 	var err error
 
+	// swagger:route GET /symbol Symbol getListings
+	//
+	// Gets all listings
+	//
+	// Responses:
+	//   200: Symbols
+	//   500: ErrorResponse
 	if r.Method == http.MethodGet {
 		listings := svc.ListingService.Read()
 		if err == nil {
@@ -27,6 +41,20 @@ func ListingsHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// swagger:route POST /symbol Symbol createListings
+	//
+	// Creates multiple listings
+	//
+	// Parameters:
+	//  + name: Symbols
+	//	  in: body
+	//	  description: Create listings
+	//	required: true
+	//	type: Listing
+	//
+	// Responses:
+	//   204:
+	//   500: ErrorResponse
 	if r.Method == http.MethodPost {
 		var listings []contracts.Listing
 		utils.Decode(r.Body, &listings)
@@ -36,7 +64,17 @@ func ListingsHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	//	http.MethodPatch, http.MethodPut, http.MethodDelete,
+	// swagger:route PATCH /symbol/{sasSymbol} Symbol updateListing
+	//
+	// Updates a specific listing
+	//
+	// Parameters:
+	//   - getListingsParams
+	//   - body
+	//
+	// Responses:
+	//   204:
+	//   500: ErrorResponse
 	if r.Method == http.MethodPatch {
 		var listing contracts.Listing
 		utils.Decode(r.Body, &listing)
@@ -46,6 +84,17 @@ func ListingsHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// swagger:route PUT /symbol/{sasSymbol} Symbol replaceListing
+	//
+	// Replaces a specific listing
+	//
+	// Parameters:
+	//   - getListingsParams
+	//   - body
+	//
+	// Responses:
+	//   204:
+	//   500: ErrorResponse
 	if r.Method == http.MethodPut {
 		var listing contracts.Listing
 		utils.Decode(r.Body, &listing)
@@ -55,6 +104,16 @@ func ListingsHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// swagger:route DELETE /symbol/{sasSymbol} Symbol deleteListing
+	//
+	// Deletes a specific listing
+	//
+	// Parameters:
+	//   - getListingsParams
+	//
+	// Responses:
+	//   204:
+	//   500: ErrorResponse
 	if r.Method == http.MethodDelete {
 		var listing contracts.Listing
 		utils.Decode(r.Body, &listing)
@@ -70,3 +129,6 @@ func ListingsHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		utils.Encode(w, ErrorResponse{Error: err.Error()})
 	}
 }
+
+// swagger:model Symbols
+type symbolsList []contracts.Listing

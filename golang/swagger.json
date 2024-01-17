@@ -24,12 +24,11 @@
     "version": "0.0.1"
   },
   "host": "localhost",
-  "basePath": "/v2",
   "paths": {
     "/history/{sasSymbol}": {
       "get": {
         "tags": [
-          "history"
+          "History"
         ],
         "summary": "Gets history for a given symbol",
         "operationId": "getHistory",
@@ -63,7 +62,7 @@
           "multipart/form-data"
         ],
         "tags": [
-          "history"
+          "History"
         ],
         "operationId": "writeHistory",
         "parameters": [
@@ -80,6 +79,143 @@
             "description": "HistoricalData consumes a csv with historical data till date.",
             "name": "file_name",
             "in": "formData"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "500": {
+            "description": "ErrorResponse",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/symbol": {
+      "get": {
+        "description": "Gets all listings",
+        "tags": [
+          "Symbol"
+        ],
+        "operationId": "getListings",
+        "responses": {
+          "200": {
+            "description": "Symbols",
+            "schema": {
+              "$ref": "#/definitions/Symbols"
+            }
+          },
+          "500": {
+            "description": "ErrorResponse",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Creates multiple listings",
+        "tags": [
+          "Symbol"
+        ],
+        "operationId": "createListings",
+        "parameters": [
+          {
+            "description": "Create listings",
+            "name": "Symbols",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "Create listings",
+              "type": "object",
+              "$ref": "#/definitions/Listing"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "500": {
+            "description": "ErrorResponse",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/symbol/{sasSymbol}": {
+      "put": {
+        "description": "Replaces a specific listing",
+        "tags": [
+          "Symbol"
+        ],
+        "operationId": "replaceListing",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "SasSymbol",
+            "name": "sasSymbol",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "500": {
+            "description": "ErrorResponse",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Deletes a specific listing",
+        "tags": [
+          "Symbol"
+        ],
+        "operationId": "deleteListing",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "SasSymbol",
+            "name": "sasSymbol",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "500": {
+            "description": "ErrorResponse",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+      "patch": {
+        "description": "Updates a specific listing",
+        "tags": [
+          "Symbol"
+        ],
+        "operationId": "updateListing",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "SasSymbol",
+            "name": "sasSymbol",
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {
@@ -132,8 +268,8 @@
       "x-go-package": "github.com/vsheoran/trends/transport/http"
     },
     "Listing": {
+      "description": "Listing",
       "type": "object",
-      "title": "Listing represents information related to a listing.",
       "properties": {
         "Company": {
           "type": "string",
@@ -151,18 +287,6 @@
         }
       },
       "x-go-package": "github.com/vsheoran/trends/pkg/contracts"
-    },
-    "Listings": {
-      "type": "object",
-      "properties": {
-        "Read": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Listing"
-          }
-        }
-      },
-      "x-go-package": "github.com/vsheoran/trends/services/listing"
     },
     "Stock": {
       "type": "object",
@@ -276,18 +400,12 @@
       },
       "x-go-package": "github.com/vsheoran/trends/pkg/contracts"
     },
-    "SymbolsResponse": {
-      "type": "object",
-      "properties": {
-        "symbols": {
-          "description": "List of available symbols",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Listings"
-          },
-          "x-go-name": "Symbols"
-        }
+    "Symbols": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Listing"
       },
+      "x-go-name": "symbolsList",
       "x-go-package": "github.com/vsheoran/trends/transport/http"
     }
   }

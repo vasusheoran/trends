@@ -6,7 +6,6 @@
 //	 Title: Trends API
 //		Schemes: http, https
 //		Host: localhost
-//		BasePath: /v2
 //		Version: 0.0.1
 //		License: MIT http://opensource.org/licenses/MIT
 //		Contact: Sheoran, Vasu<vasusheoran92@gmail.com>
@@ -68,12 +67,6 @@ type ErrorResponse struct {
 type IndexResponse struct {
 	// Summary of the index
 	Summary contracts.Summary `json:"summary"`
-}
-
-// swagger:model SymbolsResponse
-type SymbolsResponse struct {
-	// List of available symbols
-	Symbols []listing.Listings `json:"symbols"`
 }
 
 type Services struct {
