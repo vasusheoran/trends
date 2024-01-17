@@ -1,7 +1,6 @@
 package http
 
 import (
-	"github.com/vsheoran/trends/pkg/contracts"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -15,7 +14,7 @@ func HistoryHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := mux.Vars(r)
-	sasSymbol := params[contracts.SasSymbolKey]
+	sasSymbol := params[constants.SasSymbolKey]
 
 	logger.Log("msg", "HistoryHandlerFunc", "path", r.URL.Path, "method", r.Method, "sasSymbol", sasSymbol)
 	var err error

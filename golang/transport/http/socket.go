@@ -16,7 +16,7 @@ func SocketHandleFunc(w http.ResponseWriter, r *http.Request) {
 	var conn *websocket.Conn
 
 	params := mux.Vars(r)
-	sasSymbol := params[contracts.SasSymbolKey]
+	sasSymbol := params[constants.SasSymbolKey]
 
 	if r.Method == http.MethodGet {
 		conn, err = (&websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}).Upgrade(w, r, nil)

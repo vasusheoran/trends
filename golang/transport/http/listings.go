@@ -13,7 +13,7 @@ func ListingsHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	// Stop here if its Preflighted OPTIONS request
 
 	params := mux.Vars(r)
-	sasSymbol := params[contracts.SasSymbolKey]
+	sasSymbol := params[constants.SasSymbolKey]
 
 	logger.Log("msg", "ListingsHandlerFunc", "path", r.URL.Path, "method", r.Method)
 	var err error

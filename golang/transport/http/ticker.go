@@ -16,7 +16,7 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := mux.Vars(r)
-	sasSymbol := params[contracts.SasSymbolKey]
+	sasSymbol := params[constants.SasSymbolKey]
 
 	logger.Log("msg", "TickerHandleFunc", "path", r.URL.Path, "method", r.Method, "sasSymbol", sasSymbol)
 	var err error
@@ -50,7 +50,7 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 		err = svc.TickerService.Update(sasSymbol, st)
 	}
 
-	if r.Method == http.MethodPatch && strings.Contains(r.URL.Path, contracts.FreezeKey) {
+	if r.Method == http.MethodPatch && strings.Contains(r.URL.Path, constants.FreezeKey) {
 		var st contracts.Stock
 		utils.Decode(r.Body, &st)
 		err = svc.TickerService.Freeze(sasSymbol, st)
