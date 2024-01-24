@@ -1,6 +1,7 @@
 package contracts
 
 // Summary represents summary information about a ticker.
+// swagger:model Summary
 type Summary struct {
 	Close       float64 `json:"close" description:"Closing price"`
 	High        float64 `json:"high" description:"High price"`

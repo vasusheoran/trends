@@ -1,26 +1,24 @@
-// Package http Trends API.
+// Package http Trends API
 //
 // the purpose of this application is to provide an application
 // that is go to provide stock updates
 //
-//	 Title: Trends API
-//		Schemes: http, https
-//		Host: localhost
-//		Version: 0.0.1
-//		License: MIT http://opensource.org/licenses/MIT
-//		Contact: Sheoran, Vasu<vasusheoran92@gmail.com>
+//	Schemes: http, https
+//	Host: localhost:5000
+//	Version: 0.0.1
+//	License: MIT http://opensource.org/licenses/MIT
+//	Contact: Sheoran, Vasu<vasusheoran92@gmail.com>
 //
-//		Consumes:
-//		- application/json
+//	Consumes:
+//	- application/json
 //
-//		Produces:
-//		- application/json
+//	Produces:
+//	- application/json
 //
 // swagger:meta
 package http
 
 import (
-	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/services/database"
 	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/services/listing"
@@ -63,10 +61,11 @@ type ErrorResponse struct {
 	Error string `json:"err" description:"Error message"`
 }
 
-// swagger:model IndexResponse
-type IndexResponse struct {
-	// Summary of the index
-	Summary contracts.Summary `json:"summary"`
+// swagger:parameters deleteListing replaceListing updateListing getTicker getHistory initTicker updateTicker freezeTicker
+type tickerSymbol struct {
+	// in: path
+	// required: true
+	SasSymbol string `json:"sasSymbol"`
 }
 
 type Services struct {

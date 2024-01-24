@@ -30,6 +30,7 @@ var (
 // cancelInterrupt type definition for channel
 type cancelInterrupt struct{}
 
+//go:generate swagger generate spec -m -o ../swagger.yaml -w ..
 func main() {
 	logger = utils.InitializeDefaultLogger()
 	logger.Log("msg", "Starting trends server..")

@@ -1,0 +1,379 @@
+consumes:
+    - application/json
+definitions:
+    ErrorResponse:
+        properties:
+            err:
+                description: Error message
+                type: string
+                x-go-name: Error
+        type: object
+        x-go-package: github.com/vsheoran/trends/transport/http
+    HistoryResponse:
+        properties:
+            candles:
+                description: List of candles (historical stock data)
+                items:
+                    $ref: '#/definitions/Stock'
+                type: array
+                x-go-name: Candles
+        type: object
+        x-go-package: github.com/vsheoran/trends/transport/http
+    IndexResponse:
+        properties:
+            summary:
+                $ref: '#/definitions/Summary'
+        type: object
+        x-go-package: github.com/vsheoran/trends/transport/http
+    Listing:
+        description: Listing
+        properties:
+            Company:
+                type: string
+                x-go-name: Name
+            SAS:
+                type: string
+                x-go-name: SASSymbol
+            Series:
+                type: string
+            Symbol:
+                type: string
+        type: object
+        x-go-package: github.com/vsheoran/trends/pkg/contracts
+    Stock:
+        properties:
+            CP:
+                description: Closing price
+                format: double
+                type: number
+            Date:
+                description: Date of the stock information
+                type: string
+            HP:
+                description: High price
+                format: double
+                type: number
+            LP:
+                description: Low price
+                format: double
+                type: number
+        type: object
+        x-go-package: github.com/vsheoran/trends/pkg/contracts
+    Summary:
+        properties:
+            average:
+                format: double
+                type: number
+                x-go-name: Average
+            barish:
+                format: double
+                type: number
+                x-go-name: Barish
+            buy:
+                format: double
+                type: number
+                x-go-name: Buy
+            close:
+                format: double
+                type: number
+                x-go-name: Close
+            ema_5:
+                format: double
+                type: number
+                x-go-name: Ema5
+            ema_20:
+                format: double
+                type: number
+                x-go-name: Ema20
+            high:
+                format: double
+                type: number
+                x-go-name: High
+            hl_3:
+                format: double
+                type: number
+                x-go-name: HL3
+            low:
+                format: double
+                type: number
+                x-go-name: Low
+            lower_l:
+                format: double
+                type: number
+                x-go-name: LowerL
+            min_lp_3:
+                format: double
+                type: number
+                x-go-name: MinLP3
+            prev_buy:
+                format: double
+                type: number
+                x-go-name: PreviousBuy
+            rsi:
+                format: double
+                type: number
+                x-go-name: RSI
+            sell:
+                format: double
+                type: number
+                x-go-name: Bullish
+            support:
+                format: double
+                type: number
+                x-go-name: Support
+            trend:
+                format: double
+                type: number
+                x-go-name: Trend
+        title: Summary represents summary information about a ticker.
+        type: object
+        x-go-package: github.com/vsheoran/trends/pkg/contracts
+    Symbols:
+        items:
+            $ref: '#/definitions/Listing'
+        type: array
+        x-go-name: symbolsList
+        x-go-package: github.com/vsheoran/trends/transport/http
+host: localhost:5000
+info:
+    contact:
+        email: vasusheoran92@gmail.com
+        name: Sheoran, Vasu
+    description: |-
+        the purpose of this application is to provide an application
+        that is go to provide stock updates
+    license:
+        name: MIT
+        url: http://opensource.org/licenses/MIT
+    title: Trends API
+    version: 0.0.1
+paths:
+    /history/{sasSymbol}:
+        get:
+            operationId: getHistory
+            parameters:
+                - in: path
+                  name: sasSymbol
+                  required: true
+                  type: string
+                  x-go-name: SasSymbol
+            responses:
+                "200":
+                    description: HistoryResponse
+                    schema:
+                        $ref: '#/definitions/HistoryResponse'
+                "500":
+                    description: ErrorResponse
+                    schema:
+                        $ref: '#/definitions/ErrorResponse'
+            summary: Gets history for a given symbol
+            tags:
+                - History
+        post:
+            consumes:
+                - multipart/form-data
+            description: Writes historical data for a given symbol
+            operationId: writeHistory
+            parameters:
+                - in: path
+                  name: sasSymbol
+                  required: true
+                  type: string
+                  x-go-name: SasSymbol
+                - description: HistoricalData consumes a csv with historical data till date.
+                  in: formData
+                  name: file_name
+                  type: file
+                  x-go-name: HistoricalData
+            responses:
+                "204":
+                    description: ""
+                "500":
+                    description: ErrorResponse
+                    schema:
+                        $ref: '#/definitions/ErrorResponse'
+            tags:
+                - History
+    /index/{sasSymbol}:
+        get:
+            description: Gets ticker information for a given symbol
+            operationId: getTicker
+            parameters:
+                - in: path
+                  name: sasSymbol
+                  required: true
+                  type: string
+                  x-go-name: SasSymbol
+            responses:
+                "200":
+                    description: IndexResponse
+                    schema:
+                        $ref: '#/definitions/IndexResponse'
+                "500":
+                    description: ErrorResponse
+                    schema:
+                        $ref: '#/definitions/ErrorResponse'
+            tags:
+                - Index
+        post:
+            description: Initializes a ticker for a given symbol
+            operationId: initTicker
+            parameters:
+                - in: path
+                  name: sasSymbol
+                  required: true
+                  type: string
+                  x-go-name: SasSymbol
+            responses:
+                "200":
+                    description: IndexResponse
+                    schema:
+                        $ref: '#/definitions/IndexResponse'
+                "500":
+                    description: ErrorResponse
+                    schema:
+                        $ref: '#/definitions/ErrorResponse'
+            tags:
+                - Index
+        put:
+            description: Updates ticker information for a given symbol
+            operationId: updateTicker
+            parameters:
+                - in: path
+                  name: sasSymbol
+                  required: true
+                  type: string
+                  x-go-name: SasSymbol
+                - description: Ticker update values
+                  in: body
+                  name: stock
+                  required: true
+                  schema:
+                    $ref: '#/definitions/Stock'
+                    description: Ticker update values
+                    type: object
+            responses:
+                "204":
+                    description: ""
+                "500":
+                    description: ErrorResponse
+                    schema:
+                        $ref: '#/definitions/ErrorResponse'
+            tags:
+                - Index
+    /index/{sasSymbol}/freeze:
+        patch:
+            description: Freezes ticker updates for a given symbol
+            operationId: freezeTicker
+            parameters:
+                - in: path
+                  name: sasSymbol
+                  required: true
+                  type: string
+                  x-go-name: SasSymbol
+            responses:
+                "204":
+                    description: ""
+                "500":
+                    description: ErrorResponse
+                    schema:
+                        $ref: '#/definitions/ErrorResponse'
+            tags:
+                - Index
+    /symbol:
+        get:
+            description: Gets all listings
+            operationId: getListings
+            responses:
+                "200":
+                    description: Symbols
+                    schema:
+                        $ref: '#/definitions/Symbols'
+                "500":
+                    description: ErrorResponse
+                    schema:
+                        $ref: '#/definitions/ErrorResponse'
+            tags:
+                - Symbol
+        post:
+            description: Creates multiple listings
+            operationId: createListings
+            parameters:
+                - description: Create listings
+                  in: body
+                  name: Symbols
+                  required: true
+                  schema:
+                    $ref: '#/definitions/Listing'
+                    description: Create listings
+                    type: object
+            responses:
+                "204":
+                    description: ""
+                "500":
+                    description: ErrorResponse
+                    schema:
+                        $ref: '#/definitions/ErrorResponse'
+            tags:
+                - Symbol
+    /symbol/{sasSymbol}:
+        delete:
+            description: Deletes a specific listing
+            operationId: deleteListing
+            parameters:
+                - in: path
+                  name: sasSymbol
+                  required: true
+                  type: string
+                  x-go-name: SasSymbol
+            responses:
+                "204":
+                    description: ""
+                "500":
+                    description: ErrorResponse
+                    schema:
+                        $ref: '#/definitions/ErrorResponse'
+            tags:
+                - Symbol
+        patch:
+            description: Updates a specific listing
+            operationId: updateListing
+            parameters:
+                - in: path
+                  name: sasSymbol
+                  required: true
+                  type: string
+                  x-go-name: SasSymbol
+            responses:
+                "204":
+                    description: ""
+                "500":
+                    description: ErrorResponse
+                    schema:
+                        $ref: '#/definitions/ErrorResponse'
+            tags:
+                - Symbol
+        put:
+            description: Replaces a specific listing
+            operationId: replaceListing
+            parameters:
+                - in: path
+                  name: sasSymbol
+                  required: true
+                  type: string
+                  x-go-name: SasSymbol
+            responses:
+                "204":
+                    description: ""
+                "500":
+                    description: ErrorResponse
+                    schema:
+                        $ref: '#/definitions/ErrorResponse'
+            tags:
+                - Symbol
+produces:
+    - application/json
+schemes:
+    - http
+    - https
+swagger: "2.0"

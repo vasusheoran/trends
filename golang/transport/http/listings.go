@@ -9,13 +9,6 @@ import (
 	"github.com/vsheoran/trends/utils"
 )
 
-// swagger:parameters deleteListing replaceListing updateListing
-type getListingsParams struct {
-	// in: path
-	// required: true
-	SasSymbol string `json:"sasSymbol"`
-}
-
 func ListingsHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	// Stop here if its Preflighted OPTIONS request
 
@@ -69,7 +62,7 @@ func ListingsHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	// Updates a specific listing
 	//
 	// Parameters:
-	//   - getListingsParams
+	//   - tickerSymbol
 	//   - body
 	//
 	// Responses:
@@ -89,7 +82,7 @@ func ListingsHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	// Replaces a specific listing
 	//
 	// Parameters:
-	//   - getListingsParams
+	//   - tickerSymbol
 	//   - body
 	//
 	// Responses:
@@ -109,7 +102,7 @@ func ListingsHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	// Deletes a specific listing
 	//
 	// Parameters:
-	//   - getListingsParams
+	//   - tickerSymbol
 	//
 	// Responses:
 	//   204:

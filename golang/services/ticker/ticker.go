@@ -86,11 +86,11 @@ func (s *ticker) Get(key string) (contracts.Summary, error) {
 func (s *ticker) Init(key string) (contracts.Summary, error) {
 	candles, err := s.historyService.Read(key)
 	if err != nil {
-		level.Error(s.logger).Log("failed to read history from database", "sasSymbol", key)
+		level.Error(s.logger).Log("msg", "failed to read history from database", "sasSymbol", key)
 		return contracts.Summary{}, errors.New("error fetching data")
 	}
 	if candles == nil {
-		level.Error(s.logger).Log("failed to parse history from database", "sasSymbol", key)
+		level.Error(s.logger).Log("msg", "failed to parse history from database", "sasSymbol", key)
 		return contracts.Summary{}, errors.New("error fetching data")
 	}
 

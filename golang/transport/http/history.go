@@ -16,13 +16,6 @@ type HistoryResponse struct {
 	Candles []contracts.Stock `json:"candles"`
 }
 
-// swagger:parameters getHistory
-type getHistoryParams struct {
-	// in: path
-	// required: true
-	SasSymbol string `json:"sasSymbol"`
-}
-
 // swagger:parameters writeHistory
 type postHistoryParams struct {
 	// in: path
