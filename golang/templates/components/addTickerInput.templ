@@ -6,16 +6,16 @@ templ AddTickerInput() {
             <input type="text" id="add-ticker-input" name="add-ticker-input" class="rounded-2xl text-black font-sans text-sm flex-1"/>
             <span
                 class="material-symbols-outlined cursor-pointer"
-                hx-post="/"
+                hx-post="/add-ticker"
                 hx-trigger="click"
-                hx-swap="multi:#add-ticker-section:outerHTML,#todos:outerHTML"
+                hx-swap="multi:#add-ticker-section:outerHTML,#tickers:outerHTML"
                 hx-ext="multi-swap"
             >
                 check
             </span>
             <span
                 class="material-symbols-outlined cursor-pointer"
-                hx-get="/add-ticker"
+                hx-get="/"
                 hx-trigger="click"
                 hx-swap="outerHTML"
                 hx-target="#add-ticker-section"

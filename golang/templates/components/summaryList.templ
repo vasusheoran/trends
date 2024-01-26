@@ -4,19 +4,11 @@ import "github.com/vsheoran/trends/pkg/contracts"
 
 templ SummaryData(data map[string]*contracts.Summary) {
 	// px-4 py-16 mx-auto md:max-w-full lg:max-w-screen-xl md:px-24 lg:px-8 lg:py-20
-	<div class="" hx-ext="ws" ws-connect="/ws/ticker">
+	// TODO: Initialize seperate socket connection for each ticker.
+	<div hx-ext="ws" ws-connect="/ws/ticker">
     	<div id="tickers" >
 			for k, s := range data {
-				<div id={ k }>
-					<div class="row-gap-2 grid grid-cols-15 md:grid-cols-15" >
-						<div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-							<div class="font-heading text-[2rem] dark:text-white lg:text-2xl xl:text-1xl">
-								{ k }
-							</div>
-						</div>
-						@Summary(k, s)
-					</div>
-				</div>
+				@Message(k, s)
 			}
 
 		</div>

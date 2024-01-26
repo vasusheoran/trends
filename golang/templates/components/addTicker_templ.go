@@ -10,7 +10,9 @@ import "context"
 import "io"
 import "bytes"
 
-func AddTickerButton() templ.Component {
+import "github.com/vsheoran/trends/pkg/contracts"
+
+func AddTicker(id string, s map[string]*contracts.Summary) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -23,7 +25,11 @@ func AddTickerButton() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button id=\"add-ticker-section\" hx-get=\"/add-ticker\" hx-trigger=\"click\" hx-swap=\"outerHTML\" type=\"button\" class=\"bg-white hover:opacity-50 p-3 rounded-2xl border border-black border-solid  max-w-1xl\">Add Ticker</button>")
+		templ_7745c5c3_Err = AddTickerButton().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = SummaryData(s).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

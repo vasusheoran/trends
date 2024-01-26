@@ -60,9 +60,10 @@ func SertHTTP2(l log.Logger, router *mux.Router, services Services) {
 	logger = log.With(l, "method", "ServeHTTP")
 
 	router.Path("/").HandlerFunc(HTMXSummaryHandlerFunc).Methods(http.MethodGet)
-	router.Path("/add-ticker").HandlerFunc(HTMXAddTickerFunc).Methods(http.MethodGet)
+	router.Path("/add-ticker-input").HandlerFunc(HTMXAddTickerInputFunc).Methods(http.MethodGet)
+	router.Path("/add-ticker").HandlerFunc(HTMXAddTickerFunc).Methods(http.MethodPost)
 
-	router.Path("/ws/ticker").HandlerFunc(HTMXUpdateData).Methods(http.MethodGet)
+	router.Path("/ws/ticker/{SasSymbolKey}").HandlerFunc(HTMXUpdateData).Methods(http.MethodGet)
 
 	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))

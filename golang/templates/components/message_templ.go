@@ -25,7 +25,23 @@ func Message(id string, symbol *contracts.Summary) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"Nifty50\"><div hx-swap=\"#Nifty50\" class=\"row-gap-2 grid grid-cols-15 md:grid-cols-15\"><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] dark:text-white lg:text-2xl xl:text-1xl\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(id))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div hx-swap=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString("#" + id))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"row-gap-2 grid grid-cols-15 md:grid-cols-15\"><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] dark:text-white lg:text-2xl xl:text-1xl\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

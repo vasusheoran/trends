@@ -23,7 +23,7 @@ func AddTickerInput() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex flex-row w-full gap-4 items-center max-w-1xl\"><form id=\"add-ticker-section\"><input type=\"text\" id=\"add-ticker-input\" name=\"add-ticker-input\" class=\"rounded-2xl text-black font-sans text-sm flex-1\"> <span class=\"material-symbols-outlined cursor-pointer\" hx-post=\"/\" hx-trigger=\"click\" hx-swap=\"multi:#add-ticker-section:outerHTML,#todos:outerHTML\" hx-ext=\"multi-swap\">check\r</span> <span class=\"material-symbols-outlined cursor-pointer\" hx-get=\"/add-ticker\" hx-trigger=\"click\" hx-swap=\"outerHTML\" hx-target=\"#add-ticker-section\">close\r</span></form></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex flex-row w-full gap-4 items-center max-w-1xl\"><form id=\"add-ticker-section\"><input type=\"text\" id=\"add-ticker-input\" name=\"add-ticker-input\" class=\"rounded-2xl text-black font-sans text-sm flex-1\"> <span class=\"material-symbols-outlined cursor-pointer\" hx-post=\"/add-ticker\" hx-trigger=\"click\" hx-swap=\"multi:#add-ticker-section:outerHTML,#tickers:outerHTML\" hx-ext=\"multi-swap\">check\r</span> <span class=\"material-symbols-outlined cursor-pointer\" hx-get=\"/\" hx-trigger=\"click\" hx-swap=\"outerHTML\" hx-target=\"#add-ticker-section\">close\r</span></form></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

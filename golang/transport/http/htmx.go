@@ -8,10 +8,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/templates"
 	"github.com/vsheoran/trends/templates/components"
+	"github.com/vsheoran/trends/utils"
 )
 
 type Film struct {
@@ -30,14 +33,24 @@ var (
 
 func HTMXUpdateData(w http.ResponseWriter, r *http.Request) {
 
+	params := mux.Vars(r)
+	key := params[constants.SasSymbolKey]
+
+	logger.Log("msg", "ListingsHandlerFunc", "path", r.URL.Path, "method", r.Method, "ticker", key)
+
+	if len(key) == 0 {
+		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
+		w.WriteHeader(http.StatusBadRequest)
+		utils.Encode(w, ErrorResponse{Error: "key cannot be empty"})
+		return
+	}
+
 	// Upgrade the HTTP connection to a WebSocket connection.
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-
-	key := "Nifty50"
 
 	s, ok := data[key]
 	if !ok {
@@ -89,14 +102,30 @@ func HTMXSummaryHandlerFunc(w http.ResponseWriter, r *http.Request) {
 }
 
 // HTMXAddTickerFunc returns the template block with the newly added film, as an HTMX response
+func HTMXAddTickerInputFunc(w http.ResponseWriter, r *http.Request) {
+	// render component
+	component := components.AddTickerInput()
+	component.Render(context.Background(), w)
+}
+
+// HTMXAddTickerFunc returns the template block with the newly added film, as an HTMX response
 func HTMXAddTickerFunc(w http.ResponseWriter, r *http.Request) {
+	key := r.FormValue("add-ticker-input")
+
+	if len(key) == 0 {
+		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
+		w.WriteHeader(http.StatusBadRequest)
+		utils.Encode(w, ErrorResponse{Error: "key cannot be empty"})
+		return
+	}
+
+	logger.Log("msg", "ListingsHandlerFunc", "path", r.URL.Path, "method", r.Method)
+
 	// Get summary list
 	newSummary := &contracts.Summary{}
-	key := strconv.Itoa(index)
-	index++
 	data[key] = newSummary
 
 	// render component
-	component := components.AddTickerInput()
+	component := components.AddTicker(key, data)
 	component.Render(context.Background(), w)
 }

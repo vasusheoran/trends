@@ -23,8 +23,10 @@ templ Index(data map[string]*contracts.Summary) {
 				// <div class="w-screen flex flex-col justify-between">
 				<div class="w-screen flex flex-col justify-center items-center relative">
 				<div class="h-screen w-screen justify-center items-center relative">
-					@components.AddTickerButton()
-					@components.SummaryData(data)
+					<div id="dashboard">
+						@components.AddTickerButton()
+						@components.SummaryData(data)
+					</div>
 				</div>  
                 </div>
 			// </div>
