@@ -14,6 +14,17 @@ import (
 	"github.com/vsheoran/trends/pkg/contracts"
 )
 
+var (
+	green    = "text-green-600"
+	red      = "text-red-700"
+	blue     = "text-blue-500"
+	darkblue = "text-blue-900"
+	magenta  = "text-fuchsia-500"
+	purple   = "text-purple-500"
+	violet   = "text-violet-500"
+	gold     = "text-yellow-500"
+)
+
 func Summary(id string, symbol *contracts.Summary) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
@@ -27,28 +38,125 @@ func Summary(id string, symbol *contracts.Summary) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"")
+		templ_7745c5c3_Err = Stat("Close", symbol.Close, "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(id))
+		templ_7745c5c3_Err = Stat("High", symbol.High, "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"row-gap-2 grid grid-cols-15 md:grid-cols-15\"><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] dark:text-white lg:text-2xl xl:text-1xl\">")
+		templ_7745c5c3_Err = Stat("Low", symbol.Low, "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(id)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates\components\summary.templ`, Line: 11, Col: 24}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		templ_7745c5c3_Err = Stat("Average", symbol.Average, "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div></div></div>")
+		templ_7745c5c3_Err = Stat("Ema20", symbol.Ema20, "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if symbol.Close > symbol.Trend {
+			templ_7745c5c3_Err = Stat("Trend", symbol.Trend, green).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = Stat("Trend", symbol.Trend, red).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		if symbol.Close > symbol.Ema5 {
+			templ_7745c5c3_Err = Stat("Ema5", symbol.Ema5, green).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else if symbol.Close > symbol.Average {
+			templ_7745c5c3_Err = Stat("Ema5", symbol.Ema5, blue).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = Stat("Ema5", symbol.Ema5, red).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		if symbol.Close > symbol.Trend {
+			templ_7745c5c3_Err = Stat("HL3", symbol.HL3, magenta).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = Stat("HL3", symbol.HL3, violet).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		if symbol.RSI > 69 {
+			templ_7745c5c3_Err = Stat("RSI", symbol.RSI, darkblue).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else if symbol.RSI > 49 {
+			templ_7745c5c3_Err = Stat("RSI", symbol.RSI, green).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = Stat("RSI", symbol.RSI, red).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		if symbol.Close > symbol.Trend {
+			templ_7745c5c3_Err = Stat("LowerL", symbol.LowerL, green).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = Stat("LowerL", symbol.LowerL, red).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		if symbol.Close > symbol.Trend {
+			templ_7745c5c3_Err = Stat("Barish", symbol.Barish, gold).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = Stat("Barish", symbol.Barish, red).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		if symbol.Close > symbol.Trend {
+			templ_7745c5c3_Err = Stat("Barish", symbol.Support, purple).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = Stat("Barish", symbol.Support, red).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		if symbol.Close > symbol.Trend {
+			templ_7745c5c3_Err = Stat("Sell", symbol.Support, darkblue).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = Stat("Sell", symbol.Support, red).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = Stat("Prev-Buy", symbol.PreviousBuy, "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

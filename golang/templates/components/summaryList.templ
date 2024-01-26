@@ -7,8 +7,18 @@ templ SummaryData(data map[string]*contracts.Summary) {
 	<div class="" hx-ext="ws" ws-connect="/ws/ticker">
     	<div id="tickers" >
 			for k, s := range data {
-				@Summary(k, s)
+				<div id={ k }>
+					<div class="row-gap-2 grid grid-cols-15 md:grid-cols-15" >
+						<div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
+							<div class="font-heading text-[2rem] dark:text-white lg:text-2xl xl:text-1xl">
+								{ k }
+							</div>
+						</div>
+						@Summary(k, s)
+					</div>
+				</div>
 			}
+
 		</div>
 	</div>
 }

@@ -1,0 +1,14 @@
+package components
+
+import "fmt"
+
+templ Stat(key string, val float64, color string ) {
+    <div class="mb-12 text-center md:mb-0 md:border-r-2 ">
+        <div class="font-heading text-[2rem] font-bold lg:text-2xl xl:text-1xl">
+            <p class={ color }>{ fmt.Sprintf("%.2f", val)}</p>
+        </div>
+        <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
+            { key }
+        </p>
+    </div>
+}

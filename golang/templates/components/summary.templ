@@ -4,139 +4,80 @@ import (
 	"github.com/vsheoran/trends/pkg/contracts"
 )
 
+var (
+    green = "text-green-600"
+    red = "text-red-700"
+    blue = "text-blue-500"
+    darkblue = "text-blue-900"
+    magenta = "text-fuchsia-500"
+    purple = "text-purple-500"
+    violet = "text-violet-500"
+    gold = "text-yellow-500"
+)
+
 templ Summary(id string, symbol *contracts.Summary) {
-    <div id={ id }>
-        <div class="row-gap-2 grid grid-cols-15 md:grid-cols-15" >
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-                <div class="font-heading text-[2rem] dark:text-white lg:text-2xl xl:text-1xl">
-                    { id }
-                </div>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-                
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-                
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-            
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-            
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-            
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-            
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-            
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-            
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-            
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-            
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-            
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-            
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-            <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
-            
-                <div class="font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl">
-                    13.3K
-                </div>
-                <p class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
-                    CP
-                </p>
-            </div>
-        </div>
-    </div>
+    @Stat("Close", symbol.Close, "")
+    @Stat("High", symbol.High, "")
+    @Stat("Low", symbol.Low, "")
+    @Stat("Average", symbol.Average, "")
+    @Stat("Ema20", symbol.Ema20, "")
+    
+    if symbol.Close > symbol.Trend {
+        @Stat("Trend", symbol.Trend, green)
+    } else {
+        @Stat("Trend", symbol.Trend, red)
+    }
+
+    
+    if symbol.Close > symbol.Ema5 {
+        @Stat("Ema5", symbol.Ema5, green)
+    } else if symbol.Close > symbol.Average {
+        @Stat("Ema5", symbol.Ema5, blue)
+    } else {
+        @Stat("Ema5", symbol.Ema5, red)   
+    }
+    
+    
+    
+    if symbol.Close > symbol.Trend {
+        @Stat("HL3", symbol.HL3, magenta)
+    } else {
+        @Stat("HL3", symbol.HL3, violet)
+    }
+    
+    
+    if symbol.RSI > 69 {
+        @Stat("RSI", symbol.RSI, darkblue)
+    } else if symbol.RSI > 49 {
+        @Stat("RSI", symbol.RSI, green)
+    } else {
+        @Stat("RSI", symbol.RSI, red)
+    }
+    
+    
+    if symbol.Close > symbol.Trend {
+        @Stat("LowerL", symbol.LowerL, green)
+    } else {
+        @Stat("LowerL", symbol.LowerL, red)
+    }
+    
+    if symbol.Close > symbol.Trend {
+        @Stat("Barish", symbol.Barish, gold)
+    } else {
+        @Stat("Barish", symbol.Barish, red)
+    }
+    
+    if symbol.Close > symbol.Trend {
+        @Stat("Barish", symbol.Support, purple)
+    } else {
+        @Stat("Barish", symbol.Support, red)
+    }
+    
+    if symbol.Close > symbol.Trend {
+        @Stat("Sell", symbol.Support, darkblue)
+    } else {
+        @Stat("Sell", symbol.Support, red)
+    }
+
+    @Stat("Prev-Buy", symbol.PreviousBuy, "")
 }

@@ -50,7 +50,6 @@ func HTMXUpdateData(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 	// Read messages from the client.
 	for {
-		time.Sleep(5 * time.Second)
 		fmt.Println(i)
 		c := components.Message(key, s)
 		b := &bytes.Buffer{}
@@ -69,7 +68,7 @@ func HTMXUpdateData(w http.ResponseWriter, r *http.Request) {
 
 		i++
 		s.Close = i
-		time.Sleep(10 * time.Second)
+		time.Sleep(20 * time.Second)
 	}
 }
 

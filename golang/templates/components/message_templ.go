@@ -11,7 +11,6 @@ import "io"
 import "bytes"
 
 import "github.com/vsheoran/trends/pkg/contracts"
-import "fmt"
 
 func Message(id string, symbol *contracts.Summary) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
@@ -33,26 +32,21 @@ func Message(id string, symbol *contracts.Summary) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(id)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates\components\message.templ`, Line: 10, Col: 24}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates\components\message.templ`, Line: 9, Col: 24}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", symbol.Close))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates\components\message.templ`, Line: 18, Col: 55}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+		templ_7745c5c3_Err = Summary(id, symbol).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] font-bold dark:text-white lg:text-2xl xl:text-1xl\">13.3K\r</div><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base\">CP\r</p></div></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
