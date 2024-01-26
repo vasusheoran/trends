@@ -1,0 +1,8 @@
+package components
+
+import "github.com/vsheoran/trends/pkg/contracts"
+
+templ AddSummaryListWithButton(data map[string]*contracts.Summary) {
+    @AddTickerButton()
+    @SummaryData(data)
+}

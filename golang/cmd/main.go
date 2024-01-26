@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/vsheoran/trends/services/socket"
-	http2 "github.com/vsheoran/trends/transport/http"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/vsheoran/trends/services/socket"
+	http2 "github.com/vsheoran/trends/transport/http"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -77,6 +78,7 @@ func initHTTP(g *run.Group, services http2.Services) {
 	subRouter := router.PathPrefix("/api").Subrouter()
 
 	http2.ServeHTTP(logger, subRouter, services)
+	http2.SertHTTP2(logger, router, services)
 
 	srv := &http.Server{
 		Handler: handler,

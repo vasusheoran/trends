@@ -31,4 +31,6 @@ const (
 	SasSymbolKey = "sasSymbol"
 	FreezeKey    = "freeze"
 	SocketAPI    = "/ws/{sasSymbol}"
+
+	IndexHTMX = "/htmx/index"
 )

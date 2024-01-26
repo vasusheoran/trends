@@ -19,12 +19,13 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/vsheoran/trends/services/database"
 	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/services/listing"
 	"github.com/vsheoran/trends/services/socket"
 	"github.com/vsheoran/trends/services/ticker"
-	"net/http"
 
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
@@ -52,6 +53,19 @@ func ServeHTTP(l log.Logger, router *mux.Router, services Services) {
 	router.Path(constants.SymbolsAPI).HandlerFunc(ListingsHandlerFunc).Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
 	router.Path(constants.SymbolAPI).HandlerFunc(ListingsHandlerFunc).Methods(http.MethodPatch, http.MethodPut, http.MethodDelete, http.MethodOptions)
 	router.Path(constants.SocketAPI).HandlerFunc(SocketHandleFunc).Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+
+}
+
+func SertHTTP2(l log.Logger, router *mux.Router, services Services) {
+	logger = log.With(l, "method", "ServeHTTP")
+
+	router.Path("/").HandlerFunc(HTMXSummaryHandlerFunc).Methods(http.MethodGet)
+	router.Path("/add-ticker").HandlerFunc(HTMXAddTickerFunc).Methods(http.MethodGet)
+
+	router.Path("/ws/ticker").HandlerFunc(HTMXUpdateData).Methods(http.MethodGet)
+
+	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 }
 

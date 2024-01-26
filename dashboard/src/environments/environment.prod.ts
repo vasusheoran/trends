@@ -1,6 +1,8 @@
+import * as process from 'process'
+
 export const environment = {
   production: true,
-  socketUrl: "ws://localhost:5000/api/ws/",
+  socketUrl: "ws://localhost/api/ws/",
   apiUrl: 'http://localhost:5000',
-  grpcURL: 'http://localhost:5001'
+  grpcURL: 'http://localhost:12002'
 };

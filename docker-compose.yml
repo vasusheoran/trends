@@ -3,6 +3,7 @@ services:
   web:
     environment:
       - TZ=Asia/Kolkata
+      - API_URL=127.0.0.1
     build:
       context: ./dashboard
       dockerfile: prod.dockerfile

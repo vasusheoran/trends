@@ -1,12 +1,13 @@
 // This file can be replaced during build by using the `fileReplacements` array.
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
+import * as process from 'process'
 
 export const environment = {
   production: false,
-  socketUrl: "ws://localhost:5000/api/ws/",
-  apiUrl: 'http://localhost:5000',
-  grpcURL: 'http://localhost:12002'
+  socketUrl: "ws://65.2.179.35/api/ws/",
+  apiUrl: 'http://65.2.179.35:5000',
+  grpcURL: 'http://65.2.179.35:12002'
 };
 
 /*

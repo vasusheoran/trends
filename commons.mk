@@ -5,9 +5,12 @@ BASH_CMD = /bin/bash -c
 CUR_DIR = $(shell pwd)
 NODE_IMAGE = node:16
 NPM_BUILD_CMD = npm i
+NPM_BUILD_PROD_CMD = npm run build:prod
 NPM_PKG_STAGE_CMD = npm run start
 USER_ID := $(shell id -u)
 GROUP_ID := $(shell id -g)
+ENV_VAR := -e API_KEY=127.0.0.1
+
 
 # NPM_CMN_ARG_DR_LINUX =	--net=host 
 NPM_CMN_ARG_DR_LINUX =	--name web \
@@ -18,7 +21,7 @@ NPM_PXY_ARG_DR_LINUX = -e HOME=. \
 	-e NPM_CONFIG_CACHE="${ROOT}/dashboard/.npm" \
 	-u ${USER_ID}:${GROUP_ID}
 
-NPM_ARG_DR_LINUX = ${NPM_CMN_ARG_DR_LINUX} ${NPM_PXY_ARG_DR_LINUX}
+NPM_ARG_DR_LINUX = ${ENV_VAR} ${NPM_CMN_ARG_DR_LINUX} ${NPM_PXY_ARG_DR_LINUX}
 
 NPM_DR_LINUX = docker run --rm \
 	${NPM_ARG_DR_LINUX} \

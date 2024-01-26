@@ -1,0 +1,35 @@
+package templates
+
+import "github.com/vsheoran/trends/pkg/contracts"
+import "github.com/vsheoran/trends/templates/components"
+
+
+templ Index(data map[string]*contracts.Summary) {
+    <html>
+        <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <link href="/css/output.css" rel="stylesheet"/>
+			<script src="https://unpkg.com/htmx.org@1.9.8"></script>
+			<script src="https://unpkg.com/htmx.org/dist/ext/multi-swap.js"></script>
+			<script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
+			<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"
+			/>
+			<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+		    <title>Trends</title>
+        </head>
+        <body>
+            // <div class="w-screen">
+				// <div class="w-screen flex flex-col justify-between">
+				<div class="w-screen flex flex-col justify-center items-center relative">
+				<div class="h-screen w-screen justify-center items-center relative">
+					@components.AddTickerButton()
+					@components.SummaryData(data)
+				</div>  
+                </div>
+			// </div>
+                    // @components.AddSummaryListWithButton(summarList)
+                  
+        </body>
+    </html>
+}

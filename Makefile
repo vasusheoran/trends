@@ -22,11 +22,14 @@ server:
 # -v /Users/vasusheoran/git/trends:/app \
 # -w /app/golang golang:1.17 /bin/bash -c CGO_ENABLED=0 go build -ldflags '-w -s -extldflags -static' -o main cmd/main.go
 	
-dashboard:
+dashboard-set-up:
 	${NPM_DR_LINUX} "${NPM_BUILD_CMD}"
 
 ui-run:
 	${NPM_RUN_LINUX} "${NPM_PKG_STAGE_CMD}"
+
+ui-build-prod:
+	${NPM_DR_LINUX} "${NPM_BUILD_PROD_CMD}"
 
 envoy-run:
 	docker run -p 4200:4200 -p 49153:49153 --rm --name web -v /Users/vasusheoran/git/trends:/Users/vasusheoran/git/trends -w /Users/vasusheoran/git/trends/dashboard  -e ENVOY_UID=777 -e ENVOY_GID=777  envoyproxy/envoy:v1.18-latest 
