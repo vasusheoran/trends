@@ -8,25 +8,23 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/vsheoran/trends/services/socket"
-	http2 "github.com/vsheoran/trends/transport/http"
-
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/gorilla/mux"
 	"github.com/oklog/run"
 	"github.com/rs/cors"
+
 	"github.com/vsheoran/trends/services/cards"
 	"github.com/vsheoran/trends/services/database"
 	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/services/listing"
+	"github.com/vsheoran/trends/services/socket"
 	"github.com/vsheoran/trends/services/ticker"
+	http2 "github.com/vsheoran/trends/transport/http"
 	"github.com/vsheoran/trends/utils"
 )
 
-var (
-	logger log.Logger
-)
+var logger log.Logger
 
 // cancelInterrupt type definition for channel
 type cancelInterrupt struct{}
@@ -47,7 +45,6 @@ func main() {
 }
 
 func initServer(g *run.Group) {
-
 	db := database.NewDatabase(logger)
 	cs := cards.New(logger)
 	hs := history.New(logger, db)
@@ -67,9 +64,15 @@ func initServer(g *run.Group) {
 }
 
 func initHTTP(g *run.Group, services http2.Services) {
-
 	c := cors.New(cors.Options{
-		AllowedMethods: []string{http.MethodPatch, http.MethodPut, http.MethodDelete, http.MethodOptions, http.MethodGet, http.MethodPost},
+		AllowedMethods: []string{
+			http.MethodPatch,
+			http.MethodPut,
+			http.MethodDelete,
+			http.MethodOptions,
+			http.MethodGet,
+			http.MethodPost,
+		},
 	})
 
 	router := mux.NewRouter()

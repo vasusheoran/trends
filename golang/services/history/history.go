@@ -3,7 +3,6 @@ package history
 import (
 	"errors"
 	"fmt"
-	"github.com/vsheoran/trends/services/database"
 	"io"
 	"net/http"
 	"os"
@@ -11,7 +10,9 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+
 	"github.com/vsheoran/trends/pkg/contracts"
+	"github.com/vsheoran/trends/services/database"
 	"github.com/vsheoran/trends/utils"
 )
 
@@ -34,14 +35,15 @@ type history struct {
 }
 
 func (s *history) UploadFile(symbol string, r *http.Request) error {
-	file, handler, err := r.FormFile("file_name")
+	file, handler, err := r.FormFile("file")
 	if err != nil {
 		level.Error(s.logger).Log("err", err.Error())
 		return err
 	}
 	defer file.Close()
 
-	level.Info(s.logger).Log("msg", "file uploaded successfully", "handler", handler.Filename, "symbol")
+	level.Info(s.logger).
+		Log("msg", "file uploaded successfully", "handler", handler.Filename, "symbol")
 	f, err := os.OpenFile(utils.HistoricalFilePath(symbol), os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		level.Error(s.logger).Log("err", err.Error())
@@ -56,7 +58,8 @@ func (s *history) UploadFile(symbol string, r *http.Request) error {
 		return err
 	}
 
-	level.Info(s.logger).Log("msg", "file uploaded successfully", "handler_filename", handler.Filename, "path", utils.HistoricalFilePath(symbol))
+	level.Info(s.logger).
+		Log("msg", "file uploaded successfully", "handler_filename", handler.Filename, "path", utils.HistoricalFilePath(symbol))
 	return nil
 }
 

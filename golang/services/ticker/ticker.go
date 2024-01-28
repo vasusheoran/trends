@@ -3,14 +3,15 @@ package ticker
 import (
 	"errors"
 	"fmt"
-	"github.com/vsheoran/trends/services/cards"
-	"github.com/vsheoran/trends/services/history"
 	"math"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+
 	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
+	"github.com/vsheoran/trends/services/cards"
+	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/services/ma"
 )
 
@@ -18,6 +19,7 @@ type Ticker interface {
 	Init(key string) (contracts.Summary, error)
 	Update(key string, stock contracts.Stock) error
 	Get(key string) (contracts.Summary, error)
+	GetAllSummary() map[string]*contracts.Summary
 	Freeze(key string, st contracts.Stock) error
 }
 
@@ -67,6 +69,10 @@ func (s *ticker) Update(key string, stock contracts.Stock) error {
 	return nil
 }
 
+func (s *ticker) GetAllSummary() map[string]*contracts.Summary {
+	return s.summary
+}
+
 func (s *ticker) Get(key string) (contracts.Summary, error) {
 	var summary *contracts.Summary
 	var ok bool
@@ -86,11 +92,13 @@ func (s *ticker) Get(key string) (contracts.Summary, error) {
 func (s *ticker) Init(key string) (contracts.Summary, error) {
 	candles, err := s.historyService.Read(key)
 	if err != nil {
-		level.Error(s.logger).Log("msg", "failed to read history from database", "sasSymbol", key)
+		level.Error(s.logger).
+			Log("msg", "failed to read history from database", "sasSymbol", key, "err", err.Error())
 		return contracts.Summary{}, errors.New("error fetching data")
 	}
 	if candles == nil {
-		level.Error(s.logger).Log("msg", "failed to parse history from database", "sasSymbol", key)
+		level.Error(s.logger).
+			Log("msg", "failed to parse history from database", "sasSymbol", key, "err", err.Error())
 		return contracts.Summary{}, errors.New("error fetching data")
 	}
 
@@ -175,7 +183,6 @@ func (s *ticker) setNextValues(key string, cp, hp, lp float64) {
 	s.data[key].Future.NextEMACP20 = s.emaService.AddArray(key, constants.KeyCP20, cpNext)
 	s.data[key].Future.NextEMACPHP5 = s.emaService.AddArray(key, constants.KeyCP5, cpHpAv)
 	s.data[key].Future.NextEMACPHP20 = s.emaService.AddArray(key, constants.KeyCP20, cpHpAv)
-
 }
 
 func (s *ticker) updateSummaryMap(key string, card contracts.Card) {
@@ -206,8 +213,16 @@ func NewTicker(logger log.Logger, cardsSvc cards.Cards, hs history.History) Tick
 		summary:        map[string]*contracts.Summary{},
 		cardService:    cardsSvc,
 		historyService: hs,
-		emaService:     ma.NewExponentialMovingAverage(logger, []string{"CP5", "CP20"}, []int{5, 20}),
+		emaService: ma.NewExponentialMovingAverage(
+			logger,
+			[]string{"CP5", "CP20"},
+			[]int{5, 20},
+		),
 		averageService: ma.NewMovingAverage(logger, []string{"CP10", "CP50"}, []int{10, 50}),
-		emaPosNegSvc:   ma.NewEMAPosNeg(logger, []string{constants.KeyDiffCpPos, constants.KeyDiffCpNeg}, []int{15, 15}),
+		emaPosNegSvc: ma.NewEMAPosNeg(
+			logger,
+			[]string{constants.KeyDiffCpPos, constants.KeyDiffCpNeg},
+			[]int{15, 15},
+		),
 	}
 }
