@@ -73,7 +73,7 @@ func SertHTTP2(l log.Logger, router *mux.Router, services Services) {
 	router.Path("/").HandlerFunc(HTMXSummaryHandlerFunc).Methods(http.MethodGet)
 	router.Path("/add-ticker-input").HandlerFunc(HTMXAddTickerInputFunc).Methods(http.MethodGet)
 	router.Path("/add-ticker").HandlerFunc(HTMXAddTickerFunc).Methods(http.MethodPost)
-	router.Path("/search").HandlerFunc(HTMXSearchTickerFunc).Methods(http.MethodPost)
+	// router.Path("/search").HandlerFunc(HTMXSearchTickerFunc).Methods(http.MethodPost)
 
 	router.Path("/ws/ticker/{SasSymbolKey}").HandlerFunc(HTMXUpdateData).Methods(http.MethodGet)
 
