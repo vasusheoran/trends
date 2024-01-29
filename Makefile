@@ -1,67 +1,59 @@
-include commons.mk
+PACKAGES := $(shell go list ./...)
+name := $(shell basename ${PWD})
 
-SERVICE_NAME = dashboard
-SERVICE_LANG = ts
+all: help
 
-USERNAME := $(shell whoami)
-WORKSPACE := workspace
+.PHONY: help
+help: Makefile
+	@echo
+	@echo " Choose a make command to run"
+	@echo
+	@sed -n 's/^##//p' $< | column -t -s ':' |  sed -e 's/^/ /'
+	@echo
 
-.PHONY: all build run
+## init: initialize project (make init module=github.com/user/project)
+.PHONY: init
+init:
+	go mod init ${module}
+	go install github.com/cosmtrek/air@latest
+	asdf reshim golang
 
-server:
-# go build -ldflags '-w -s -extldflags -static' -o main golang/cmd/main.go
-	docker run -it --rm --net=host -e GOOS=linux -e GOARCH=amd64 -e GOGC="" \
-	-v /home/$(USERNAME)/build/go:/go \
-	-v /home/$(USERNAME)/build/go_cache:/root/.cache/go-build \
-	-v /home/$(USERNAME)/$(WORKSPACE)/git/trends:/app \
-	-w /app/golang golang:1.17 /bin/bash \
-	-c CGO_ENABLED=0 go build -ldflags '-w -s -extldflags -static' -o main cmd/main.go
-# docker run --rm --net=host -e GOOS=linux -e GOARCH=amd64 -e GOGC="" \
-# -v /Users/vasusheoran/go/darwin_amd64/go:/go \
-# -v /Users/vasusheoran/go/darwin_amd64/go_cache:/root/.cache/go-build \
-# -v /Users/vasusheoran/git/trends:/app \
-# -w /app/golang golang:1.17 /bin/bash -c CGO_ENABLED=0 go build -ldflags '-w -s -extldflags -static' -o main cmd/main.go
-	
-dashboard-set-up:
-	${NPM_DR_LINUX} "${NPM_BUILD_CMD}"
+## vet: vet code
+.PHONY: vet
+vet:
+	go vet $(PACKAGES)
 
-ui-run:
-	${NPM_RUN_LINUX} "${NPM_PKG_STAGE_CMD}"
+## test: run unit tests
+.PHONY: test
+test:
+	go test -race -cover $(PACKAGES)
 
-ui-build-prod:
-	${NPM_DR_LINUX} "${NPM_BUILD_PROD_CMD}"
+## build: build a binary
+.PHONY: build
+build: test
+	go build -o ./tmp/main -v cmd/main.go
 
-envoy-run:
-	docker run -p 4200:4200 -p 49153:49153 --rm --name web -v /Users/vasusheoran/git/trends:/Users/vasusheoran/git/trends -w /Users/vasusheoran/git/trends/dashboard  -e ENVOY_UID=777 -e ENVOY_GID=777  envoyproxy/envoy:v1.18-latest 
+## docker-build: build project into a docker container image
+.PHONY: docker-build
+docker-build: test
+	GOPROXY=direct docker buildx build -t ${name} .
 
-ui-update:
-	${NPM_UPDATE_ANGULAR} "${UPDATE_ANGULAR}"
+## docker-run: run project in a container
+.PHONY: docker-run
+docker-run:
+	docker run -it --rm -p 5000:5000 ${name}
 
-image:
-	docker-compose build
-	doker-compose push
-	
-# protobufs-go: 
-# 	cd golang/grpc/proto && protoc --go_out=../client --go_opt=paths=source_relative \
-# 		--go-grpc_out=../client --go-grpc_opt=paths=source_relative \
-# 		ticker.proto
+## start: build and run local project
+.PHONY: start
+start: build
+	air
 
-# protobufs-ts: 
-# 	protoc --plugin=protoc-gen-ts="/Users/vasusheoran/git/trends/dashboard/node_modules/.bin/protoc-gen-ts" \
-#        --js_out="import_style=commonjs,binary:dashboard/src/app/generated" \
-#        --ts_out="service=grpc-web:dashboard/src/app/generated" \
-#        --proto_path="golang/grpc/proto"  golang/grpc/proto/ticker.proto
+## css: build tailwindcss
+.PHONY: css
+css:
+	tailwindcss -i css/input.css -o css/output.css --minify
 
-# protoc -I="golang/grpc/proto" golang/grpc/proto/ticker.proto \
-# --js_out=import_style=commonjs,binary:dashboard/src/app/generated \
-# --grpc-web_out=import_style=typescript,mode=grpcwebtext:dashboard/src/app/generated
-
-
-gen-protobufs: protobufs-go protobufs-ts
-# Target pattern to match any from parent
-%: ;
-
-# > sudo mv ~/Downloads/protoc-gen-grpc-web-1.2.1-darwin-x86_64 \
-#     /usr/local/bin/protoc-gen-grpc-web
-# Password:
-# >  chmod +x /usr/local/bin/protoc-gen-grpc-web
+## css-watch: watch build tailwindcss
+.PHONY: css-watch
+css-watch:
+	tailwindcss -i css/input.css -o css/output.css --watch
