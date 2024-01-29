@@ -12,7 +12,7 @@ import "bytes"
 
 import "github.com/vsheoran/trends/pkg/contracts"
 
-func AddTicker(id string, s map[string]*contracts.Summary) templ.Component {
+func AddTicker(data contracts.HTMXData) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -29,7 +29,7 @@ func AddTicker(id string, s map[string]*contracts.Summary) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = SummaryData(s).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = SummaryData(data).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -193,4 +193,6 @@ dev*.dockerfile
 *npm.json
 
 # golang
-tmp/
+**/tmp/
+**/data
+**/.idea

@@ -1,25 +1,52 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+
 	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/services/socket"
 	"github.com/vsheoran/trends/utils"
-	"net/http"
+)
+
+var (
+// mutex   = &sync.Mutex{}
+// connMap = map[string]*websocket.Conn{}
 )
 
 func SocketHandleFunc(w http.ResponseWriter, r *http.Request) {
+	logger.Log("msg", "SocketHandleFunc")
+
 	var err error
-	var conn *websocket.Conn
 
 	params := mux.Vars(r)
 	sasSymbol := params[constants.SasSymbolKey]
 
+	// var conn *websocket.Conn
+
+	// mutex.Lock()
+	//
+	// conn, ok := connMap[sasSymbol]
+	// if !ok {
+	//   conn = &websocker.conn{}
+	//   connMap[sasSymbol] = conn
+	// }
+	//
+	// mutex.Unlock()
+	//
+
 	if r.Method == http.MethodGet {
-		conn, err = (&websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}).Upgrade(w, r, nil)
+
+		conn := &websocket.Conn{}
+		conn, err = (&websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}).Upgrade(
+			w,
+			r,
+			nil,
+		)
 
 		uid := uuid.New()
 
@@ -35,10 +62,26 @@ func SocketHandleFunc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodPost {
+		logger.Log("msg", "SocketHandleFunc", "method", "POST")
+
 		var st contracts.Stock
-		utils.Decode(r.Body, &st)
+		err := utils.Decode(r.Body, &st)
+		if err != nil {
+			logger.Log("msg", "SocketHandleFunc", "err", err.Error())
+			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.Encode(w, ErrorResponse{Error: err.Error()})
+			return
+		}
 
 		err = svc.HubService.UpdateStock(sasSymbol, st)
+		if err != nil {
+			logger.Log("msg", "SocketHandleFunc", "err", err.Error())
+			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
+			w.WriteHeader(http.StatusInternalServerError)
+			utils.Encode(w, ErrorResponse{Error: err.Error()})
+			return
+		}
 
 		if err == nil {
 			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)

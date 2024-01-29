@@ -2,7 +2,7 @@ package components
 
 import "github.com/vsheoran/trends/pkg/contracts"
 
-templ AddTicker(id string, s map[string]*contracts.Summary) {
+templ AddTicker(data contracts.HTMXData) {
     @AddTickerButton()
-    @SummaryData(s)
+    @SummaryData(data)
 }

@@ -1,11 +1,9 @@
 package http
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -13,6 +11,7 @@ import (
 	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/templates"
+	"github.com/vsheoran/trends/templates/common"
 	"github.com/vsheoran/trends/templates/components"
 	"github.com/vsheoran/trends/utils"
 )
@@ -24,66 +23,14 @@ type Film struct {
 
 var (
 	// Create a new WebSocket server.
-	wsUpgrader = websocket.Upgrader{}
-	data       = map[string]*contracts.Summary{}
-	index      int
+	wsUpgrader     = websocket.Upgrader{}
+	ErrKeyNotFound = fmt.Errorf("Ticker name is required")
 )
-
-func HTMXUpdateData(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	key := params[constants.SasSymbolKey]
-
-	logger.Log("msg", "ListingsHandlerFunc", "path", r.URL.Path, "method", r.Method, "ticker", key)
-
-	if len(key) == 0 {
-		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.Encode(w, ErrorResponse{Error: "key cannot be empty"})
-		return
-	}
-
-	// Upgrade the HTTP connection to a WebSocket connection.
-	conn, err := wsUpgrader.Upgrade(w, r, nil)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	s, ok := data[key]
-	if !ok {
-		s = &contracts.Summary{}
-		data[key] = s
-	}
-
-	i := 1.0
-
-	defer conn.Close()
-	// Read messages from the client.
-	for {
-		fmt.Println(i)
-		c := components.Message(key, s)
-		b := &bytes.Buffer{}
-		c.Render(context.Background(), b)
-		// s.Close = i
-		// c := components.Message(key, s)
-		//
-		// c.Render(context.Background(), b)
-		// // Send a message back to the client.
-		// err = conn.WriteMessage(websocket.TextMessage, b.Bytes())
-		err = conn.WriteMessage(websocket.TextMessage, b.Bytes())
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		i++
-		s.Close = i
-		time.Sleep(20 * time.Second)
-	}
-}
 
 // HTMXSummaryHandlerFunc returns the index.html template, with film data
 func HTMXSummaryHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	logger.Log("msg", "HTMXSummaryHandlerFunc")
+
 	data := svc.TickerService.GetAllSummary()
 	if data == nil {
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
@@ -92,12 +39,14 @@ func HTMXSummaryHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component := templates.Index(data)
+	component := templates.Index(contracts.HTMXData{SummaryMap: data})
 	component.Render(context.Background(), w)
 }
 
 // HTMXAddTickerFunc returns the template block with the newly added film, as an HTMX response
 func HTMXAddTickerInputFunc(w http.ResponseWriter, r *http.Request) {
+	logger.Log("msg", "HTMXAddTickerInputFunc")
+
 	// render component
 	component := components.AddTickerInput()
 	component.Render(context.Background(), w)
@@ -106,7 +55,7 @@ func HTMXAddTickerInputFunc(w http.ResponseWriter, r *http.Request) {
 // HTMXAddTickerFunc returns the template block with the newly added film, as an HTMX response
 func HTMXAddTickerFunc(w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("ticker-name")
-	logger.Log("msg", "ListingsHandlerFunc", "path", r.URL.Path, "method", r.Method, "key", key)
+	logger.Log("msg", "HTMXAddTickerFunc", "path", r.URL.Path, "method", r.Method, "key", key)
 
 	if len(key) == 0 {
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
@@ -141,21 +90,42 @@ func HTMXAddTickerFunc(w http.ResponseWriter, r *http.Request) {
 		utils.Encode(w, ErrorResponse{Error: "no ticker data found"})
 		return
 	}
-	component := components.AddTicker(key, data)
+	component := components.AddTicker(contracts.HTMXData{SummaryMap: data})
 	component.Render(context.Background(), w)
 }
 
-func HTMXSearchTickerFunc(w http.ResponseWriter, r *http.Request) {
-	key := r.FormValue("search")
+func HTMXRemoveTickerFunc(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	key := params[constants.SasSymbolKey]
+
+	logger.Log("msg", "HTMXRemoveTickerFunc", "path", r.URL.Path, "method", r.Method, "key", key)
 
 	if len(key) == 0 {
-		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.Encode(w, ErrorResponse{Error: "search key cannot be empty"})
+		c := common.Error("tickers", ErrKeyNotFound)
+		c.Render(context.Background(), w)
 		return
 	}
 
-	listings := svc.ListingService.Read()
-	c := components.SearchTickerResult(listings)
-	c.Render(context.Background(), w)
+	logger.Log("msg", "removing ticker", "key", key)
+
+	err := svc.TickerService.Remove(key)
+	if err != nil {
+		logger.Log("err", "failed to remove ticker", "msg", err.Error())
+		c := common.Error("tickers", err)
+		c.Render(context.Background(), w)
+		return
+	}
+
+	data := svc.TickerService.GetAllSummary()
+	if data == nil {
+		logger.Log("err", "failed to fetch updated summary", "msg", err.Error())
+		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
+		w.WriteHeader(http.StatusBadRequest)
+		utils.Encode(w, ErrorResponse{Error: "no ticker data found"})
+		return
+	}
+
+	logger.Log("msg", "ticker removed successfully", "key", key)
+	component := components.AddTicker(contracts.HTMXData{SummaryMap: data})
+	component.Render(context.Background(), w)
 }

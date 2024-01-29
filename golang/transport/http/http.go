@@ -62,9 +62,6 @@ func ServeHTTP(l log.Logger, router *mux.Router, services Services) {
 	router.Path(constants.SymbolAPI).
 		HandlerFunc(ListingsHandlerFunc).
 		Methods(http.MethodPatch, http.MethodPut, http.MethodDelete, http.MethodOptions)
-	router.Path(constants.SocketAPI).
-		HandlerFunc(SocketHandleFunc).
-		Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 }
 
 func SertHTTP2(l log.Logger, router *mux.Router, services Services) {
@@ -73,9 +70,20 @@ func SertHTTP2(l log.Logger, router *mux.Router, services Services) {
 	router.Path("/").HandlerFunc(HTMXSummaryHandlerFunc).Methods(http.MethodGet)
 	router.Path("/add-ticker-input").HandlerFunc(HTMXAddTickerInputFunc).Methods(http.MethodGet)
 	router.Path("/add-ticker").HandlerFunc(HTMXAddTickerFunc).Methods(http.MethodPost)
-	// router.Path("/search").HandlerFunc(HTMXSearchTickerFunc).Methods(http.MethodPost)
+	router.Path("/remove-ticker/{" + constants.SasSymbolKey + "}").
+		HandlerFunc(HTMXRemoveTickerFunc).
+		Methods(http.MethodPost)
+	router.Path("/update/ticker/{"+constants.SasSymbolKey+"}").
+		HandlerFunc(SocketHandleFunc).
+		Methods(http.MethodPost, http.MethodGet)
 
-	router.Path("/ws/ticker/{SasSymbolKey}").HandlerFunc(HTMXUpdateData).Methods(http.MethodGet)
+	router.Path("/ws/ticker/{"+constants.SasSymbolKey+"}").
+		HandlerFunc(SocketHandleFunc).
+		Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+
+	// router.Path("/ws/ticker/{" + constants.SasSymbolKey + "}").
+	// HandlerFunc(HTMXUpdateData).
+	// Methods(http.MethodGet)
 
 	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
 	router.PathPrefix("/static/").

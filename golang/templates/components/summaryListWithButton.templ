@@ -2,7 +2,7 @@ package components
 
 import "github.com/vsheoran/trends/pkg/contracts"
 
-templ AddSummaryListWithButton(data map[string]*contracts.Summary) {
+templ AddSummaryListWithButton(data contracts.HTMXData) {
     @AddTickerButton()
     @SummaryData(data)
 }

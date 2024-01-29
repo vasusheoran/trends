@@ -1,13 +1,16 @@
 package socket
 
 import (
-	"encoding/json"
-	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
-	"github.com/vsheoran/trends/pkg/contracts"
+	"bytes"
+	"context"
 	"time"
 
+	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/log/level"
 	"github.com/gorilla/websocket"
+
+	"github.com/vsheoran/trends/pkg/contracts"
+	"github.com/vsheoran/trends/templates/components"
 )
 
 const (
@@ -104,15 +107,19 @@ func (c *Client) writePump() {
 				return
 			}
 
-			jsonBytes, err := json.Marshal(SocketResponse{
-				Summary: summary,
-			})
-			if err != nil {
-				level.Error(c.logger).Log("msg", "failed to marshal summary", "err", err.Error())
-				continue
-			}
+			htmlBytes := &bytes.Buffer{}
+			message := components.Message(summary.Ticker, &summary, nil)
+			message.Render(context.Background(), htmlBytes)
 
-			_, err = w.Write(jsonBytes)
+			// jsonBytes, err := json.Marshal(SocketResponse{
+			// 	Summary: summary,
+			// })
+			// if err != nil {
+			// 	level.Error(c.logger).Log("msg", "failed to marshal summary", "err", err.Error())
+			// 	continue
+			// }
+			//
+			_, err = w.Write(htmlBytes.Bytes())
 
 			// Add queued chat messages to the current websocket message.
 			//n := len(c.send)
@@ -130,7 +137,8 @@ func (c *Client) writePump() {
 				return
 			}
 
-			level.Debug(c.logger).Log("msg", "successfully published data to client", "symbol", c.ticker, "uuid", c.uuid)
+			level.Debug(c.logger).
+				Log("msg", "successfully published data to client", "symbol", c.ticker, "uuid", c.uuid)
 		}
 	}
 }

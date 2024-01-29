@@ -11,19 +11,24 @@ import (
 	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/services/cards"
+	custom_errors "github.com/vsheoran/trends/services/errors"
 	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/services/ma"
 )
+
+var ErrTickerNotInitialised = fmt.Errorf("Ticker has not beed added.")
 
 type Ticker interface {
 	Init(key string) (contracts.Summary, error)
 	Update(key string, stock contracts.Stock) error
 	Get(key string) (contracts.Summary, error)
+	Remove(key string) error
 	GetAllSummary() map[string]*contracts.Summary
 	Freeze(key string, st contracts.Stock) error
 }
 
 type ticker struct {
+	chanMap        map[string]chan *contracts.Summary
 	logger         log.Logger
 	data           map[string]*contracts.TickerInfo
 	summary        map[string]*contracts.Summary
@@ -56,10 +61,11 @@ func (s *ticker) Freeze(key string, st contracts.Stock) error {
 	return nil
 }
 
-func (s *ticker) Update(key string, stock contracts.Stock) error {
+func (s *ticker) update(key string, stock contracts.Stock) error {
 	if _, ok := s.data[key]; !ok {
-		msg := fmt.Sprintf("ticker '%s' has not been initialized", key)
-		return errors.New(msg)
+		err := custom_errors.NewKeyNotFoundError(key)
+		s.logger.Log("err", err.Error())
+		return err
 	}
 	s.setNextValues(key, stock.CP, stock.HP, stock.LP)
 
@@ -69,16 +75,52 @@ func (s *ticker) Update(key string, stock contracts.Stock) error {
 	return nil
 }
 
+func (s *ticker) Update(key string, stock contracts.Stock) error {
+	if _, ok := s.data[key]; !ok {
+		err := custom_errors.NewKeyNotFoundError(key)
+		return err
+	}
+
+	go s.update(key, stock)
+
+	return nil
+}
+
 func (s *ticker) GetAllSummary() map[string]*contracts.Summary {
 	return s.summary
+}
+
+func (s *ticker) Remove(key string) error {
+	if _, ok := s.summary[key]; ok {
+		delete(s.summary, key)
+	} else {
+		s.logger.Log("info", "no ticker summary found", "key", key)
+	}
+
+	if _, ok := s.data[key]; ok {
+		delete(s.data, key)
+	} else {
+		s.logger.Log("info", "no ticker data found", "key", key)
+	}
+
+	keys := make([]string, len(s.summary))
+
+	i := 0
+	for k := range s.summary {
+		keys[i] = k
+		i++
+	}
+
+	s.logger.Log("msg", "removed ticker from summary", "key", key, "keys", keys)
+
+	return nil
 }
 
 func (s *ticker) Get(key string) (contracts.Summary, error) {
 	var summary *contracts.Summary
 	var ok bool
 	if _, ok = s.data[key]; !ok {
-		msg := fmt.Sprintf("ticker '%s' has not been initialized", key)
-		return contracts.Summary{}, errors.New(msg)
+		return contracts.Summary{Ticker: key}, ErrTickerNotInitialised
 	}
 	if summary, ok = s.summary[key]; !ok {
 		card := s.cardService.Get(*s.data[key])
@@ -187,6 +229,7 @@ func (s *ticker) setNextValues(key string, cp, hp, lp float64) {
 
 func (s *ticker) updateSummaryMap(key string, card contracts.Card) {
 	s.summary[key] = &contracts.Summary{
+		Ticker:      key,
 		Close:       s.data[key].Future.NextCP[0],
 		High:        s.data[key].Future.NextHP[0],
 		Low:         s.data[key].Future.NextLP[0],
