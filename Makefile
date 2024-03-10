@@ -1,5 +1,6 @@
 PACKAGES := $(shell go list ./...)
-name := $(shell basename ${PWD})
+# name := $(shell basename ${PWD})
+name := h20180061/trends:1.0
 
 all: help
 
@@ -30,12 +31,12 @@ test:
 
 ## build: build a binary
 .PHONY: build
-build: test
-	go build -o ./tmp/main -v cmd/main.go
+build:
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./tmp/main -v cmd/main.go
 
 ## docker-build: build project into a docker container image
 .PHONY: docker-build
-docker-build: test
+docker-build:
 	GOPROXY=direct docker buildx build -t ${name} .
 
 ## docker-run: run project in a container

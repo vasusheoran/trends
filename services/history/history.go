@@ -6,7 +6,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
+	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -33,6 +35,7 @@ type history struct {
 	logger log.Logger
 	dbSvc  database.Database
 }
+
 
 func (s *history) UploadFile(symbol string, r *http.Request) error {
 	file, handler, err := r.FormFile("file")
@@ -70,7 +73,11 @@ func (s *history) Read(sasSymbol string) ([]contracts.Stock, error) {
 		return nil, err
 	}
 
-	return s.parseData(data), nil
+	st := s.parseData(data)
+
+	s.Write(sasSymbol+"-1", st)
+
+	return st, nil
 }
 
 func (s *history) Write(sasSymbol string, st []contracts.Stock) error {
@@ -116,10 +123,26 @@ func (s *history) parseHeaders(records [][]string, index *historyDataIndex) {
 	}
 }
 
+func (s *history) parseDate(dateStr string) (time.Time, error) {
+	// Define the layout of the date string
+	layout := "01-Jan-06"
+
+	// Parse the date string using the layout
+	date, err := time.Parse(layout, dateStr)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	// Return the parsed date
+	return date, nil
+}
+
 func (s *history) parseData(records [][]string) []contracts.Stock {
 	if records == nil {
 		return []contracts.Stock{}
 	}
+
+	level.Info(s.logger).Log("msg", "parsing CSV data")
 
 	var index historyDataIndex
 	s.parseHeaders(records, &index)
@@ -129,10 +152,17 @@ func (s *history) parseData(records [][]string) []contracts.Stock {
 	var data []contracts.Stock
 	var err error
 
-	for _, row := range records {
+	for i, row := range records {
+		if len(row) == 0 {
+			level.Error(s.logger).Log("err", "no data found", "row", i)
+			continue
+		}
 		var temp contracts.Stock
 
-		temp.Date = row[index.Date]
+		if temp.Time, err = s.parseDate(row[index.Date]); err != nil {
+			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
+			continue
+		}
 		if temp.CP, err = strconv.ParseFloat(row[index.CP], 64); err != nil {
 			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
 			continue
@@ -145,9 +175,11 @@ func (s *history) parseData(records [][]string) []contracts.Stock {
 			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
 			continue
 		}
-
+		temp.Date = row[index.Date]
 		data = append(data, temp)
 	}
+
+	sort.Sort(contracts.ByTime(data))
 	return data
 }
 

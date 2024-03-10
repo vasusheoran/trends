@@ -65,7 +65,9 @@ func (c *Client) readPump() {
 			Ticker: c.ticker,
 			UUID:   c.uuid,
 		}
-		c.conn.Close()
+		if c.conn != nil {
+			c.conn.Close()
+		}
 	}()
 
 	for {

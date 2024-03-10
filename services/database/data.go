@@ -2,7 +2,10 @@ package database
 
 import (
 	"encoding/csv"
+	"errors"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -18,7 +21,7 @@ type DB struct {
 }
 
 func (d *DB) Read(file string) ([][]string, error) {
-	var _, err = os.Stat(file)
+	_, err := os.Stat(file)
 	if err != nil {
 		level.Error(d.logger).Log("msg", "file does not exist", "err", err.Error())
 		return nil, err
@@ -50,16 +53,43 @@ func (d *DB) Write(path string, data [][]string) error {
 }
 
 func (d *DB) csvReader(path string) ([][]string, error) {
-
 	f, err := os.Open(path)
 	if err != nil {
 		level.Error(d.logger).Log("msg", "Unable to read input file "+path, "err", err)
 		return nil, err
 	}
 	defer f.Close()
+	records := [][]string{}
+	r := csv.NewReader(f)
+	for {
+		record, err := r.Read()
+		if err == io.EOF {
+			// Reached end of file, no more lines
+			break
+		} else if errors.Is(err, csv.ErrFieldCount) {
+			level.Error(d.logger).Log("msg", "skipping record", "err", err.Error())
+			continue
+		} else if err != nil {
+			// Handle any other error
+			level.Error(d.logger).Log("msg", "failed to read record", "err", err.Error())
+			return nil, err
+		}
+		// Check if line is empty (only whitespace and newline)
+		isEmpty := true
+		for _, field := range record {
+			if len(strings.TrimSpace(field)) > 0 {
+				isEmpty = false
+				break
+			}
+		}
 
-	csvReader := csv.NewReader(f)
-	return csvReader.ReadAll()
+		if !isEmpty {
+			// Not an empty line, return the record
+			records = append(records, record)
+		}
+	}
+
+	return records, nil
 }
 
 func NewDatabase(logger log.Logger) Database {
@@ -68,11 +98,11 @@ func NewDatabase(logger log.Logger) Database {
 
 func createFile(path string) error {
 	// check if file exists
-	var _, err = os.Stat(path)
+	_, err := os.Stat(path)
 
 	// create file if not exists
 	if os.IsNotExist(err) {
-		var file, err = os.Create(path)
+		file, err := os.Create(path)
 		if err != nil {
 			return err
 		}
