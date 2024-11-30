@@ -60,7 +60,7 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		var summary contracts.Summary
 		if err == nil {
-			summary, err = svc.TickerService.Init(sasSymbol)
+			summary, err = svc.TickerService.Init(sasSymbol, utils.HistoricalFilePath(sasSymbol))
 		}
 
 		if err == nil {

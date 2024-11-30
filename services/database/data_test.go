@@ -9,7 +9,7 @@ import (
 
 func TestDb_Read(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()
-	service := DB{
+	service := csvDatastore{
 		logger: logger,
 	}
 	const path = "/Users/vasusheoran/git/trends/golang/data/02-14-2021.csv"

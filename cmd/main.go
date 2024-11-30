@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/vsheoran/trends/services/database"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,13 +16,16 @@ import (
 	"github.com/rs/cors"
 
 	"github.com/vsheoran/trends/services/cards"
-	"github.com/vsheoran/trends/services/database"
 	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/services/listing"
 	"github.com/vsheoran/trends/services/socket"
 	"github.com/vsheoran/trends/services/ticker"
 	http2 "github.com/vsheoran/trends/transport/http"
 	"github.com/vsheoran/trends/utils"
+)
+
+const (
+	httpPort = "5001"
 )
 
 var logger log.Logger
@@ -45,9 +49,13 @@ func main() {
 }
 
 func initServer(g *run.Group) {
-	db := database.NewDatabase(logger)
+	sqlDB, err := database.NewSqlDatastore(logger, "")
+	if err != nil {
+		panic(err)
+	}
+	db := database.NewCSVDatastore(logger)
 	cs := cards.New(logger)
-	hs := history.New(logger, db)
+	hs := history.New(logger, db, sqlDB)
 	ts := ticker.NewTicker(logger, cs, hs)
 	ls := listing.New(logger, db)
 	hb := socket.NewHub(logger, ts)
@@ -85,14 +93,14 @@ func initHTTP(g *run.Group, services http2.Services) {
 
 	srv := &http.Server{
 		Handler: handler,
-		Addr:    ":5000",
+		Addr:    ":" + httpPort,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
 	g.Add(func() error {
-		level.Info(logger).Log("transport", "http", "addr", "5000")
+		level.Info(logger).Log("transport", "http", "addr", httpPort)
 		return srv.ListenAndServe()
 	}, func(error) {
 		level.Error(logger).Log("msg", "Http listen and Server failed to start")

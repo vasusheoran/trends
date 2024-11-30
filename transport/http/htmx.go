@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -32,6 +33,9 @@ func HTMXSummaryHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	logger.Log("msg", "HTMXSummaryHandlerFunc")
 
 	data := svc.TickerService.GetAllSummary()
+
+	byteData, _ := json.Marshal(data)
+	logger.Log("data", string(byteData))
 	if data == nil {
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 		w.WriteHeader(http.StatusBadRequest)
@@ -57,6 +61,7 @@ func HTMXAddTickerFunc(w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("ticker-name")
 	logger.Log("msg", "HTMXAddTickerFunc", "path", r.URL.Path, "method", r.Method, "key", key)
 
+	var err error
 	if len(key) == 0 {
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 		w.WriteHeader(http.StatusBadRequest)
@@ -64,7 +69,7 @@ func HTMXAddTickerFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := svc.HistoryService.UploadFile(key, r)
+	err = svc.HistoryService.UploadFile(key, r)
 	if err != nil {
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 		w.WriteHeader(http.StatusBadRequest)
@@ -72,13 +77,14 @@ func HTMXAddTickerFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = svc.TickerService.Init(key)
-	if err != nil {
+	path := utils.HistoricalFilePath(key)
+	_, err0 := svc.TickerService.Init(key, path)
+	if err0 != nil {
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 		w.WriteHeader(http.StatusBadRequest)
 		utils.Encode(
 			w,
-			ErrorResponse{Error: fmt.Sprintf("failed to initilize ticker: %s", err.Error())},
+			ErrorResponse{Error: fmt.Sprintf("failed to initilize ticker: %s", err0.Error())},
 		)
 		return
 	}
@@ -91,6 +97,7 @@ func HTMXAddTickerFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	component := components.AddTicker(contracts.HTMXData{SummaryMap: data})
+	//component := components.Summary("NF", data["NF"])
 	component.Render(context.Background(), w)
 }
 

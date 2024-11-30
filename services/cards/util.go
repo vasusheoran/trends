@@ -4,15 +4,15 @@ import (
 	"math"
 )
 
-// CP_CI_CH -> copy of CP except 0 and 1
+// CP_CI_CH -> copy of Close except 0 and 1
 // diffCP1 -> emaService rolling updated with span:2 for cp difference of current - previous
 // emaDiffCP1Pos -> df.at[index, col_name] = (df.at[(index-1), col_name] *13 + df.at[index, col_name])/14
 // emaDiffCP1Neg -> df.at[index, col_name] = (df.at[(index-1), col_name] *13 + (-1 * df.at[index, col_name]))/14
 
-//span 5 prevema 15149.292605464798 lastrowcp 15188.5
-//span 5 prevema 15171.074491317688
-//span 20 prevema 14801.795416480334 lastrowcp 15188.5
-//span 20 prevema 14871.94590782177
+// span 5 prevema 15149.292605464798 lastrowcp 15188.5
+// span 5 prevema 15171.074491317688
+// span 20 prevema 14801.795416480334 lastrowcp 15188.5
+// span 20 prevema 14871.94590782177
 func futureEMA(iteration, span int, val, result float64) float64 {
 	for i := 0; i < iteration; i++ {
 		result = ((2 / (float64(span) + 1)) * (val - result)) + result
@@ -27,7 +27,7 @@ func bx(hp, def, ghi float64) float64 {
 	return (hp + hp + (((((def) + ((def) + ((ghi)-(def))/2)) / 2) + ((hp + (hp + ((((def)+((def)+((ghi)-(def))/2))/2)-hp)/2)) / 2)) / 2)) / 3
 }
 
-//future_ema5 15171.074491317688 future_ema20 14871.94590782177 cpAt0 15188.5 cj 15169.290071967438 cj2 15169.290071967438
+// future_ema5 15171.074491317688 future_ema20 14871.94590782177 cpAt0 15188.5 cj 15169.290071967438 cj2 15169.290071967438
 func cj(cpAt0, futureEMA5, futureEMA20 float64) float64 {
 	return (cpAt0 + cpAt0 + ((((futureEMA5 + (futureEMA5 + (futureEMA20-futureEMA5)/2)) / 2) + ((cpAt0 + (cpAt0 + (((futureEMA5+(futureEMA5+(futureEMA20-futureEMA5)/2))/2)-cpAt0)/2)) / 2)) / 2)) / 3
 }
@@ -77,7 +77,7 @@ func ar(cpMeanRowSpan10, cpMeanRowSpan50 float64) float64 {
 	return ((cpMeanRowSpan10 + cpMeanRowSpan50) / 2) - ((cpMeanRowSpan10 + cpMeanRowSpan50) / 2 * (((cpMeanRowSpan10+cpMeanRowSpan50)/2 - (((((cpMeanRowSpan10+cpMeanRowSpan50)/2 - ((cpMeanRowSpan10 + cpMeanRowSpan50) / 2 * 0.01)) + (((cpMeanRowSpan10+cpMeanRowSpan50)/2 - ((cpMeanRowSpan10 + cpMeanRowSpan50) / 2 * 0.01)) * 0.025)) + (cpMeanRowSpan10+cpMeanRowSpan50)/2) / 2)) / (cpMeanRowSpan10 + cpMeanRowSpan50) / 2 * 100 / 2) / 100)
 }
 
-//df.at[2, 'ema_diffCP1Pos'] 56.192976714563166 df.at[2, 'ema_diffCP1Neg'] 272.592886852383
+// df.at[2, 'ema_diffCP1Pos'] 56.192976714563166 df.at[2, 'ema_diffCP1Neg'] 272.592886852383
 func cr(emaDiffCP1PosAt2, emaDiffCP1NegAt2 float64) float64 {
 	if emaDiffCP1NegAt2 == 0 {
 		return 100.0
@@ -85,7 +85,7 @@ func cr(emaDiffCP1PosAt2, emaDiffCP1NegAt2 float64) float64 {
 	return 100 - (100 / (1 + (emaDiffCP1PosAt2)/emaDiffCP1NegAt2))
 }
 
-//bn -985.0807869304917 ar 17022.095212980832 ar3 17202.227584425626 df.at[2,'emaCP5'] 16584.42631675057 df.at[3,'emaCP5'] 17749.639475125856
+// bn -985.0807869304917 ar 17022.095212980832 ar3 17202.227584425626 df.at[2,'emaCP5'] 16584.42631675057 df.at[3,'emaCP5'] 17749.639475125856
 func bn(arAtRow, arAtRowPlus1, emaCP5AtRow, emaCP5AtRowPlus1 float64) float64 {
 	return (emaCP5AtRow - arAtRow) - (emaCP5AtRowPlus1 - arAtRowPlus1)
 }

@@ -108,7 +108,7 @@ func (c *Client) writePump() {
 			}
 
 			htmlBytes := &bytes.Buffer{}
-			message := components.Message(summary.Ticker, &summary, nil)
+			message := components.Message(summary.Ticker, summary, nil)
 			message.Render(context.Background(), htmlBytes)
 
 			// jsonBytes, err := json.Marshal(SocketResponse{

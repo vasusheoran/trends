@@ -3,7 +3,7 @@ package components
 import "github.com/vsheoran/trends/pkg/contracts"
 import "github.com/vsheoran/trends/templates/common"
 
-templ Message(id string, symbol *contracts.Summary, err error) {
+templ Message(id string, symbol contracts.Summary, err error) {
 	if err == nil { 
     <div id={id} hx-swap={ "#" + id }>
       <div class="row-gap-2 grid grid-cols-15 md:grid-cols-15" >
@@ -19,7 +19,7 @@ templ Message(id string, symbol *contracts.Summary, err error) {
           @Summary(id, symbol)
 	      </div>
     </div>
-  } else if symbol != nil {
+    } else if len(symbol.Ticker) == 0 {
     <div id={id} hx-swap={ "#" + id } class="row-gap-2 grid grid-cols-15 md:grid-cols-15" >
       <div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
         <div class="font-heading text-[2rem] dark:text-white lg:text-2xl xl:text-1xl">

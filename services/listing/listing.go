@@ -29,7 +29,7 @@ type listingsIndex struct {
 
 type listing struct {
 	logger log.Logger
-	dbSvc  database.Database
+	dbSvc  database.DataStore
 }
 
 func (s *listing) Patch(sasSymbol string, listing contracts.Listing) error {
@@ -200,7 +200,7 @@ func (s *listing) parseHeaders(records [][]string, index *listingsIndex) {
 	}
 }
 
-func New(logger log.Logger, db database.Database) Listings {
+func New(logger log.Logger, db database.DataStore) Listings {
 	return &listing{
 		logger: logger,
 		dbSvc:  db,

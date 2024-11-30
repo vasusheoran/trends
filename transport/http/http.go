@@ -19,13 +19,13 @@
 package http
 
 import (
+	"github.com/vsheoran/trends/services/database"
 	"net/http"
 
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
 
 	"github.com/vsheoran/trends/pkg/constants"
-	"github.com/vsheoran/trends/services/database"
 	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/services/listing"
 	"github.com/vsheoran/trends/services/socket"
@@ -105,7 +105,7 @@ type tickerSymbol struct {
 
 type Services struct {
 	TickerService   ticker.Ticker
-	DatabaseService database.Database
+	DatabaseService database.DataStore
 	ListingService  listing.Listings
 	HistoryService  history.History
 	HubService      *socket.Hub
