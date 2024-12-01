@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/vsheoran/trends/pkg/transport"
 	"github.com/vsheoran/trends/services/database"
 	"net/http"
 	"os"
@@ -60,18 +61,19 @@ func initServer(g *run.Group) {
 	ls := listing.New(logger, db)
 	hb := socket.NewHub(logger, ts)
 
-	services := http2.Services{
-		TickerService:   ts,
-		DatabaseService: db,
-		ListingService:  ls,
-		HistoryService:  hs,
-		HubService:      hb,
+	services := transport.Services{
+		TickerService:      ts,
+		DatabaseService:    db,
+		SQLDatabaseService: sqlDB,
+		ListingService:     ls,
+		HistoryService:     hs,
+		HubService:         hb,
 	}
 
 	initHTTP(g, services)
 }
 
-func initHTTP(g *run.Group, services http2.Services) {
+func initHTTP(g *run.Group, services transport.Services) {
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{
 			http.MethodPatch,

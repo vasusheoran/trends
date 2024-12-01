@@ -19,25 +19,24 @@
 package http
 
 import (
-	"github.com/vsheoran/trends/services/database"
+	"github.com/vsheoran/trends/pkg/transport"
+	route3 "github.com/vsheoran/trends/templates/history/route"
+	route2 "github.com/vsheoran/trends/templates/search/route"
+	"github.com/vsheoran/trends/templates/symbols/route"
 	"net/http"
 
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
 
 	"github.com/vsheoran/trends/pkg/constants"
-	"github.com/vsheoran/trends/services/history"
-	"github.com/vsheoran/trends/services/listing"
-	"github.com/vsheoran/trends/services/socket"
-	"github.com/vsheoran/trends/services/ticker"
 	"github.com/vsheoran/trends/utils"
 )
 
 var logger log.Logger
 
-var svc Services
+var svc transport.Services
 
-func ServeHTTP(l log.Logger, router *mux.Router, services Services) {
+func ServeHTTP(l log.Logger, router *mux.Router, services transport.Services) {
 	logger = log.With(l, "method", "ServeHTTP")
 	svc = services
 
@@ -64,22 +63,14 @@ func ServeHTTP(l log.Logger, router *mux.Router, services Services) {
 		Methods(http.MethodPatch, http.MethodPut, http.MethodDelete, http.MethodOptions)
 }
 
-func SertHTTP2(l log.Logger, router *mux.Router, services Services) {
+func SertHTTP2(l log.Logger, router *mux.Router, services transport.Services) {
 	logger = log.With(l, "method", "ServeHTTP")
 
 	router.Path("/").HandlerFunc(HTMXSummaryHandlerFunc).Methods(http.MethodGet)
-	router.Path("/add-ticker-input").HandlerFunc(HTMXAddTickerInputFunc).Methods(http.MethodGet)
-	router.Path("/add-ticker").HandlerFunc(HTMXAddTickerFunc).Methods(http.MethodPost)
-	router.Path("/remove-ticker/{" + constants.SasSymbolKey + "}").
-		HandlerFunc(HTMXRemoveTickerFunc).
-		Methods(http.MethodPost)
-	router.Path("/update/ticker/{"+constants.SasSymbolKey+"}").
-		HandlerFunc(SocketHandleFunc).
-		Methods(http.MethodPost, http.MethodGet)
 
-	router.Path("/ws/ticker/{"+constants.SasSymbolKey+"}").
-		HandlerFunc(SocketHandleFunc).
-		Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+	route.SymbolsRoute(l, router, services)
+	route2.SearchRoute(l, router, services)
+	route3.HistoryRoute(l, router, services)
 
 	// router.Path("/ws/ticker/{" + constants.SasSymbolKey + "}").
 	// HandlerFunc(HTMXUpdateData).
@@ -90,23 +81,9 @@ func SertHTTP2(l log.Logger, router *mux.Router, services Services) {
 		Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 }
 
-// swagger:model ErrorResponse
-type ErrorResponse struct {
-	// Error message
-	Error string `json:"err" description:"Error message"`
-}
-
 // swagger:parameters deleteListing replaceListing updateListing getTicker getHistory initTicker updateTicker freezeTicker
 type tickerSymbol struct {
 	// in: path
 	// required: true
 	SasSymbol string `json:"sasSymbol"`
-}
-
-type Services struct {
-	TickerService   ticker.Ticker
-	DatabaseService database.DataStore
-	ListingService  listing.Listings
-	HistoryService  history.History
-	HubService      *socket.Hub
 }

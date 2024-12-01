@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/vsheoran/trends/pkg/transport"
 	"net/http"
 	"strings"
 
@@ -113,6 +114,6 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 		w.WriteHeader(http.StatusInternalServerError)
-		utils.Encode(w, ErrorResponse{Error: err.Error()})
+		utils.Encode(w, transport.ErrorResponse{Error: err.Error()})
 	}
 }

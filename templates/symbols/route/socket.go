@@ -1,6 +1,7 @@
-package http
+package route
 
 import (
+	"github.com/vsheoran/trends/pkg/transport"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -70,7 +71,7 @@ func SocketHandleFunc(w http.ResponseWriter, r *http.Request) {
 			logger.Log("msg", "SocketHandleFunc", "err", err.Error())
 			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.Encode(w, ErrorResponse{Error: err.Error()})
+			utils.Encode(w, transport.ErrorResponse{Error: err.Error()})
 			return
 		}
 
@@ -79,7 +80,7 @@ func SocketHandleFunc(w http.ResponseWriter, r *http.Request) {
 			logger.Log("msg", "SocketHandleFunc", "err", err.Error())
 			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 			w.WriteHeader(http.StatusInternalServerError)
-			utils.Encode(w, ErrorResponse{Error: err.Error()})
+			utils.Encode(w, transport.ErrorResponse{Error: err.Error()})
 			return
 		}
 
@@ -104,6 +105,6 @@ func SocketHandleFunc(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 		w.WriteHeader(http.StatusInternalServerError)
-		utils.Encode(w, ErrorResponse{Error: err.Error()})
+		utils.Encode(w, transport.ErrorResponse{Error: err.Error()})
 	}
 }

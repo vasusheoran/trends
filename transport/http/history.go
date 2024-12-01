@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"github.com/vsheoran/trends/pkg/contracts"
+	"github.com/vsheoran/trends/pkg/transport"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -85,6 +86,6 @@ func HistoryHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 		w.WriteHeader(http.StatusInternalServerError)
-		utils.Encode(w, ErrorResponse{Error: err.Error()})
+		utils.Encode(w, transport.ErrorResponse{Error: err.Error()})
 	}
 }

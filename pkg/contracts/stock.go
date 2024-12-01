@@ -1,6 +1,9 @@
 package contracts
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 // swagger:model Stock
 type Stock struct {
@@ -16,7 +19,7 @@ type Stock struct {
 	// Low price
 	Low float64 `json:"low" description:"Low price"`
 	// Time of the stock information (not included in JSON)
-	//Time time.Time `json:"-"`
+	Time time.Time `json:"time"`
 	//CreatedAt time.Time `json:"created_at"`
 	//UpdatedAt time.Time `json:"updated_at"`
 }

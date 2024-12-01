@@ -16,9 +16,25 @@ type SQLDatastore struct {
 	db     *gorm.DB
 }
 
-func (s SQLDatastore) ReadStockByTicker(ticker string) ([]contracts.Stock, error) {
+func (s *SQLDatastore) GetDistinctTicker(pattern string) ([]string, error) {
 	var stocks []contracts.Stock
-	result := s.db.Model(contracts.Stock{}).Where("ticker = ?", ticker).Order("created_at desc").Find(&stocks)
+	result := s.db.Model(contracts.Stock{}).Select("ticker").Where("ticker LIKE ?", "%"+pattern+"%").Distinct("ticker").Find(&stocks)
+	if result.Error != nil {
+		s.logger.Log("error", result.Error)
+		return nil, result.Error
+	}
+
+	var tickers []string
+	for _, stock := range stocks {
+		tickers = append(tickers, stock.Ticker)
+	}
+
+	return tickers, nil
+}
+
+func (s *SQLDatastore) ReadStockByTicker(ticker string) ([]contracts.Stock, error) {
+	var stocks []contracts.Stock
+	result := s.db.Model(contracts.Stock{}).Where("ticker = ?", ticker).Order("time desc").Find(&stocks)
 	//result := s.db.Model(contracts.Stock{}).Where("ticker = ?", ticker).Limit(500).Find(&stocks)
 
 	if result.Error != nil {
@@ -29,11 +45,11 @@ func (s SQLDatastore) ReadStockByTicker(ticker string) ([]contracts.Stock, error
 	return stocks, nil
 }
 
-func (s SQLDatastore) SaveStocks(data []contracts.Stock) error {
+func (s *SQLDatastore) SaveStocks(data []contracts.Stock) error {
 	tx := s.db.Model(contracts.Stock{}).Begin()
 	result := tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "ticker"}, {Name: "date"}},          // key column
-		DoUpdates: clause.AssignmentColumns([]string{"close", "high", "low"}), // column needed to be updated
+		Columns:   []clause.Column{{Name: "ticker"}, {Name: "date"}},                  // key column
+		DoUpdates: clause.AssignmentColumns([]string{"close", "high", "low", "time"}), // column needed to be updated
 	}).Create(data)
 
 	if result.Error != nil {
@@ -56,7 +72,7 @@ func (s SQLDatastore) SaveStocks(data []contracts.Stock) error {
 	return nil
 }
 
-func (s SQLDatastore) UpdateStock(data contracts.Stock) error {
+func (s *SQLDatastore) UpdateStock(data contracts.Stock) error {
 	result := s.db.Save(&data)
 	if result.Error != nil {
 		s.logger.Log("error", result.Error)

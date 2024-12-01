@@ -3,10 +3,12 @@ package history
 import (
 	"encoding/csv"
 	"errors"
+	"fmt"
 	"github.com/vsheoran/trends/services/database"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -47,23 +49,6 @@ func (s *history) UploadFile(symbol string, r *http.Request) error {
 	defer file.Close()
 
 	level.Debug(s.logger).Log("msg", "Parsing uploaded file", "handler", handler.Filename, "path")
-	//f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0666)
-	//if err != nil {
-	//	level.Error(s.logger).Log("err", err.Error())
-	//	return err
-	//}
-	//
-	//defer f.Close()
-	//
-	//_, err = io.Copy(f, file)
-	//if err != nil {
-	//	level.Error(s.logger).Log("err", err.Error())
-	//	return err
-	//}
-	//
-	//level.Info(s.logger).
-	//	Log("msg", "file uploaded successfully", "handler_filename", handler.Filename, "path", utils.HistoricalFilePath(path))
-	//
 
 	csvReader := csv.NewReader(file)
 	records, err := csvReader.ReadAll()
@@ -143,11 +128,21 @@ func (s *history) parseData(symbol string, records [][]string) []contracts.Stock
 
 	var data []contracts.Stock
 	var err error
+	var t time.Time
 
 	for _, row := range records {
 		var temp contracts.Stock
 
 		temp.Date = row[index.Date]
+
+		t, err = s.parseDate(temp.Date)
+		if err != nil {
+			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
+			continue
+		}
+
+		temp.Time = t
+
 		if temp.Close, err = strconv.ParseFloat(row[index.CP], 64); err != nil {
 			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
 			continue
@@ -166,6 +161,18 @@ func (s *history) parseData(symbol string, records [][]string) []contracts.Stock
 		data = append(data, temp)
 	}
 	return data
+}
+
+func (s *history) parseDate(date string) (time.Time, error) {
+	layout := "2-Jan-2006" // Reference layout for parsing
+
+	t, err := time.Parse(layout, date)
+	if err != nil {
+		fmt.Println(err)
+		return t, err
+	}
+
+	return t, nil
 }
 
 func New(logger log.Logger, db database.DataStore, sqlDB *database.SQLDatastore) History {

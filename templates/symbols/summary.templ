@@ -1,0 +1,67 @@
+package symbols
+
+import "github.com/vsheoran/trends/pkg/contracts"
+
+var (
+	green    = "text-green-600"
+	red      = "text-red-700"
+	blue     = "text-blue-500"
+	darkblue = "text-blue-900"
+	magenta  = "text-fuchsia-500"
+	purple   = "text-purple-500"
+	violet   = "text-violet-500"
+	gold     = "text-yellow-500"
+)
+
+templ Summary(id string, symbol contracts.Summary) {
+	@Stat("Close", symbol.Close, "")
+	@Stat("High", symbol.High, "")
+	@Stat("Low", symbol.Low, "")
+	@Stat("Average", symbol.Average, "")
+	@Stat("Ema20", symbol.Ema20, "")
+	if symbol.Close > symbol.Trend {
+		@Stat("Trend", symbol.Trend, green)
+	} else {
+		@Stat("Trend", symbol.Trend, red)
+	}
+	if symbol.Close > symbol.Ema5 {
+		@Stat("Ema5", symbol.Ema5, green)
+	} else if symbol.Close > symbol.Average {
+		@Stat("Ema5", symbol.Ema5, blue)
+	} else {
+		@Stat("Ema5", symbol.Ema5, red)
+	}
+	if symbol.Close > symbol.Trend {
+		@Stat("HL3", symbol.HL3, magenta)
+	} else {
+		@Stat("HL3", symbol.HL3, violet)
+	}
+	if symbol.RSI > 69 {
+		@Stat("RSI", symbol.RSI, darkblue)
+	} else if symbol.RSI > 49 {
+		@Stat("RSI", symbol.RSI, green)
+	} else {
+		@Stat("RSI", symbol.RSI, red)
+	}
+	if symbol.Close > symbol.Trend {
+		@Stat("LowerL", symbol.LowerL, green)
+	} else {
+		@Stat("LowerL", symbol.LowerL, red)
+	}
+	if symbol.Close > symbol.Trend {
+		@Stat("Barish", symbol.Barish, gold)
+	} else {
+		@Stat("Barish", symbol.Barish, red)
+	}
+	if symbol.Close > symbol.Trend {
+		@Stat("Bullish", symbol.Bullish, purple)
+	} else {
+		@Stat("Bullish", symbol.Bullish, red)
+	}
+	if symbol.Close > symbol.Trend {
+		@Stat("Sell", symbol.Support, darkblue)
+	} else {
+		@Stat("Sell", symbol.Support, red)
+	}
+	@Stat("Prev-Buy", symbol.PreviousBuy, "")
+}

@@ -1,0 +1,7 @@
+<div id=\"search-results\" hidden></div>
+<div id=\"search-results\">
+<button id=\"
+\" hx-get=\"
+\" hx-trigger=\"click\" hx-swap=\"outerHTML\" type=\"button\" class=\"bg-white hover:opacity-50 p-3 rounded-2xl border border-black border-solid  max-w-1xl\">
+</button>
+</div>
