@@ -2,9 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/vsheoran/trends/pkg/transport"
+	"github.com/vsheoran/trends/services/database"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -15,13 +19,16 @@ import (
 	"github.com/rs/cors"
 
 	"github.com/vsheoran/trends/services/cards"
-	"github.com/vsheoran/trends/services/database"
 	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/services/listing"
 	"github.com/vsheoran/trends/services/socket"
 	"github.com/vsheoran/trends/services/ticker"
 	http2 "github.com/vsheoran/trends/transport/http"
 	"github.com/vsheoran/trends/utils"
+)
+
+const (
+	httpPort = "5001"
 )
 
 var logger log.Logger
@@ -39,31 +46,57 @@ func main() {
 	initServer(g)
 
 	initCancelInterrupt(g, make(chan cancelInterrupt))
+
+	go openbrowser("http://localhost:" + httpPort)
 	if err := g.Run(); err != nil {
 		level.Error(logger).Log("error", err)
 	}
 }
 
+func openbrowser(url string) {
+	var err error
+
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "windows":
+		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	default:
+		err = fmt.Errorf("unsupported platform")
+	}
+	if err != nil {
+		logger.Log("err", err)
+	}
+
+}
+
 func initServer(g *run.Group) {
-	db := database.NewDatabase(logger)
+	sqlDB, err := database.NewSqlDatastore(logger, "")
+	if err != nil {
+		panic(err)
+	}
+	db := database.NewCSVDatastore(logger)
 	cs := cards.New(logger)
-	hs := history.New(logger, db)
+	hs := history.New(logger, db, sqlDB)
 	ts := ticker.NewTicker(logger, cs, hs)
 	ls := listing.New(logger, db)
 	hb := socket.NewHub(logger, ts)
 
-	services := http2.Services{
-		TickerService:   ts,
-		DatabaseService: db,
-		ListingService:  ls,
-		HistoryService:  hs,
-		HubService:      hb,
+	services := transport.Services{
+		TickerService:      ts,
+		DatabaseService:    db,
+		SQLDatabaseService: sqlDB,
+		ListingService:     ls,
+		HistoryService:     hs,
+		HubService:         hb,
 	}
 
 	initHTTP(g, services)
 }
 
-func initHTTP(g *run.Group, services http2.Services) {
+func initHTTP(g *run.Group, services transport.Services) {
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{
 			http.MethodPatch,
@@ -85,14 +118,14 @@ func initHTTP(g *run.Group, services http2.Services) {
 
 	srv := &http.Server{
 		Handler: handler,
-		Addr:    ":5000",
+		Addr:    ":" + httpPort,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
 	g.Add(func() error {
-		level.Info(logger).Log("transport", "http", "addr", "5000")
+		level.Info(logger).Log("transport", "http", "addr", httpPort)
 		return srv.ListenAndServe()
 	}, func(error) {
 		level.Error(logger).Log("msg", "Http listen and Server failed to start")

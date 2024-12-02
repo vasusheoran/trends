@@ -25,16 +25,20 @@ func WriteToFile(logger log.Logger, data interface{}, filename string) {
 	}
 }
 
-func ReadFromFile(logger log.Logger, filename string, res interface{}) {
+func ReadFromFile(logger log.Logger, filename string, res interface{}) error {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		level.Error(logger).Log("err", err.Error())
+		return err
 	}
 
 	err = json.Unmarshal(data, &res)
 	if err != nil {
 		level.Error(logger).Log("err", err.Error())
+		return err
 	}
+
+	return nil
 }
 
 func HistoricalFilePath(sasSymbol string) string {

@@ -32,9 +32,9 @@ func TestMovingAverage(t *testing.T) {
 			expected := helper(tc.values, tc.windows[0])
 			ma := NewMovingAverage(logger, tc.keys, tc.windows)
 			for _, val := range tc.values {
-				ma.Add(key, val)
+				ma.Add("test", key, val)
 			}
-			assert.Equal(t, expected[len(expected)-1], ma.Value(key))
+			assert.Equal(t, expected[len(expected)-1], ma.Value("test", key))
 		})
 	}
 }

@@ -1,0 +1,58 @@
+package common
+
+import "net/http"
+
+templ IndexSelectOption(data []string, path string, httpType string) {
+	<div id="index-select-ticker-section">
+		<span
+			class="material-symbols-outlined cursor-pointer"
+			hx-get="/"
+			hx-trigger="click"
+			hx-swap="outerHTML"
+			hx-target="#index-select-ticker-section"
+		>
+			close
+		</span>
+		switch httpType {
+			case http.MethodPost:
+				<select
+					class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+					hx-post={ path }
+					hx-target="#dashboard"
+					hx-trigger="change"
+					name="ticker-name"
+				>
+					<option value="">Select an index</option>
+					for _, l := range data {
+						<option value={ l }>{ l }</option>
+					}
+				</select>
+			case http.MethodDelete:
+				<select
+					class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+					hx-delete={ path }
+					hx-target="#dashboard"
+					hx-trigger="change"
+					name="ticker-name"
+				>
+					<option value="">Select an index</option>
+					for _, l := range data {
+						<option value={ l }>{ l }</option>
+					}
+				</select>
+			default:
+				<select
+					class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+					hx-get={ path }
+					hx-target="#dashboard"
+					hx-trigger="change"
+					name="ticker-name"
+				>
+					<option value="">Select an index</option>
+					for _, l := range data {
+						<option value={ l }>{ l }</option>
+					}
+				</select>
+		}
+	</div>
+}

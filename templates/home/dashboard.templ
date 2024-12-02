@@ -1,0 +1,36 @@
+package home
+
+import (
+	"github.com/vsheoran/trends/pkg/contracts"
+	"github.com/vsheoran/trends/templates/common"
+	"github.com/vsheoran/trends/templates/history"
+	"github.com/vsheoran/trends/templates/search"
+	"github.com/vsheoran/trends/templates/symbols"
+)
+
+templ Home(data contracts.HTMXData) {
+	@Buttons()
+	@SummaryData(data)
+}
+
+templ Buttons() {
+	@symbols.AddSymbolButton()
+	@symbols.RemoveSymbolButton()
+	@search.SearchButton()
+	@history.HistoryButton()
+}
+
+templ SummaryData(data contracts.HTMXData) {
+	// px-4 py-16 mx-auto md:max-w-full lg:max-w-screen-xl md:px-24 lg:px-8 lg:py-20
+	// TODO: Initialize seperate socket connection for each ticker.
+	<div id="tickers">
+		if data.Error != nil {
+			@common.Error("tickers", data.Error)
+		}
+		for k, s := range data.SummaryMap {
+			<div hx-ext="ws" ws-connect={ "/ws/ticker/" + k }>
+				@symbols.Message(k, s, data.Error)
+			</div>
+		}
+	</div>
+}

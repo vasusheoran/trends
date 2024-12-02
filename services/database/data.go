@@ -8,25 +8,20 @@ import (
 	"github.com/go-kit/kit/log/level"
 )
 
-type Database interface {
-	Read(path string) ([][]string, error)
-	Write(path string, data [][]string) error
-}
-
-type DB struct {
+type csvDatastore struct {
 	logger log.Logger
 }
 
-func (d *DB) Read(file string) ([][]string, error) {
+func (d *csvDatastore) Read(file string) ([][]string, error) {
 	var _, err = os.Stat(file)
 	if err != nil {
 		level.Error(d.logger).Log("msg", "file does not exist", "err", err.Error())
 		return nil, err
 	}
-	return d.csvReader(file)
+	return d.CSVReader(file)
 }
 
-func (d *DB) Write(path string, data [][]string) error {
+func (d *csvDatastore) Write(path string, data [][]string) error {
 	err := createFile(path)
 	if err != nil {
 		level.Error(d.logger).Log("msg", "Failed to create/open input file "+path, "err", err)
@@ -49,7 +44,7 @@ func (d *DB) Write(path string, data [][]string) error {
 	return nil
 }
 
-func (d *DB) csvReader(path string) ([][]string, error) {
+func (d *csvDatastore) CSVReader(path string) ([][]string, error) {
 
 	f, err := os.Open(path)
 	if err != nil {
@@ -62,8 +57,8 @@ func (d *DB) csvReader(path string) ([][]string, error) {
 	return csvReader.ReadAll()
 }
 
-func NewDatabase(logger log.Logger) Database {
-	return &DB{logger: logger}
+func NewCSVDatastore(logger log.Logger) DataStore {
+	return &csvDatastore{logger: logger}
 }
 
 func createFile(path string) error {

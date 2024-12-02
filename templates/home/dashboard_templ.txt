@@ -1,0 +1,5 @@
+<div id=\"tickers\">
+<div hx-ext=\"ws\" ws-connect=\"
+\">
+</div>
+</div>

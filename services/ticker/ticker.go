@@ -19,11 +19,11 @@ import (
 var ErrTickerNotInitialised = fmt.Errorf("Ticker has not beed added.")
 
 type Ticker interface {
-	Init(key string) (contracts.Summary, error)
+	Init(key string, path string) (contracts.Summary, error)
 	Update(key string, stock contracts.Stock) error
 	Get(key string) (contracts.Summary, error)
 	Remove(key string) error
-	GetAllSummary() map[string]*contracts.Summary
+	GetAllSummary() map[string]contracts.Summary
 	Freeze(key string, st contracts.Stock) error
 }
 
@@ -31,7 +31,7 @@ type ticker struct {
 	chanMap        map[string]chan *contracts.Summary
 	logger         log.Logger
 	data           map[string]*contracts.TickerInfo
-	summary        map[string]*contracts.Summary
+	summary        map[string]contracts.Summary
 	cardService    cards.Cards
 	historyService history.History
 	emaService     ma.ExponentialMovingAverage
@@ -67,7 +67,7 @@ func (s *ticker) update(key string, stock contracts.Stock) error {
 		s.logger.Log("err", err.Error())
 		return err
 	}
-	s.setNextValues(key, stock.CP, stock.HP, stock.LP)
+	s.setNextValues(key, stock.Close, stock.High, stock.Low)
 
 	card := s.cardService.Get(*s.data[key])
 	s.updateSummaryMap(key, card)
@@ -86,7 +86,7 @@ func (s *ticker) Update(key string, stock contracts.Stock) error {
 	return nil
 }
 
-func (s *ticker) GetAllSummary() map[string]*contracts.Summary {
+func (s *ticker) GetAllSummary() map[string]contracts.Summary {
 	return s.summary
 }
 
@@ -117,7 +117,7 @@ func (s *ticker) Remove(key string) error {
 }
 
 func (s *ticker) Get(key string) (contracts.Summary, error) {
-	var summary *contracts.Summary
+	var summary contracts.Summary
 	var ok bool
 	if _, ok = s.data[key]; !ok {
 		return contracts.Summary{Ticker: key}, ErrTickerNotInitialised
@@ -128,20 +128,20 @@ func (s *ticker) Get(key string) (contracts.Summary, error) {
 		summary = s.summary[key]
 	}
 
-	return *summary, nil
+	return summary, nil
 }
 
-func (s *ticker) Init(key string) (contracts.Summary, error) {
+func (s *ticker) Init(key string, path string) (contracts.Summary, error) {
 	candles, err := s.historyService.Read(key)
 	if err != nil {
 		level.Error(s.logger).
 			Log("msg", "failed to read history from database", "sasSymbol", key, "err", err.Error())
-		return contracts.Summary{}, errors.New("error fetching data")
+		return contracts.Summary{}, err
 	}
-	if candles == nil {
+	if candles == nil || len(candles) == 0 {
 		level.Error(s.logger).
 			Log("msg", "failed to parse history from database", "sasSymbol", key, "err", err.Error())
-		return contracts.Summary{}, errors.New("error fetching data")
+		return contracts.Summary{}, err
 	}
 
 	var st *contracts.TickerInfo
@@ -152,14 +152,14 @@ func (s *ticker) Init(key string) (contracts.Summary, error) {
 	}
 
 	previousCP := 0.0
-	nextCP := candles[0].CP
+	nextCP := candles[0].Close
 	for _, val := range candles {
-		s.averageService.Add(key, constants.KeyCP10, val.CP)
-		s.averageService.Add(key, constants.KeyCP50, val.CP)
-		s.emaService.Add(key, constants.KeyCP5, val.CP)
-		s.emaService.Add(key, constants.KeyCP20, val.CP)
+		s.averageService.Add(key, constants.KeyCP10, val.Close)
+		s.averageService.Add(key, constants.KeyCP50, val.Close)
+		s.emaService.Add(key, constants.KeyCP5, val.Close)
+		s.emaService.Add(key, constants.KeyCP20, val.Close)
 		previousCP = nextCP
-		nextCP = val.CP
+		nextCP = val.Close
 		diff := nextCP - previousCP
 
 		if diff >= 0.0 {
@@ -177,14 +177,14 @@ func (s *ticker) Init(key string) (contracts.Summary, error) {
 	s.data[key].EmaCP20 = s.emaService.Value(key, constants.KeyCP20)
 	s.data[key].EmaDiffCpPos = s.emaPosNegSvc.Value(constants.KeyDiffCpPos)
 	s.data[key].EmaDiffCpNeg = s.emaPosNegSvc.Value(constants.KeyDiffCpNeg)
-	s.data[key].MinHP2 = math.Min(candles[lastIndex].HP, candles[lastIndex-1].HP)
-	s.data[key].MinHP3 = math.Min(s.data[key].MinHP2, candles[lastIndex-2].HP)
-	s.data[key].MinLP2 = math.Min(candles[lastIndex].LP, candles[lastIndex-1].LP)
-	s.data[key].MinLP3 = math.Min(s.data[key].MinLP2, candles[lastIndex-2].LP)
-	s.data[key].LowerL = candles[lastIndex].LP
-	s.data[key].CP = candles[lastIndex].CP
-	s.data[key].HP = candles[lastIndex].HP
-	s.data[key].LP = candles[lastIndex].LP
+	s.data[key].MinHP2 = math.Min(candles[lastIndex].High, candles[lastIndex-1].High)
+	s.data[key].MinHP3 = math.Min(s.data[key].MinHP2, candles[lastIndex-2].High)
+	s.data[key].MinLP2 = math.Min(candles[lastIndex].Low, candles[lastIndex-1].Low)
+	s.data[key].MinLP3 = math.Min(s.data[key].MinLP2, candles[lastIndex-2].Low)
+	s.data[key].LowerL = candles[lastIndex].Low
+	s.data[key].CP = candles[lastIndex].Close
+	s.data[key].HP = candles[lastIndex].High
+	s.data[key].LP = candles[lastIndex].Low
 
 	s.setNextValues(key, s.data[key].CP, s.data[key].HP, s.data[key].LP)
 	return s.Get(key)
@@ -228,7 +228,7 @@ func (s *ticker) setNextValues(key string, cp, hp, lp float64) {
 }
 
 func (s *ticker) updateSummaryMap(key string, card contracts.Card) {
-	s.summary[key] = &contracts.Summary{
+	s.summary[key] = contracts.Summary{
 		Ticker:      key,
 		Close:       s.data[key].Future.NextCP[0],
 		High:        s.data[key].Future.NextHP[0],
@@ -253,7 +253,7 @@ func NewTicker(logger log.Logger, cardsSvc cards.Cards, hs history.History) Tick
 	return &ticker{
 		logger:         logger,
 		data:           map[string]*contracts.TickerInfo{},
-		summary:        map[string]*contracts.Summary{},
+		summary:        map[string]contracts.Summary{},
 		cardService:    cardsSvc,
 		historyService: hs,
 		emaService: ma.NewExponentialMovingAverage(

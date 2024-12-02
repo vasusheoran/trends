@@ -3,23 +3,24 @@ package contracts
 // Summary represents summary information about a ticker.
 // swagger:model Summary
 type Summary struct {
-	Ticker      string  `json: ticker`
-	Close       float64 `json:"close" description:"Closing price"`
-	High        float64 `json:"high" description:"High price"`
-	Low         float64 `json:"low" description:"Low price"`
-	Average     float64 `json:"average" description:"Average price"`
-	LowerL      float64 `json:"lower_l" description:"Lower limit"`
-	MinLP3      float64 `json:"min_lp_3" description:"Minimum low price over 3 periods"`
-	Ema5        float64 `json:"ema_5" description:"Exponential moving average over 5 periods"`
-	Ema20       float64 `json:"ema_20" description:"Exponential moving average over 20 periods"`
-	RSI         float64 `json:"rsi" description:"Relative Strength Index"`
-	HL3         float64 `json:"hl_3" description:"High minus low over 3 periods"`
-	Trend       float64 `json:"trend" description:"Trend strength"`
-	Buy         float64 `json:"buy" description:"Buy signal strength"`
-	Support     float64 `json:"support" description:"Support strength"`
-	Bullish     float64 `json:"sell" description:"Bullish signal strength"`
-	Barish      float64 `json:"barish" description:"Bearish signal strength"`
-	PreviousBuy float64 `json:"prev_buy" description:"Previous buy signal strength"`
+	//gorm.Model
+	Ticker      string  `form:"ticker" json:"ticker"`
+	Close       float64 `form:"close" json:"close" description:"Closing price"`
+	High        float64 `form:"high" json:"high" description:"High price"`
+	Low         float64 `form:"low" json:"low" description:"Low price"`
+	Average     float64 `form:"average" json:"average" description:"Average price"`
+	LowerL      float64 `form:"lower_l" json:"lower_l" description:"Lower limit"`
+	MinLP3      float64 `form:"min_lp_3" json:"min_lp_3" description:"Minimum low price over 3 periods"`
+	Ema5        float64 `form:"ema_5" json:"ema_5" description:"Exponential moving average over 5 periods"`
+	Ema20       float64 `form:"ema_20" json:"ema_20" description:"Exponential moving average over 20 periods"`
+	RSI         float64 `form:"rsi" json:"rsi" description:"Relative Strength Index"`
+	HL3         float64 `form:"hl_3" json:"hl_3" description:"High minus low over 3 periods"`
+	Trend       float64 `form:"trend" json:"trend" description:"Trend strength"`
+	Buy         float64 `form:"buy" json:"buy" description:"Buy signal strength"`
+	Support     float64 `form:"support" json:"support" description:"Support strength"`
+	Bullish     float64 `form:"sell" json:"sell" description:"Bullish signal strength"`
+	Barish      float64 `form:"barish" json:"barish" description:"Bearish signal strength"`
+	PreviousBuy float64 `form:"prev_buy" json:"prev_buy" description:"Previous buy signal strength"`
 }
 
 // Card represents information related to a card.
