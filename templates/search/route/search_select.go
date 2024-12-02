@@ -15,6 +15,6 @@ func HTMXSearchIndexFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component := common.IndexSelectOption(listings, "/ticker/init")
+	component := common.IndexSelectOption(listings, "/ticker/init", http.MethodGet)
 	component.Render(context.Background(), w)
 }

@@ -15,12 +15,12 @@ func SymbolsRoute(l log.Logger, router *mux.Router, services transport.Services)
 	svc = services
 	logger = log.With(l, "method", "SymbolsRoute")
 
-	router.Path("/ticker/button").HandlerFunc(HTMXAddTickerInputFunc).Methods(http.MethodPost)
+	router.Path("/ticker/button").HandlerFunc(HTMXAddTickerInputFunc).Methods(http.MethodGet)
 	router.Path("/ticker/init").HandlerFunc(HTMXNewTickerInitFunc).Methods(http.MethodPost)
 	router.Path("/ticker/init").HandlerFunc(HTMXTickerInitFunc).Methods(http.MethodGet)
-	router.Path("/remove-ticker/{" + constants.SasSymbolKey + "}").
-		HandlerFunc(HTMXRemoveTickerFunc).
-		Methods(http.MethodPost)
+	router.Path("/ticker/init").HandlerFunc(HTMXRemoveInitTickerFunc).Methods(http.MethodDelete)
+	router.Path("/ticker/remove").HandlerFunc(HTMXSelectTickerFunc).Methods(http.MethodGet)
+	router.Path("/ticker/remove").HandlerFunc(HTMXRemoveTicker).Methods(http.MethodPost)
 	router.Path("/update/ticker/{"+constants.SasSymbolKey+"}").
 		HandlerFunc(SocketHandleFunc).
 		Methods(http.MethodPost, http.MethodGet)

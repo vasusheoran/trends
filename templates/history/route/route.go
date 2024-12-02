@@ -16,7 +16,7 @@ func HistoryRoute(l log.Logger, router *mux.Router, services transport.Services)
 
 	router.Path("/history/button").
 		HandlerFunc(HTMXHistorySelectFunc).
-		Methods(http.MethodPost, http.MethodGet)
+		Methods(http.MethodGet)
 	router.Path("/history").
 		HandlerFunc(HTMXHistoryGetFunc).
 		Methods(http.MethodPost, http.MethodGet)

@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -23,10 +24,10 @@ type History interface {
 }
 
 type historyDataIndex struct {
-	HP   int
-	LP   int
-	CP   int
-	Date int
+	Close int
+	High  int
+	Low   int
+	Date  int
 }
 
 type StocksORM struct {
@@ -101,14 +102,14 @@ func (s *history) parseHeaders(records [][]string, index *historyDataIndex) {
 	}
 
 	for i, val := range records[0] {
-		switch val {
-		case "cp", "CP", "Close", "close":
-			index.CP = i
-		case "hp", "HP", "High", "high":
-			index.HP = i
-		case "lp", "LP", "Low", "low":
-			index.LP = i
-		case "Date", "date":
+		switch strings.ToLower(val) {
+		case "cp", "close":
+			index.Close = i
+		case "hp", "high":
+			index.High = i
+		case "lp", "low":
+			index.Low = i
+		case "date":
 			index.Date = i
 		default:
 			level.Warn(s.logger).Log("msg", "Column not found or supported", "name", val)
@@ -143,15 +144,15 @@ func (s *history) parseData(symbol string, records [][]string) []contracts.Stock
 
 		temp.Time = t
 
-		if temp.Close, err = strconv.ParseFloat(row[index.CP], 64); err != nil {
+		if temp.Close, err = strconv.ParseFloat(row[index.Close], 64); err != nil {
 			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
 			continue
 		}
-		if temp.High, err = strconv.ParseFloat(row[index.HP], 64); err != nil {
+		if temp.High, err = strconv.ParseFloat(row[index.High], 64); err != nil {
 			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
 			continue
 		}
-		if temp.Low, err = strconv.ParseFloat(row[index.LP], 64); err != nil {
+		if temp.Low, err = strconv.ParseFloat(row[index.Low], 64); err != nil {
 			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
 			continue
 		}

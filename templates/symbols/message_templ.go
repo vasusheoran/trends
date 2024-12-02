@@ -79,9 +79,9 @@ func Message(id string, symbol contracts.Summary, err error) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
-			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs("/remove-ticker/" + id)
+			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs("/ticker/init?ticker-name=" + id)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/message.templ`, Line: 16, Col: 92}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/message.templ`, Line: 17, Col: 117}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {

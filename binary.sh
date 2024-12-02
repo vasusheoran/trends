@@ -3,7 +3,7 @@
 # Define the target architectures and operating systems
 TARGETS="darwin_amd64 darwin_arm64 linux_amd64 linux_arm64 windows_amd64 windows_arm64"
 
-VERSION="0.0.1"
+VERSION="0.0.2"
 
 # Function to build for a specific target
 build_for_target() {

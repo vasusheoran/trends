@@ -1,14 +1,15 @@
 package http
 
 import (
-	"github.com/vsheoran/trends/pkg/transport"
-	"net/http"
-	"strings"
-
 	"github.com/gorilla/mux"
 	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
+	"github.com/vsheoran/trends/pkg/transport"
 	"github.com/vsheoran/trends/utils"
+	"io"
+	"net/http"
+	"strings"
+	"time"
 )
 
 // swagger:model IndexResponse
@@ -88,8 +89,10 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 	//   500: ErrorResponse
 	if r.Method == http.MethodPut {
 		var st contracts.Stock
-		utils.Decode(r.Body, &st)
-		err = svc.TickerService.Update(sasSymbol, st)
+		st, err = parseOlderStocks(r.Body, sasSymbol)
+		if err == nil {
+			err = svc.TickerService.Update(sasSymbol, st)
+		}
 	}
 
 	// swagger:route PATCH /index/{sasSymbol}/freeze Index freezeTicker
@@ -104,8 +107,10 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 	//  500: ErrorResponse
 	if r.Method == http.MethodPatch && strings.Contains(r.URL.Path, constants.FreezeKey) {
 		var st contracts.Stock
-		utils.Decode(r.Body, &st)
-		err = svc.TickerService.Freeze(sasSymbol, st)
+		st, err = parseOlderStocks(r.Body, sasSymbol)
+		if err == nil {
+			err = svc.TickerService.Freeze(sasSymbol, st)
+		}
 		if err == nil {
 			w.WriteHeader(http.StatusNoContent)
 		}
@@ -116,4 +121,34 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		utils.Encode(w, transport.ErrorResponse{Error: err.Error()})
 	}
+}
+
+type StockV0 struct {
+	// Closing price
+	CP float64 `json:"CP" description:"Closing price"`
+	// High price
+	HP float64 `json:"HP" description:"High price"`
+	// Low price
+	LP float64 `json:"LP" description:"Low price"`
+	// Date of the stock information
+	Date string `json:"Date,omitempty" description:"Date of the stock information"`
+	// Time of the stock information (not included in JSON)
+	Time time.Time `json:"-"`
+}
+
+func parseOlderStocks(body io.ReadCloser, symbol string) (contracts.Stock, error) {
+	var request StockV0
+
+	err := utils.Decode(body, &request)
+	if err != nil {
+		return contracts.Stock{}, err
+	}
+
+	return contracts.Stock{
+		Ticker: symbol,
+		Date:   request.Date,
+		Close:  request.CP,
+		High:   request.HP,
+		Low:    request.LP,
+	}, nil
 }

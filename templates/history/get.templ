@@ -1,40 +1,42 @@
 package history
 
-import "github.com/vsheoran/trends/pkg/contracts"
-import "fmt"
+import (
+	"fmt"
+	"github.com/vsheoran/trends/pkg/contracts"
+)
 
 templ GetHistory(stocks []contracts.Stock, ticker string) {
-  <div id="history-section">
-    <span
-        class="material-symbols-outlined cursor-pointer"
-        hx-get="/"
-        hx-trigger="click"
-        hx-swap="outerHTML"
-        hx-target="#history-section"
-    >
-        close
-    </span>
-    <h2>{ ticker }</h2>
-    <table id="history">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Close</th>
-          <th>Low</th>
-          <th>High</th>
-        </tr>
-      </thead>
-      <tbody id="table_body">
-        for _, st := range stocks {
-          <tr>
-             //<td>{ fmt.Sprintf("%v", st.Time) }</td>
-             <td>{ st.Date }</td>
-             <td>{ fmt.Sprintf("%.2f", st.Close) }</td>
-             <td>{ fmt.Sprintf("%.2f", st.Low) }</td>
-             <td>{ fmt.Sprintf("%.2f", st.High) }</td>
-           </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+	<div id="history-section">
+		<span
+			class="material-symbols-outlined cursor-pointer"
+			hx-get="/"
+			hx-trigger="click"
+			hx-swap="outerHTML"
+			hx-target="#history-section"
+		>
+			close
+		</span>
+		<h2>{ ticker }</h2>
+		<table id="history">
+			<thead>
+				<tr>
+					<th>Date</th>
+					<th>Close</th>
+					<th>Low</th>
+					<th>High</th>
+				</tr>
+			</thead>
+			<tbody id="table_body">
+				for _, st := range stocks {
+					<tr>
+						//<td>{ fmt.Sprintf("%v", st.Time) }</td>
+						<td>{ st.Date }</td>
+						<td>{ fmt.Sprintf("%.2f", st.Close) }</td>
+						<td>{ fmt.Sprintf("%.2f", st.Low) }</td>
+						<td>{ fmt.Sprintf("%.2f", st.High) }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
 }

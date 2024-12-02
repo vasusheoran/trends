@@ -3,35 +3,21 @@ package home
 import (
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/templates/common"
+	"github.com/vsheoran/trends/templates/history"
 	"github.com/vsheoran/trends/templates/search"
 	"github.com/vsheoran/trends/templates/symbols"
 )
 
 templ Home(data contracts.HTMXData) {
-	@IndexButton()
+	@Buttons()
 	@SummaryData(data)
 }
 
-templ IndexButton() {
-	<button
-		id="add-ticker-section"
-		hx-post="/ticker/button"
-		hx-trigger="click"
-		hx-target="#dashboard"
-		hx-swap="innerHTML"
-		type="button"
-		class="bg-white hover:opacity-50 p-3 rounded-2xl border border-black border-solid  max-w-1xl"
-	>Add</button>
+templ Buttons() {
+	@symbols.AddSymbolButton()
+	@symbols.RemoveSymbolButton()
 	@search.SearchButton()
-	<button
-		id="history-ticker-section"
-		hx-get="/history/button"
-		hx-trigger="click"
-		hx-target="#dashboard"
-		hx-swap="innerHTML"
-		type="button"
-		class="bg-white hover:opacity-50 p-3 rounded-2xl border border-black border-solid  max-w-1xl"
-	>History</button>
+	@history.HistoryButton()
 }
 
 templ SummaryData(data contracts.HTMXData) {

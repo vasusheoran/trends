@@ -138,7 +138,7 @@ func (s *ticker) Init(key string, path string) (contracts.Summary, error) {
 			Log("msg", "failed to read history from database", "sasSymbol", key, "err", err.Error())
 		return contracts.Summary{}, err
 	}
-	if candles == nil {
+	if candles == nil || len(candles) == 0 {
 		level.Error(s.logger).
 			Log("msg", "failed to parse history from database", "sasSymbol", key, "err", err.Error())
 		return contracts.Summary{}, err

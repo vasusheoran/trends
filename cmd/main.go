@@ -6,7 +6,9 @@ import (
 	"github.com/vsheoran/trends/services/database"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -44,9 +46,30 @@ func main() {
 	initServer(g)
 
 	initCancelInterrupt(g, make(chan cancelInterrupt))
+
+	go openbrowser("http://localhost:" + httpPort)
 	if err := g.Run(); err != nil {
 		level.Error(logger).Log("error", err)
 	}
+}
+
+func openbrowser(url string) {
+	var err error
+
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "windows":
+		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	default:
+		err = fmt.Errorf("unsupported platform")
+	}
+	if err != nil {
+		logger.Log("err", err)
+	}
+
 }
 
 func initServer(g *run.Group) {
