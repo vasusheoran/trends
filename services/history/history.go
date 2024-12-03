@@ -102,7 +102,8 @@ func (s *history) parseHeaders(records [][]string, index *historyDataIndex) {
 	}
 
 	for i, val := range records[0] {
-		switch strings.ToLower(val) {
+		toLowerVal := strings.Trim(strings.ToLower(val), " ")
+		switch toLowerVal {
 		case "cp", "close":
 			index.Close = i
 		case "hp", "high":
