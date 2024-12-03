@@ -6,7 +6,7 @@
 //	Schemes: http, https
 //	Host: localhost:5000
 //	Version: 0.0.1
-//	License: MIT http://opensource.org/licenses/MIT
+//	License: MIT http://opensource.orgCommonRoute/licenses/MIT
 //	Contact: Sheoran, Vasu<vasusheoran92@gmail.com>
 //
 //	Consumes:
@@ -19,11 +19,13 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/vsheoran/trends/pkg/transport"
+	route4 "github.com/vsheoran/trends/templates/common/route"
 	route3 "github.com/vsheoran/trends/templates/history/route"
 	route2 "github.com/vsheoran/trends/templates/search/route"
 	"github.com/vsheoran/trends/templates/symbols/route"
-	"net/http"
 
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
@@ -71,6 +73,7 @@ func SertHTTP2(l log.Logger, router *mux.Router, services transport.Services) {
 	route.SymbolsRoute(l, router, services)
 	route2.SearchRoute(l, router, services)
 	route3.HistoryRoute(l, router, services)
+	route4.CommonRoute(l, router, services)
 
 	// router.Path("/ws/ticker/{" + constants.SasSymbolKey + "}").
 	// HandlerFunc(HTMXUpdateData).
