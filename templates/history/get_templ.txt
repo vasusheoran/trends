@@ -1,8 +1,0 @@
-<div id=\"history-section\"><span class=\"material-symbols-outlined cursor-pointer\" hx-get=\"/history/close\" hx-trigger=\"click\" hx-swap=\"outerHTML\" hx-target=\"#history-section\">close</span><h2>
-</h2><table id=\"history\"><thead><tr><th>Date</th><th>Close</th><th>Low</th><th>High</th></tr></thead> <tbody id=\"table_body\">
-<tr><td>
-</td><td>
-</td><td>
-</td><td>
-</td></tr>
-</tbody></table></div>
