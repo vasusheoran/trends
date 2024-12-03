@@ -137,7 +137,9 @@ func NewSqlDatastore(logger log.Logger, dbPath string) (*SQLDatastore, error) {
 		return nil, err
 	}
 
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+		CreateBatchSize: 20,
+	})
 	if err != nil {
 		return nil, err
 	}
