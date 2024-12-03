@@ -9,7 +9,7 @@ templ GetHistory(stocks []contracts.Stock, ticker string) {
 	<div id="history-section">
 		<span
 			class="material-symbols-outlined cursor-pointer"
-			hx-get="/"
+			hx-get="/history/close"
 			hx-trigger="click"
 			hx-swap="outerHTML"
 			hx-target="#history-section"

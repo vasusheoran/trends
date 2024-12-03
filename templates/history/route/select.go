@@ -15,6 +15,6 @@ func HTMXHistorySelectFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component := common.IndexSelectOption(listings, "/history", http.MethodGet)
+	component := common.IndexSelectOption(listings, "/history", "/select/close", http.MethodGet)
 	component.Render(context.Background(), w)
 }
