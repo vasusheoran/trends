@@ -4,12 +4,13 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	"github.com/vsheoran/trends/services/database"
-	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/vsheoran/trends/services/database"
+	"gorm.io/gorm"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -166,7 +167,7 @@ func (s *history) parseData(symbol string, records [][]string) []contracts.Stock
 }
 
 func (s *history) parseDate(date string) (time.Time, error) {
-	layout := "2-Jan-2006" // Reference layout for parsing
+	layout := "2-Jan-06" // Reference layout for parsing
 
 	t, err := time.Parse(layout, date)
 	if err != nil {

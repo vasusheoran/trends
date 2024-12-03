@@ -3,11 +3,13 @@ package route
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/transport"
 	"github.com/vsheoran/trends/templates/upload"
 	"github.com/vsheoran/trends/utils"
-	"net/http"
 )
 
 // HTMXNewTickerInitFunc returns the template block with the newly added film, as an HTMX response
@@ -22,6 +24,7 @@ func HTMXAddTickerInputFunc(w http.ResponseWriter, r *http.Request) {
 // HTMXNewTickerInitFunc returns the template block with the newly added film, as an HTMX response
 func HTMXNewTickerInitFunc(w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("ticker-name")
+	key = strings.Trim(key, "\n")
 	logger.Log("msg", "HTMXNewTickerInitFunc", "path", r.URL.Path, "method", r.Method, "key", key)
 
 	var err error
@@ -46,6 +49,7 @@ func HTMXNewTickerInitFunc(w http.ResponseWriter, r *http.Request) {
 // HTMXNewTickerInitFunc returns the template block with the newly added film, as an HTMX response
 func HTMXTickerInitFunc(w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("ticker-name")
+	key = strings.Trim(key, "\n")
 	logger.Log("msg", "HTMXNewTickerInitFunc", "path", r.URL.Path, "method", r.Method, "key", key)
 
 	transport.InitTicker(key, svc, w, r)
