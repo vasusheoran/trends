@@ -1,5 +1,0 @@
-<div class=\"mb-12 text-center md:mb-0 md:border-r-2 \">
-<p class=\"
-\">
-</p><p class=\"text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400\">
-</p></div>
