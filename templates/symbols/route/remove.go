@@ -20,7 +20,7 @@ func HTMXSelectTickerFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component := common.IndexSelectOption(listings, "/ticker/remove", http.MethodPost)
+	component := common.IndexSelectOption(listings, "/ticker/remove", "/select/close", http.MethodPost)
 	component.Render(context.Background(), w)
 }
 
