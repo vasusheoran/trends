@@ -5,13 +5,14 @@ import (
 	"fmt"
 
 	//"database/sql"
+	"os"
+	"path/filepath"
+
 	"github.com/go-kit/kit/log"
 	"github.com/vsheoran/trends/pkg/contracts"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"os"
-	"path/filepath"
 )
 
 type SQLDatastore struct {

@@ -2,13 +2,15 @@ package route
 
 import (
 	"context"
+	"net/http"
+	"strings"
+
 	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/pkg/transport"
 	"github.com/vsheoran/trends/templates/common"
 	"github.com/vsheoran/trends/templates/home"
 	"github.com/vsheoran/trends/utils"
-	"net/http"
 )
 
 // HTMXSelectTickerFunc
@@ -27,6 +29,7 @@ func HTMXSelectTickerFunc(w http.ResponseWriter, r *http.Request) {
 // HTMXSelectTickerFunc
 func HTMXRemoveTicker(w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("ticker-name")
+	key = strings.Trim(key, "\n")
 	logger.Log("msg", "HTMXRemoveTicker", "path", r.URL.Path, "method", r.Method, "key", key)
 
 	if len(key) == 0 {
@@ -72,6 +75,7 @@ func HTMXRemoveTicker(w http.ResponseWriter, r *http.Request) {
 
 func HTMXRemoveInitTickerFunc(w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("ticker-name")
+	key = strings.Trim(key, "\n")
 	logger.Log("msg", "HTMXRemoveInitTickerFunc", "path", r.URL.Path, "method", r.Method, "key", key)
 
 	if len(key) == 0 {
