@@ -77,16 +77,16 @@ func initServer(g *run.Group) {
 	if err != nil {
 		panic(err)
 	}
-	db := database.NewCSVDatastore(logger)
+	//db := database.NewCSVDatastore(logger)
 	cs := cards.New(logger)
-	hs := history.New(logger, db, sqlDB)
+	hs := history.New(logger, nil, sqlDB)
 	ts := ticker.NewTicker(logger, cs, hs)
-	ls := listing.New(logger, db)
+	ls := listing.New(logger, nil)
 	hb := socket.NewHub(logger, ts)
 
 	services := transport.Services{
 		TickerService:      ts,
-		DatabaseService:    db,
+		DatabaseService:    nil,
 		SQLDatabaseService: sqlDB,
 		ListingService:     ls,
 		HistoryService:     hs,

@@ -23,14 +23,9 @@ const (
 
 const (
 	HealthAPI    = "/health"
+	CardsAPI     = "/cards/{sasSymbol}"
 	IndexAPI     = "/index/{sasSymbol}"
 	FreezeAPI    = IndexAPI + "/freeze"
-	HistoryAPI   = "/history/{sasSymbol}"
-	SymbolsAPI   = "/symbol"
-	SymbolAPI    = "/symbol/{sasSymbol}"
 	SasSymbolKey = "sasSymbol"
 	FreezeKey    = "freeze"
-	SocketAPI    = "/ws/{sasSymbol}"
-
-	IndexHTMX = "/htmx/index"
 )
