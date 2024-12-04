@@ -77,10 +77,3 @@ func SertHTTP2(l log.Logger, router *mux.Router, services transport.Services) {
 	router.PathPrefix("/static/").
 		Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 }
-
-// swagger:parameters deleteListing replaceListing updateListing getTicker getHistory initTicker updateTicker freezeTicker
-type tickerSymbol struct {
-	// in: path
-	// required: true
-	SasSymbol string `json:"sasSymbol"`
-}
