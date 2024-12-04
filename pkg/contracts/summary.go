@@ -1,5 +1,7 @@
 package contracts
 
+import "encoding/json"
+
 // Summary represents summary information about a ticker.
 // swagger:model Summary
 type Summary struct {
@@ -21,6 +23,11 @@ type Summary struct {
 	Bullish     float64 `form:"sell" json:"sell" description:"Bullish signal strength"`
 	Barish      float64 `form:"barish" json:"barish" description:"Bearish signal strength"`
 	PreviousBuy float64 `form:"prev_buy" json:"prev_buy" description:"Previous buy signal strength"`
+}
+
+func (s Summary) ToString() (string, error) {
+	byteData, err := json.Marshal(s)
+	return string(byteData), err
 }
 
 // Card represents information related to a card.
@@ -47,4 +54,9 @@ type Card struct {
 	BR         float64 `json:"br" description:"BR value"`
 	Barish     float64 `json:"barish" description:"Barish value"`
 	Trend      float64 `json:"trend" description:"Trend value"`
+}
+
+func (c Card) ToString() (string, error) {
+	byteData, err := json.Marshal(c)
+	return string(byteData), err
 }

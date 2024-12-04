@@ -2,6 +2,7 @@ package route
 
 import (
 	"context"
+	"github.com/vsheoran/trends/services/database"
 	"net/http"
 	"strings"
 
@@ -15,7 +16,7 @@ func HTMXHistoryGetFunc(w http.ResponseWriter, r *http.Request) {
 	ticker := query.Get("ticker-name")
 	ticker = strings.Trim(ticker, "\n")
 
-	stocks, err := svc.SQLDatabaseService.ReadStockByTicker(ticker)
+	stocks, err := svc.SQLDatabaseService.ReadStockByTicker(ticker, database.ORDER_DESC)
 	if err != nil {
 		logger.Log("err", err)
 		return
