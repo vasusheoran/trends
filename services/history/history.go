@@ -38,7 +38,6 @@ type StocksORM struct {
 
 type history struct {
 	logger log.Logger
-	dbSvc  database.DataStore
 	sqlDB  *database.SQLDatastore
 }
 
@@ -188,10 +187,9 @@ func (s *history) parseDate(dateString string) (time.Time, error) {
 	return time.Time{}, fmt.Errorf("unable to parse date: %s", dateString)
 }
 
-func New(logger log.Logger, db database.DataStore, sqlDB *database.SQLDatastore) History {
+func New(logger log.Logger, sqlDB *database.SQLDatastore) History {
 	return &history{
 		logger: logger,
-		dbSvc:  db,
 		sqlDB:  sqlDB,
 	}
 }

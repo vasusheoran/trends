@@ -66,7 +66,7 @@ func SocketHandleFunc(w http.ResponseWriter, r *http.Request) {
 		logger.Log("msg", "SocketHandleFunc", "method", "POST")
 
 		var st contracts.Stock
-		err := utils.Decode(r.Body, &st)
+		st, err = transport.ParseOlderStocks(r.Body, sasSymbol)
 		if err != nil {
 			logger.Log("msg", "SocketHandleFunc", "err", err.Error())
 			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)

@@ -20,7 +20,6 @@ import (
 
 	"github.com/vsheoran/trends/services/cards"
 	"github.com/vsheoran/trends/services/history"
-	"github.com/vsheoran/trends/services/listing"
 	"github.com/vsheoran/trends/services/socket"
 	"github.com/vsheoran/trends/services/ticker"
 	http2 "github.com/vsheoran/trends/transport/http"
@@ -73,22 +72,18 @@ func openbrowser(url string) {
 }
 
 func initServer(g *run.Group) {
-	sqlDB, err := database.NewSqlDatastore(logger, "")
+	sqlDB, err := database.NewSqlDatastore(logger, "data/gorm.db")
 	if err != nil {
 		panic(err)
 	}
-	//db := database.NewCSVDatastore(logger)
+	hs := history.New(logger, sqlDB)
 	cs := cards.New(logger)
-	hs := history.New(logger, nil, sqlDB)
 	ts := ticker.NewTicker(logger, cs, hs)
-	ls := listing.New(logger, nil)
 	hb := socket.NewHub(logger, ts)
 
 	services := transport.Services{
 		TickerService:      ts,
-		DatabaseService:    nil,
 		SQLDatabaseService: sqlDB,
-		ListingService:     ls,
 		HistoryService:     hs,
 		HubService:         hb,
 	}
@@ -117,9 +112,8 @@ func initHTTP(g *run.Group, services transport.Services) {
 	http2.SertHTTP2(logger, router, services)
 
 	srv := &http.Server{
-		Handler: handler,
-		Addr:    ":" + httpPort,
-		// Good practice: enforce timeouts for servers you create!
+		Handler:      handler,
+		Addr:         ":" + httpPort,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
