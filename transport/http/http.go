@@ -54,15 +54,9 @@ func ServeHTTP(l log.Logger, router *mux.Router, services transport.Services) {
 	router.Path(constants.FreezeAPI).
 		HandlerFunc(TickerHandleFunc).
 		Methods(http.MethodPatch, http.MethodOptions)
-	router.Path(constants.HistoryAPI).
-		HandlerFunc(HistoryHandlerFunc).
-		Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
-	router.Path(constants.SymbolsAPI).
-		HandlerFunc(ListingsHandlerFunc).
-		Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
-	router.Path(constants.SymbolAPI).
-		HandlerFunc(ListingsHandlerFunc).
-		Methods(http.MethodPatch, http.MethodPut, http.MethodDelete, http.MethodOptions)
+	router.Path(constants.CardsAPI).
+		HandlerFunc(GetCardsHandler).
+		Methods(http.MethodGet, http.MethodOptions)
 }
 
 func SertHTTP2(l log.Logger, router *mux.Router, services transport.Services) {
