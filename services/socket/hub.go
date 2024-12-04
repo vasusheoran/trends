@@ -77,6 +77,12 @@ func (h *Hub) run() {
 				if client.uuid == ucl.UUID {
 					close(client.send)
 					clients = append(clients[:index], clients[index+1:]...)
+
+					if len(clients) == 0 {
+						delete(h.clients, client.ticker)
+						break
+					}
+
 					h.clients[client.ticker] = clients
 					level.Warn(h.log).Log("msg", "successfully unregistered client")
 					break

@@ -53,6 +53,7 @@ func New(logger log.Logger, conn *websocket.Conn, ticker, uuid string, hub *Hub)
 		send:   make(chan contracts.Summary),
 		ticker: ticker,
 		hub:    hub,
+		uuid:   uuid,
 	}
 	go client.writePump()
 	go client.readPump()
