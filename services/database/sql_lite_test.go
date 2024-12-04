@@ -151,7 +151,7 @@ func TestSaveStocks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	result, err := dbSvc.ReadStockByTicker(ticker)
+	result, err := dbSvc.ReadStockByTicker(ticker, "")
 	if err != nil {
 		t.Fatal(err)
 	}

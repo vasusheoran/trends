@@ -20,6 +20,12 @@ type SQLDatastore struct {
 	db     *gorm.DB
 }
 
+type ORDER string
+
+const (
+	ORDER_DESC ORDER = "desc"
+)
+
 func (s *SQLDatastore) DeleteStocks(ticker string) error {
 	tx := s.db.Model(contracts.Stock{}).Begin()
 	result := tx.Where("ticker = ?", ticker).Delete(&contracts.Stock{})
@@ -59,9 +65,10 @@ func (s *SQLDatastore) GetDistinctTicker(pattern string) ([]string, error) {
 	return tickers, nil
 }
 
-func (s *SQLDatastore) ReadStockByTicker(ticker string) ([]contracts.Stock, error) {
+func (s *SQLDatastore) ReadStockByTicker(ticker string, order ORDER) ([]contracts.Stock, error) {
 	var stocks []contracts.Stock
-	result := s.db.Model(contracts.Stock{}).Where("ticker = ?", ticker).Order("time desc").Find(&stocks)
+
+	result := s.db.Model(contracts.Stock{}).Where("ticker = ?", ticker).Order(fmt.Sprintf("time %s", order)).Find(&stocks)
 	//result := s.db.Model(contracts.Stock{}).Where("ticker = ?", ticker).Limit(500).Find(&stocks)
 
 	if result.Error != nil {

@@ -63,7 +63,7 @@ func (s *history) UploadFile(symbol string, r *http.Request) error {
 }
 
 func (s *history) Read(path string) ([]contracts.Stock, error) {
-	return s.sqlDB.ReadStockByTicker(path)
+	return s.sqlDB.ReadStockByTicker(path, "")
 	//data, err := s.dbSvc.Read(path)
 	//if err != nil {
 	//	level.Error(s.logger).Log("msg", "failed to retieve listings", "err", err.Error())
@@ -166,16 +166,26 @@ func (s *history) parseData(symbol string, records [][]string) []contracts.Stock
 	return data
 }
 
-func (s *history) parseDate(date string) (time.Time, error) {
-	layout := "2-Jan-06" // Reference layout for parsing
-
-	t, err := time.Parse(layout, date)
-	if err != nil {
-		fmt.Println(err)
-		return t, err
+func (s *history) parseDate(dateString string) (time.Time, error) {
+	formats := []string{
+		"2-Jan-2006",
+		"02-Jan-2006",
+		"2-Jan-06",
+		"02-Jan-06",
+		"2-01-2006",
+		"02-1-2006",
+		"2-01-06",
+		"02-1-06",
 	}
 
-	return t, nil
+	for _, format := range formats {
+		parsedTime, err := time.Parse(format, dateString)
+		if err == nil {
+			return parsedTime, nil
+		}
+	}
+
+	return time.Time{}, fmt.Errorf("unable to parse date: %s", dateString)
 }
 
 func New(logger log.Logger, db database.DataStore, sqlDB *database.SQLDatastore) History {
