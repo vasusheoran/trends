@@ -20,7 +20,6 @@ import (
 
 	"github.com/vsheoran/trends/services/cards"
 	"github.com/vsheoran/trends/services/history"
-	"github.com/vsheoran/trends/services/listing"
 	"github.com/vsheoran/trends/services/socket"
 	"github.com/vsheoran/trends/services/ticker"
 	http2 "github.com/vsheoran/trends/transport/http"
@@ -77,18 +76,14 @@ func initServer(g *run.Group) {
 	if err != nil {
 		panic(err)
 	}
-	//db := database.NewCSVDatastore(logger)
 	cs := cards.New(logger)
-	hs := history.New(logger, nil, sqlDB)
+	hs := history.New(logger, sqlDB)
 	ts := ticker.NewTicker(logger, cs, hs)
-	ls := listing.New(logger, nil)
 	hb := socket.NewHub(logger, ts)
 
 	services := transport.Services{
 		TickerService:      ts,
-		DatabaseService:    nil,
 		SQLDatabaseService: sqlDB,
-		ListingService:     ls,
 		HistoryService:     hs,
 		HubService:         hb,
 	}
