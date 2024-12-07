@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
+	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/test"
 	"github.com/vsheoran/trends/utils"
 	"math"
@@ -15,37 +16,6 @@ import (
 	"strings"
 	"testing"
 )
-
-type tickerDataIndex struct {
-	Date int `json:"Date"`
-
-	W int `json:"W" description:"Close"`
-	X int `json:"X" description:"Open"`
-	Y int `json:"Y" description:"High"`
-	Z int `json:"Z" description:"Low"`
-
-	AD int `json:"AD" description:""`
-	AR int `json:"AR"`
-	AS int `json:"AS"`
-	BN int `json:"BN"`
-	BP int `json:"BP"`
-	CW int `json:"CW"`
-	BR int `json:"BR"`
-	CC int `json:"CC"`
-	CE int `json:"CE"`
-	ED int `json:"ED"`
-
-	E int `json:"E"`
-	C int `json:"C"`
-	D int `json:"D"`
-
-	O  int `json:"O"`
-	M  int `json:"M"`
-	CD int `json:"CD"`
-	DK int `json:"DK"`
-	EC int `json:"EC"`
-	EB int `json:"EB"`
-}
 
 func TestNewCard(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()
@@ -110,7 +80,22 @@ func TestNewCard(t *testing.T) {
 			assert.True(t, test.IsValueWithinTolerance(actualData.D, expected.D, 0.5), fmt.Sprintf("actualD: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.D, expected.D, math.Abs(actualData.D-expected.D), actualData.Date, i))
 		}
 
+		if expected.CW > 0.1 && i > 623 { // Invalid test data before this row
+			assert.True(t, test.IsValueWithinTolerance(actualData.CW, expected.CW, 0.5), fmt.Sprintf("actualCW: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.CW, expected.CW, math.Abs(actualData.CW-expected.CW), actualData.Date, i))
+		}
+
 	}
+
+	lastRow := data[len(data)-1]
+	err = cardSvc.Update(ticker, lastRow.W, lastRow.X, lastRow.Y, lastRow.Z)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//if expected.CW > 0.1 && i > 623 { // Invalid test data before this row
+	//	assert.True(t, test.IsValueWithinTolerance(actualData.CW, expected.CW, 0.5), fmt.Sprintf("actualCW: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.CW, expected.CW, math.Abs(actualData.CW-expected.CW), actualData.Date, i))
+	//}
+
 }
 
 func GetTestCases(path string, response interface{}) error {
@@ -127,8 +112,8 @@ func GetTestCases(path string, response interface{}) error {
 	return nil
 }
 
-func parseRecords(logger log.Logger, records [][]string) ([]TickerData, error) {
-	var tickerData []TickerData
+func parseRecords(logger log.Logger, records [][]string) ([]models.Ticker, error) {
+	var tickerData []models.Ticker
 	var headers *tickerDataIndex
 	for i, row := range records {
 		if i == 0 {
@@ -142,8 +127,8 @@ func parseRecords(logger log.Logger, records [][]string) ([]TickerData, error) {
 	return tickerData, nil
 }
 
-func getTickerData(row []string, headers *tickerDataIndex) TickerData {
-	var tickerData TickerData
+func getTickerData(row []string, headers *tickerDataIndex) models.Ticker {
+	var tickerData models.Ticker
 
 	tickerData.Date = row[headers.Date]
 	date, err := parseDate(tickerData.Date)
@@ -363,4 +348,35 @@ func writeToJSON(path string, data interface{}) error {
 		return err
 	}
 	return nil
+}
+
+type tickerDataIndex struct {
+	Date int `json:"Date"`
+
+	W int `json:"W" description:"Close"`
+	X int `json:"X" description:"Open"`
+	Y int `json:"Y" description:"High"`
+	Z int `json:"Z" description:"Low"`
+
+	AD int `json:"AD" description:""`
+	AR int `json:"AR"`
+	AS int `json:"AS"`
+	BN int `json:"BN"`
+	BP int `json:"BP"`
+	CW int `json:"CW"`
+	BR int `json:"BR"`
+	CC int `json:"CC"`
+	CE int `json:"CE"`
+	ED int `json:"ED"`
+
+	E int `json:"E"`
+	C int `json:"C"`
+	D int `json:"D"`
+
+	O  int `json:"O"`
+	M  int `json:"M"`
+	CD int `json:"CD"`
+	DK int `json:"DK"`
+	EC int `json:"EC"`
+	EB int `json:"EB"`
 }

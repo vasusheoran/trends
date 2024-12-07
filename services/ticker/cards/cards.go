@@ -3,45 +3,71 @@ package cards
 import (
 	"fmt"
 	"github.com/go-kit/kit/log"
+	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/services/ticker/ma"
 	"time"
 )
 
-type TickerData struct {
-	Name string    `json:"name"`
-	Date string    `json:"date"`
-	Time time.Time `json:"parsed_date"`
+type Card interface {
+	Update(symbol string, close, open, high, low float64) error
+	Add(ticker, date string, close, open, high, low float64) error
+	Get(ticker string) models.Ticker
+}
 
-	W float64 `json:"W" description:"Close"`
-	X float64 `json:"X" description:"Open"`
-	Y float64 `json:"Y" description:"High"`
-	Z float64 `json:"Z" description:"Low"`
+type card struct {
+	logger log.Logger
+	Name   string `json:"-"`
+	ticker map[string]*tickerData
+	ema    ma.ExponentialMovingAverageV2
+	ma     ma.MovingAverageV2
+}
 
-	AD float64 `json:"AD" description:""`
-	AR float64 `json:"AR"`
-	AS float64 `json:"AS"`
-	BN float64 `json:"BN"`
-	BP float64 `json:"BP"`
-	CW float64 `json:"CW"`
-	BR float64 `json:"BR"`
-	CC float64 `json:"CC"`
-	CE float64 `json:"CE"`
-	ED float64 `json:"ED"`
+type tickerData struct {
+	Data      []models.Ticker // Current row is at Index
+	Next      []models.Ticker // futures
+	Index     int
+	NextIndex int
+}
 
-	E    float64 `json:"E"`
-	C    float64 `json:"C"`
-	MinC float64 `json:"min_c"`
-	MaxC float64 `json:"max_c"`
-	D    float64 `json:"D"`
+func (c *card) Update(symbol string, close, open, high, low float64) error {
+	if len(c.ticker[symbol].Next) == 2 {
+		return c.updateNextData(c.ticker[symbol], c.ticker[symbol].Index)
+	}
 
-	O  float64 `json:"O"`
-	M  float64 `json:"M"`
-	CD float64 `json:"CD"`
-	DK float64 `json:"DK"`
-	EC float64 `json:"EC"`
-	EB float64 `json:"EB"`
+	if len(c.ticker[symbol].Next) != 0 {
+		c.ticker[symbol].Next = []models.Ticker{}
+	}
 
-	index int // Current Index
+	return c.addNextData(symbol, close, open, high, low)
+}
+
+func (c *card) Add(symbol, date string, close, open, high, low float64) error {
+	t, err := parseDate(date)
+	if err != nil {
+		c.logger.Log("err", err.Error(), "date", date)
+	}
+
+	if _, ok := c.ticker[symbol]; !ok {
+		c.ticker[symbol] = &tickerData{
+			Index: -1,
+			Data:  make([]models.Ticker, 0),
+		}
+	}
+
+	tickerData := models.Ticker{
+		Date: date,
+		Time: t,
+		W:    close,
+		X:    open,
+		Y:    high,
+		Z:    low,
+	}
+
+	return c.add(symbol, tickerData)
+}
+
+func (c *card) Get(symbol string) models.Ticker {
+	return c.ticker[symbol].Data[c.ticker[symbol].Index]
 }
 
 func NewCard(logger log.Logger) Card {
@@ -92,118 +118,65 @@ func NewCard(logger log.Logger) Card {
 
 	return &card{
 		logger: logger,
-		ticker: make(map[string]*Ticker),
+		ticker: make(map[string]*tickerData),
 		ema:    ma.NewExponentialMovingAverageV2(logger, emaData),
 		ma:     ma.NewMovingAverageV2(logger, maData),
 	}
 
 }
 
-// Current row is last row
-type Card interface {
-	Update(symbol string, close, open, high, low float64) error
-	Add(ticker, date string, close, open, high, low float64) error
-	Get(ticker string) TickerData
-}
-
-type Ticker struct {
-	Data  []TickerData
-	Index int
-}
-
-type card struct {
-	logger log.Logger
-	Name   string `json:"-"`
-	ticker map[string]*Ticker
-	ema    ma.ExponentialMovingAverageV2
-	ma     ma.MovingAverageV2
-}
-
-func (c *card) Update(symbol string, close, open, high, low float64) error {
-	currentTicker := c.ticker[symbol]
-	currentTicker.Data[currentTicker.Index].W = close
-	currentTicker.Data[currentTicker.Index].X = open
-	currentTicker.Data[currentTicker.Index].Y = high
-	currentTicker.Data[currentTicker.Index].Z = low
-
-	return c.update(currentTicker)
-}
-
-func (c *card) Add(symbol, date string, close, open, high, low float64) error {
-	t, err := parseDate(date)
-	if err != nil {
-		c.logger.Log("err", err.Error(), "date", date)
-	}
-
-	if _, ok := c.ticker[symbol]; !ok {
-		c.ticker[symbol] = &Ticker{
-			Index: -1,
-			Data:  make([]TickerData, 0),
-		}
-	}
-
-	tickerData := TickerData{
-		Date: date,
-		Time: t,
-		W:    close,
-		X:    open,
-		Y:    high,
-		Z:    low,
-	}
-
-	return c.add(symbol, tickerData)
-}
-
-func (c *card) Get(symbol string) TickerData {
-	return c.ticker[symbol].Data[c.ticker[symbol].Index]
-}
-
-func (c *card) add(symbol string, tickerData TickerData) error {
+func (c *card) add(symbol string, tickerData models.Ticker) error {
 	currentTicker := c.ticker[symbol]
 	currentTicker.Index++
 
 	currentTicker.Data = append(currentTicker.Data, tickerData)
 
-	return c.update(currentTicker)
+	return c.calculate(currentTicker)
 }
 
-func (c *card) update(currentTicker *Ticker) error {
-	c.calculateAD(currentTicker)
+func (c *card) calculate(currentTicker *tickerData) error {
+	c.calculateAD(currentTicker, currentTicker.Index)
 
-	err := c.calculateM(currentTicker)
+	err := c.calculateM(currentTicker, currentTicker.Index)
 	if err != nil {
 		return err
 	}
 
-	err = c.calculateAS(currentTicker)
+	err = c.calculateAS(currentTicker, currentTicker.Index)
 	if err != nil {
 		return err
 	}
 
-	err = c.calculateO(currentTicker)
+	err = c.calculateO(currentTicker, currentTicker.Index)
 	if err != nil {
 		return err
 	}
 
-	err = c.calculateBN(currentTicker)
+	err = c.calculateBN(currentTicker, currentTicker.Index)
 	if err != nil {
 		return err
 	}
 
-	c.calculateBP(currentTicker)
+	c.calculateBP(currentTicker, currentTicker.Index)
 
-	err = c.calculateAR(currentTicker)
+	err = c.calculateAR(currentTicker, currentTicker.Index)
 	if err != nil {
 		return err
 	}
 
-	c.calculateC(currentTicker)
+	c.calculateC(currentTicker, currentTicker.Index)
 
-	c.calculateE(currentTicker)
+	c.calculateE(currentTicker, currentTicker.Index)
 
-	c.calculateD(currentTicker)
+	c.calculateD(currentTicker, currentTicker.Index)
+
+	c.calculateCW(currentTicker, currentTicker.Index)
 
 	return nil
+}
+
+func (c *card) calculateCE(ticker *tickerData, i int) {
+
 }
 
 func parseDate(dateString string) (time.Time, error) {
