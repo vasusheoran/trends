@@ -7,6 +7,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
+	"github.com/vsheoran/trends/services/ticker/ma"
 	"github.com/vsheoran/trends/test"
 	"github.com/vsheoran/trends/utils"
 	"math"
@@ -17,12 +18,132 @@ import (
 	"testing"
 )
 
+func TestCard_Update(t *testing.T) {
+	logger := utils.InitializeDefaultLogger()
+
+	const ticker = "test"
+
+	records, err := readInputCSV("test/input/4-12-24.csv")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	data, err := parseRecords(logger, records)
+	if err != nil {
+		t.Fatal(err)
+	}
+	emaData := map[string]*ma.EMAData{
+		"M5": {
+			Window: 5,
+			Delay:  0,
+			Decay:  2.0 / 6.0,
+			Values: []float64{},
+			EMA:    []float64{},
+		},
+		"AS5": {
+			Window: 5,
+			Delay:  0,
+			Decay:  2.0 / 6.0,
+			Values: []float64{},
+			EMA:    []float64{},
+		},
+		"O21": {
+			Window: 5,
+			Delay:  20,
+			Decay:  2.0 / 21.0,
+			Values: []float64{},
+			EMA:    []float64{},
+		},
+		"BN21": {
+			Window: 5,
+			Delay:  0,
+			Decay:  2.0 / 21.0,
+			Values: []float64{},
+			EMA:    []float64{},
+		},
+	}
+
+	maData := map[string]*ma.MAData{
+		"AR10": {
+			Values:    []float64{},
+			WindowSum: []float64{},
+			Window:    10,
+		},
+		"AR50": {
+			Values:    []float64{},
+			WindowSum: []float64{},
+			Window:    50,
+			Offset:    0,
+		},
+	}
+
+	cardSvc := &card{
+		logger: logger,
+		ticker: make(map[string]*tickerData),
+		ema:    ma.NewExponentialMovingAverageV2(logger, emaData),
+		ma:     ma.NewMovingAverageV2(logger, maData),
+	}
+
+	for _, expected := range data {
+		err = cardSvc.Add(ticker, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	files, err := GetTestFiles("test/futures")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//files := []string{"test/futures/first-update.csv"}
+
+	for i, file := range files {
+		if i > 2 {
+			break
+		}
+
+		expectedRecords, err := readInputCSV(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		expectedData, err := parseRecords(logger, expectedRecords)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = cardSvc.updateCE(ticker, expectedData[0].W, expectedData[0].X, expectedData[0].Y, expectedData[0].Z)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		result := cardSvc.Get(ticker)
+
+		validateResult(t, expectedData[0], result[0])
+		validateResult(t, expectedData[1], result[1])
+		validateResult(t, expectedData[2], result[2])
+
+		err = cardSvc.updateCE(ticker, expectedData[0].W, expectedData[0].X, expectedData[0].Y, expectedData[0].Z)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		result = cardSvc.Get(ticker)
+
+		validateResult(t, expectedData[0], result[0])
+		validateResult(t, expectedData[1], result[1])
+		validateResult(t, expectedData[2], result[2])
+	}
+
+}
+
 func TestNewCard(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()
 
 	const ticker = "test"
 
-	records, err := readInputCSV("test/input/4-12-24-v2.csv")
+	records, err := readInputCSV("test/input/4-12-24-v1.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,61 +162,56 @@ func TestNewCard(t *testing.T) {
 		}
 
 		actualData := cardSvc.Get(ticker)
-		if expected.AD > 0 && strings.Contains(expected.Date, "25-Oct-2005,12-Apr-2013,6-May-2014,6-Dec-2017") {
-			assert.True(t, test.IsValueWithinTolerance(actualData.AD, expected.AD, 0.1), fmt.Sprintf("actualAD: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.AD, expected.AD, math.Abs(actualData.AD-expected.AD), actualData.Date, i))
-		}
 
-		if expected.M > 0.0 {
-			assert.True(t, test.IsValueWithinTolerance(actualData.M, expected.M, 0.9), fmt.Sprintf("actualM: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.M, expected.M, math.Abs(actualData.M-expected.M), actualData.Date, i))
+		if i > 623 {
+			validateResult(t, expected, actualData[0])
 		}
+	}
+}
 
-		if expected.AS > 0.0 {
-			assert.True(t, test.IsValueWithinTolerance(actualData.AS, expected.AS, 0.5), fmt.Sprintf("actualAS: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.AS, expected.AS, math.Abs(actualData.AS-expected.AS), actualData.Date, i))
-		}
-
-		if expected.O > 0 {
-			assert.True(t, test.IsValueWithinTolerance(actualData.O, expected.O, 0.5), fmt.Sprintf("actualO: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.O, expected.O, math.Abs(actualData.O-expected.O), actualData.Date, i))
-		}
-		if expected.BN > 0 {
-			assert.True(t, test.IsValueWithinTolerance(actualData.BN, expected.BN, 0.5), fmt.Sprintf("actualBN: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.BN, expected.BN, math.Abs(actualData.BN-expected.BN), actualData.Date, i))
-		}
-
-		if expected.BP > 0 {
-			assert.True(t, test.IsValueWithinTolerance(actualData.BP, expected.BP, 0.5), fmt.Sprintf("actualBP: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.BP, expected.BP, math.Abs(actualData.BP-expected.BP), actualData.Date, i))
-		}
-
-		if expected.AR > 0 {
-			assert.True(t, test.IsValueWithinTolerance(actualData.AR, expected.AR, 0.5), fmt.Sprintf("actualAR: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.AR, expected.AR, math.Abs(actualData.AR-expected.AR), actualData.Date, i))
-		}
-
-		if expected.C > 0.1 {
-			assert.True(t, test.IsValueWithinTolerance(actualData.C, expected.C, 0.1), fmt.Sprintf("actualC: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.C, expected.C, math.Abs(actualData.C-expected.C), actualData.Date, i))
-		}
-
-		if expected.E > 0 {
-			assert.True(t, test.IsValueWithinTolerance(actualData.E, expected.E, 0.5), fmt.Sprintf("actualE: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.E, expected.E, math.Abs(actualData.E-expected.E), actualData.Date, i))
-		}
-
-		if expected.D > 0 {
-			assert.True(t, test.IsValueWithinTolerance(actualData.D, expected.D, 0.5), fmt.Sprintf("actualD: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.D, expected.D, math.Abs(actualData.D-expected.D), actualData.Date, i))
-		}
-
-		if expected.CW > 0.1 && i > 623 { // Invalid test data before this row
-			assert.True(t, test.IsValueWithinTolerance(actualData.CW, expected.CW, 0.5), fmt.Sprintf("actualCW: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.CW, expected.CW, math.Abs(actualData.CW-expected.CW), actualData.Date, i))
-		}
-
+func validateResult(t *testing.T, expected, actualData models.Ticker) {
+	if expected.AD > 0 && strings.Contains(expected.Date, "25-Oct-2005,12-Apr-2013,6-May-2014,6-Dec-2017") {
+		assert.True(t, test.IsValueWithinTolerance(actualData.AD, expected.AD, 0.1), fmt.Sprintf("actualAD: %f, expected: %f, diff: %f, date: %s", actualData.AD, expected.AD, math.Abs(actualData.AD-expected.AD), actualData.Date))
 	}
 
-	lastRow := data[len(data)-1]
-	err = cardSvc.Update(ticker, lastRow.W, lastRow.X, lastRow.Y, lastRow.Z)
-	if err != nil {
-		t.Fatal(err)
+	if expected.M > 0.0 {
+		assert.True(t, test.IsValueWithinTolerance(actualData.M, expected.M, 0.9), fmt.Sprintf("actualM: %f, expected: %f, diff: %f, date: %s", actualData.M, expected.M, math.Abs(actualData.M-expected.M), actualData.Date))
 	}
 
-	//if expected.CW > 0.1 && i > 623 { // Invalid test data before this row
-	//	assert.True(t, test.IsValueWithinTolerance(actualData.CW, expected.CW, 0.5), fmt.Sprintf("actualCW: %f, expected: %f, diff: %f, date: %s, i: %d", actualData.CW, expected.CW, math.Abs(actualData.CW-expected.CW), actualData.Date, i))
-	//}
+	if expected.AS > 0.0 {
+		assert.True(t, test.IsValueWithinTolerance(actualData.AS, expected.AS, 0.5), fmt.Sprintf("actualAS: %f, expected: %f, diff: %f, date: %s", actualData.AS, expected.AS, math.Abs(actualData.AS-expected.AS), actualData.Date))
+	}
 
+	if expected.O > 0 {
+		assert.True(t, test.IsValueWithinTolerance(actualData.O, expected.O, 0.5), fmt.Sprintf("actualO: %f, expected: %f, diff: %f, date: %s", actualData.O, expected.O, math.Abs(actualData.O-expected.O), actualData.Date))
+	}
+	if expected.BN > 0 {
+		assert.True(t, test.IsValueWithinTolerance(actualData.BN, expected.BN, 0.5), fmt.Sprintf("actualBN: %f, expected: %f, diff: %f, date: %s", actualData.BN, expected.BN, math.Abs(actualData.BN-expected.BN), actualData.Date))
+	}
+
+	if expected.BP > 0 {
+		assert.True(t, test.IsValueWithinTolerance(actualData.BP, expected.BP, 0.5), fmt.Sprintf("actualBP: %f, expected: %f, diff: %f, date: %s", actualData.BP, expected.BP, math.Abs(actualData.BP-expected.BP), actualData.Date))
+	}
+
+	if expected.AR > 0 {
+		assert.True(t, test.IsValueWithinTolerance(actualData.AR, expected.AR, 0.5), fmt.Sprintf("actualAR: %f, expected: %f, diff: %f, date: %s", actualData.AR, expected.AR, math.Abs(actualData.AR-expected.AR), actualData.Date))
+	}
+
+	if expected.C > 0.1 {
+		assert.True(t, test.IsValueWithinTolerance(actualData.C, expected.C, 0.1), fmt.Sprintf("actualC: %f, expected: %f, diff: %f, date: %s", actualData.C, expected.C, math.Abs(actualData.C-expected.C), actualData.Date))
+	}
+
+	if expected.E > 0 {
+		assert.True(t, test.IsValueWithinTolerance(actualData.E, expected.E, 0.5), fmt.Sprintf("actualE: %f, expected: %f, diff: %f, date: %s", actualData.E, expected.E, math.Abs(actualData.E-expected.E), actualData.Date))
+	}
+
+	if expected.D > 0 {
+		assert.True(t, test.IsValueWithinTolerance(actualData.D, expected.D, 0.5), fmt.Sprintf("actualD: %f, expected: %f, diff: %f, date: %s", actualData.D, expected.D, math.Abs(actualData.D-expected.D), actualData.Date))
+	}
+
+	if expected.CW > 0.1 {
+		assert.True(t, test.IsValueWithinTolerance(actualData.CW, expected.CW, 0.5), fmt.Sprintf("actualCW: %f, expected: %f, diff: %f, date: %s", actualData.CW, expected.CW, math.Abs(actualData.CW-expected.CW), actualData.Date))
+	}
 }
 
 func GetTestCases(path string, response interface{}) error {
@@ -325,7 +441,7 @@ func GetTestFiles(path string) ([]string, error) {
 
 	testFiles := []string{}
 	for _, e := range entries {
-		if strings.Contains(e.Name(), ".json") {
+		if strings.Contains(e.Name(), ".csv") {
 			testFiles = append(testFiles, filepath.Join(path, e.Name()))
 		}
 	}

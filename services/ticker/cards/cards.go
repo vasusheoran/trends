@@ -9,9 +9,9 @@ import (
 )
 
 type Card interface {
-	Update(symbol string, close, open, high, low float64) error
+	Future(symbol string, close, open, high, low float64) error
 	Add(ticker, date string, close, open, high, low float64) error
-	Get(ticker string) models.Ticker
+	Get(ticker string) []models.Ticker
 }
 
 type card struct {
@@ -23,22 +23,30 @@ type card struct {
 }
 
 type tickerData struct {
-	Data      []models.Ticker // Current row is at Index
-	Next      []models.Ticker // futures
+	Data []models.Ticker // Current row is at Index
+	//Next      []models.Ticker // futures
 	Index     int
 	NextIndex int
 }
 
-func (c *card) Update(symbol string, close, open, high, low float64) error {
-	if len(c.ticker[symbol].Next) == 2 {
-		return c.updateNextData(c.ticker[symbol], c.ticker[symbol].Index)
+func (c *card) Future(symbol string, close, open, high, low float64) error {
+	err := c.updateCE(symbol, close, open, high, low)
+	if err != nil {
+		return err
+	}
+	return c.calculateCE(symbol, c.ticker[symbol].Index+1)
+}
+
+func (c *card) updateCE(symbol string, close, open, high, low float64) error {
+	if c.ticker[symbol].NextIndex == 0 {
+		return c.addNextData(symbol, close, open, high, low)
 	}
 
-	if len(c.ticker[symbol].Next) != 0 {
-		c.ticker[symbol].Next = []models.Ticker{}
+	if c.ticker[symbol].NextIndex != 3 {
+		return fmt.Errorf("invalid data for `%s`, remove symbol and upload the data again", symbol)
 	}
 
-	return c.addNextData(symbol, close, open, high, low)
+	return c.updateNextData(symbol, close, open, high, low)
 }
 
 func (c *card) Add(symbol, date string, close, open, high, low float64) error {
@@ -66,8 +74,17 @@ func (c *card) Add(symbol, date string, close, open, high, low float64) error {
 	return c.add(symbol, tickerData)
 }
 
-func (c *card) Get(symbol string) models.Ticker {
-	return c.ticker[symbol].Data[c.ticker[symbol].Index]
+func (c *card) Get(symbol string) []models.Ticker {
+	if c.ticker[symbol].NextIndex == 0 {
+		return []models.Ticker{
+			c.ticker[symbol].Data[c.ticker[symbol].Index],
+		}
+	}
+	return []models.Ticker{
+		c.ticker[symbol].Data[c.ticker[symbol].Index+1],
+		c.ticker[symbol].Data[c.ticker[symbol].Index+2],
+		c.ticker[symbol].Data[c.ticker[symbol].Index+3],
+	}
 }
 
 func NewCard(logger log.Logger) Card {
@@ -131,52 +148,48 @@ func (c *card) add(symbol string, tickerData models.Ticker) error {
 
 	currentTicker.Data = append(currentTicker.Data, tickerData)
 
-	return c.calculate(currentTicker)
+	return c.calculate(currentTicker, currentTicker.Index)
 }
 
-func (c *card) calculate(currentTicker *tickerData) error {
-	c.calculateAD(currentTicker, currentTicker.Index)
+func (c *card) calculate(currentTicker *tickerData, index int) error {
+	c.calculateAD(currentTicker, index)
 
-	err := c.calculateM(currentTicker, currentTicker.Index)
+	err := c.calculateM(currentTicker, index)
 	if err != nil {
 		return err
 	}
 
-	err = c.calculateAS(currentTicker, currentTicker.Index)
+	err = c.calculateAS(currentTicker, index)
 	if err != nil {
 		return err
 	}
 
-	err = c.calculateO(currentTicker, currentTicker.Index)
+	err = c.calculateO(currentTicker, index)
 	if err != nil {
 		return err
 	}
 
-	err = c.calculateBN(currentTicker, currentTicker.Index)
+	err = c.calculateBN(currentTicker, index)
 	if err != nil {
 		return err
 	}
 
-	c.calculateBP(currentTicker, currentTicker.Index)
+	c.calculateBP(currentTicker, index)
 
-	err = c.calculateAR(currentTicker, currentTicker.Index)
+	err = c.calculateAR(currentTicker, index)
 	if err != nil {
 		return err
 	}
 
-	c.calculateC(currentTicker, currentTicker.Index)
+	c.calculateC(currentTicker, index)
 
-	c.calculateE(currentTicker, currentTicker.Index)
+	c.calculateE(currentTicker, index)
 
-	c.calculateD(currentTicker, currentTicker.Index)
+	c.calculateD(currentTicker, index)
 
-	c.calculateCW(currentTicker, currentTicker.Index)
+	c.calculateCW(currentTicker, index)
 
 	return nil
-}
-
-func (c *card) calculateCE(ticker *tickerData, i int) {
-
 }
 
 func parseDate(dateString string) (time.Time, error) {

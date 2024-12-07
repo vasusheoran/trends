@@ -19,6 +19,25 @@ type MovingAverageV2 struct {
 	data   map[string]*MAData
 }
 
+func (ma *MovingAverageV2) Remove(key string, index int) error {
+	if _, ok := ma.data[key]; !ok {
+		return fmt.Errorf("key `%s` does not exist", key)
+	}
+
+	st := ma.data[key]
+
+	if st.count-index <= st.Window {
+		return fmt.Errorf("not supporteed if length after removal is less than delay")
+	}
+
+	st.Values = st.Values[:len(st.Values)-index]
+	st.WindowSum = st.WindowSum[:len(st.WindowSum)-index]
+	st.count -= index
+
+	st.windowSum = st.WindowSum[st.count-1]
+	return nil
+}
+
 func (ma *MovingAverageV2) Add(key string, value float64) error {
 	if _, ok := ma.data[key]; !ok {
 		return fmt.Errorf("key `%s` does not exist", key)

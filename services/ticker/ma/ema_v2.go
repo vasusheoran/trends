@@ -24,6 +24,29 @@ type ExponentialMovingAverageV2 struct {
 	data   map[string]*EMAData
 }
 
+func (ema *ExponentialMovingAverageV2) Remove(key string, index int) error {
+	if _, ok := ema.data[key]; !ok {
+		return fmt.Errorf("key `%s` does not exist", key)
+	}
+
+	st := ema.data[key]
+
+	delay := st.Window
+	if delay < st.Delay {
+		delay = st.Delay
+	}
+
+	if st.count-index <= delay {
+		return fmt.Errorf("not supporteed if length after removal is less than delay")
+	}
+
+	st.EMA = st.EMA[:len(st.EMA)-index]
+	//st.Values = st.Values[:len(st.Values)-index]
+	st.count -= index
+
+	return nil
+}
+
 func (ema *ExponentialMovingAverageV2) Add(key string, value float64) error {
 	if _, ok := ema.data[key]; !ok {
 		return fmt.Errorf("key `%s` does not exist", key)

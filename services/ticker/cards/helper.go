@@ -1,10 +1,62 @@
 package cards
 
 import (
+	"errors"
 	"math"
 )
 
-// calculateAD MIN(Prev Y3)
+// BinarySearchFunc takes input value to be updated. Returns low, high and diff
+type BinarySearchFunc func(symbol string, value float64) (float64, float64, error)
+
+func Search(fn BinarySearchFunc, symbol string, tolerance float64) (float64, error) {
+	high := 99999.0
+	low := 0.0
+
+	for high > low {
+		mid := (high + low) / 2
+
+		firstValue, secondValue, err := fn(symbol, mid)
+		if err != nil {
+			return 0, err
+		}
+
+		diff := math.Abs(secondValue - firstValue)
+		if math.Abs(diff) <= tolerance {
+			return mid, nil
+		}
+
+		if secondValue > firstValue {
+			high = mid - 0.01
+		} else {
+			low = mid + 0.01
+		}
+	}
+
+	return 0, errors.New("not found") // Not found
+}
+
+func (c *card) calculateCE(symbol string, index int) error {
+	fn := func(symbol string, value float64) (float64, float64, error) {
+		result := c.Get(symbol)
+
+		err := c.updateNextData(symbol, value, result[0].X, result[0].Y, result[0].Z)
+		if err != nil {
+			return 0.0, 0.0, err
+		}
+
+		result = c.Get(symbol)
+		return result[0].BP, result[1].BP, nil
+	}
+
+	var err error
+	c.ticker[symbol].Data[index].CE, err = Search(fn, symbol, 0.09)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *card) calculateAD(t *tickerData, index int) {
 	if index < 3 {
 		t.Data[index].AD = 0.00
@@ -164,4 +216,33 @@ func (c *card) calculateBR(t *tickerData, index int) {
 
 	value := ((t.Data[index-1].D * 13) + t.Data[index].MaxC) / float64(14)
 	t.Data[index].CW = 100 - (100 / (1 + value/isValid))
+}
+
+func (c *card) updateEMA() error {
+	err := c.ema.Remove("AS5", 3)
+	if err != nil {
+		return err
+	}
+	err = c.ema.Remove("M5", 3)
+	if err != nil {
+		return err
+	}
+	err = c.ema.Remove("O21", 3)
+	if err != nil {
+		return err
+	}
+	err = c.ema.Remove("BN21", 3)
+	if err != nil {
+		return err
+	}
+	err = c.ma.Remove("AR10", 3)
+	if err != nil {
+		return err
+	}
+	err = c.ma.Remove("AR50", 3)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
