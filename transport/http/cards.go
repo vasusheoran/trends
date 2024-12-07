@@ -14,13 +14,13 @@ func GetCardsHandler(w http.ResponseWriter, r *http.Request) {
 
 	logger.Log("msg", "GetCardsHandler", "path", r.URL.Path, "method", r.Method, "sasSymbol", sasSymbol)
 
-	data := svc.TickerService.GetAllSummary()
-	if data == nil {
+	s, cards := svc.TickerService.Debug()
+	if cards == nil {
 		http.Error(w, fmt.Sprintf("Cards for `%s` does not exist", sasSymbol), http.StatusBadRequest)
 		return
 	}
 
 	w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 	w.WriteHeader(http.StatusOK)
-	utils.Encode(w, data[sasSymbol])
+	utils.EncodeMultipleStructs(w, cards[sasSymbol], s[sasSymbol])
 }

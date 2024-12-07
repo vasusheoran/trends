@@ -3,6 +3,7 @@ package route
 import (
 	"context"
 	"fmt"
+	"github.com/go-kit/kit/log/level"
 	"net/http"
 	"strings"
 
@@ -35,7 +36,14 @@ func HTMXNewTickerInitFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = svc.HistoryService.UploadFile(key, r)
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		level.Error(logger).Log("err", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	defer file.Close()
+
+	err = svc.HistoryService.UploadFile(key, file)
 	if err != nil {
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 		w.WriteHeader(http.StatusBadRequest)

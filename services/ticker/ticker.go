@@ -3,6 +3,7 @@ package ticker
 import (
 	"errors"
 	"fmt"
+	ma2 "github.com/vsheoran/trends/services/ticker/ma"
 	"math"
 
 	"github.com/go-kit/kit/log"
@@ -13,7 +14,6 @@ import (
 	"github.com/vsheoran/trends/services/cards"
 	custom_errors "github.com/vsheoran/trends/services/errors"
 	"github.com/vsheoran/trends/services/history"
-	"github.com/vsheoran/trends/services/ma"
 )
 
 var ErrTickerNotInitialised = fmt.Errorf("Ticker has not beed added.")
@@ -24,6 +24,7 @@ type Ticker interface {
 	Get(key string) (contracts.Summary, error)
 	Remove(key string) error
 	GetAllSummary() map[string]contracts.Summary
+	Debug() (map[string]contracts.Summary, map[string]contracts.Card)
 	Freeze(key string, st contracts.Stock) error
 }
 
@@ -32,11 +33,14 @@ type ticker struct {
 	logger         log.Logger
 	data           map[string]*contracts.TickerInfo
 	summary        map[string]contracts.Summary
+	card           map[string]contracts.Card
 	cardService    cards.Cards
 	historyService history.History
-	emaService     ma.ExponentialMovingAverage
-	averageService ma.MovingAverage
-	emaPosNegSvc   ma.EMAPosNegService
+	emaService     ma2.ExponentialMovingAverage
+	averageService ma2.MovingAverage
+	emaPosNegSvc   ma2.EMAPosNegService
+	cp5Service     ma2.ExponentialMovingAverage
+	cp20Service    ma2.ExponentialMovingAverage
 }
 
 func (s *ticker) Freeze(key string, st contracts.Stock) error {
@@ -84,6 +88,10 @@ func (s *ticker) Update(key string, stock contracts.Stock) error {
 	go s.update(key, stock)
 
 	return nil
+}
+
+func (s *ticker) Debug() (map[string]contracts.Summary, map[string]contracts.Card) {
+	return s.summary, s.card
 }
 
 func (s *ticker) GetAllSummary() map[string]contracts.Summary {
@@ -158,6 +166,8 @@ func (s *ticker) Init(key string, path string) (contracts.Summary, error) {
 		s.averageService.Add(key, constants.KeyCP50, val.Close)
 		s.emaService.Add(key, constants.KeyCP5, val.Close)
 		s.emaService.Add(key, constants.KeyCP20, val.Close)
+		s.cp5Service.Add(key, constants.KeyCP5, val.Close)
+		s.cp20Service.Add(key, constants.KeyCP20, val.Close)
 		previousCP = nextCP
 		nextCP = val.Close
 		diff := nextCP - previousCP
@@ -173,8 +183,8 @@ func (s *ticker) Init(key string, path string) (contracts.Summary, error) {
 
 	lastIndex := len(candles) - 1
 
-	s.data[key].EmaCp5 = s.emaService.Value(key, constants.KeyCP5)
-	s.data[key].EmaCP20 = s.emaService.Value(key, constants.KeyCP20)
+	s.data[key].EmaCp5 = s.cp5Service.Value(key, constants.KeyCP5)
+	s.data[key].EmaCP20 = s.cp20Service.Value(key, constants.KeyCP20)
 	s.data[key].EmaDiffCpPos = s.emaPosNegSvc.Value(constants.KeyDiffCpPos)
 	s.data[key].EmaDiffCpNeg = s.emaPosNegSvc.Value(constants.KeyDiffCpNeg)
 	s.data[key].MinHP2 = math.Min(candles[lastIndex].High, candles[lastIndex-1].High)
@@ -228,6 +238,7 @@ func (s *ticker) setNextValues(key string, cp, hp, lp float64) {
 }
 
 func (s *ticker) updateSummaryMap(key string, card contracts.Card) {
+	s.card[key] = card
 	s.summary[key] = contracts.Summary{
 		Ticker:      key,
 		Close:       s.data[key].Future.NextCP[0],
@@ -254,15 +265,19 @@ func NewTicker(logger log.Logger, cardsSvc cards.Cards, hs history.History) Tick
 		logger:         logger,
 		data:           map[string]*contracts.TickerInfo{},
 		summary:        map[string]contracts.Summary{},
+		card:           map[string]contracts.Card{},
 		cardService:    cardsSvc,
 		historyService: hs,
-		emaService: ma.NewExponentialMovingAverage(
+		emaService: ma2.NewExponentialMovingAverage(
 			logger,
 			[]string{"CP5", "CP20"},
 			[]int{5, 20},
+			0,
 		),
-		averageService: ma.NewMovingAverage(logger, []string{"CP10", "CP50"}, []int{10, 50}),
-		emaPosNegSvc: ma.NewEMAPosNeg(
+		cp5Service:     ma2.NewExponentialMovingAverage(logger, []string{constants.KeyCP5}, []int{5}, 49),
+		cp20Service:    ma2.NewExponentialMovingAverage(logger, []string{constants.KeyCP20}, []int{20}, 49),
+		averageService: ma2.NewMovingAverage(logger, []string{"CP10", "CP50"}, []int{10, 50}),
+		emaPosNegSvc: ma2.NewEMAPosNeg(
 			logger,
 			[]string{constants.KeyDiffCpPos, constants.KeyDiffCpNeg},
 			[]int{15, 15},

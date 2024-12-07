@@ -145,7 +145,7 @@ func (c *Client) writePump() {
 }
 
 //func (t *Client) UpdateStock(symbol string, st contracts.Stock) error {
-//	err := t.ts.Update(symbol, st)
+//	err := t.ts.Add(symbol, st)
 //	if err != nil {
 //		level.Error(t.logger).Log("msg", "failed to ch stock", "err", err.Error())
 //		return err

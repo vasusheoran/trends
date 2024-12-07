@@ -12,6 +12,10 @@ var (
 	logger log.Logger
 )
 
+func TestMovingAverage_Add(t *testing.T) {
+
+}
+
 func TestMovingAverage(t *testing.T) {
 	logger = utils.InitializeDefaultLogger()
 	const key = "cp5"

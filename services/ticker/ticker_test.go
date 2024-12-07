@@ -9,7 +9,6 @@ import (
 	"github.com/vsheoran/trends/utils"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -25,8 +24,16 @@ const (
 	testDir   = "test/input"
 )
 
-func iterateFiles(t *testing.T, logger log.Logger, dir string) error {
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+func Test_Cards(t *testing.T) {
+
+	logger = utils.InitializeDefaultLogger()
+
+}
+
+func TestTicker_Init(t *testing.T) {
+	logger = utils.InitializeDefaultLogger()
+
+	err := filepath.Walk(testDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -58,17 +65,25 @@ func iterateFiles(t *testing.T, logger log.Logger, dir string) error {
 			t.Fatal(err)
 		}
 
-		db := database.NewCSVDatastore(logger)
-		hs := history.New(logger, db, sqlDB)
+		f, err := os.Open(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		hs := history.New(logger, sqlDB)
+		err = hs.UploadFile(path, f)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		cardsSvc := cards.New(logger)
-		ticker := NewTicker(logger, cardsSvc, hs)
-		s, err := ticker.Init(filename, path)
+		tckr := NewTicker(logger, cardsSvc, hs)
+		s, err := tckr.Init(filename, path)
 
 		assert.Nil(t, err)
 		assert.NotNil(t, s)
 
-		//ticker.Update(filename, exp.In)
+		//ticker.Add(filename, exp.In)
 
 		//res, _ := ticker.Get(filename)
 
@@ -76,26 +91,6 @@ func iterateFiles(t *testing.T, logger log.Logger, dir string) error {
 
 		return nil
 	})
-
-	return err
-}
-
-func assertFields(t *testing.T, actualSummary, expectedSummary contracts.Summary, validateCols []string) {
-	vActualSummary := reflect.ValueOf(actualSummary)
-	vExpectedSummary := reflect.ValueOf(expectedSummary)
-	for _, col := range validateCols {
-		expectedfield := vExpectedSummary.FieldByName(col)
-		if !expectedfield.IsZero() {
-			actualField := vActualSummary.FieldByName(col)
-			assert.Equal(t, expectedfield.Equal(actualField), true)
-		}
-	}
-}
-
-func TestTicker_Init(t *testing.T) {
-	logger = utils.InitializeDefaultLogger()
-
-	err := iterateFiles(t, logger, testDir)
 	if err != nil {
 		t.Fatal(err)
 	}

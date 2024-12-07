@@ -95,31 +95,6 @@ func (s *SQLDatastore) SaveStocks(data []contracts.Stock) error {
 	}
 
 	return nil
-
-	//tx := s.db.Model(contracts.Stock{}).Begin()
-	//result := tx.Clauses(clause.OnConflict{
-	//	Columns:   []clause.Column{{Name: "ticker"}, {Name: "date"}},                  // key column
-	//	DoUpdates: clause.AssignmentColumns([]string{"close", "high", "low", "time"}), // column needed to be updated
-	//}).Create(data)
-	//
-	//if result.Error != nil {
-	//	s.logger.Log("error", result.Error)
-	//	return result.Error
-	//}
-	//
-	//result = tx.Commit()
-	//if result.Error == nil {
-	//	return nil
-	//}
-	//
-	//s.logger.Log("Error saving stocks", result.Error)
-	//result = tx.Rollback()
-	//if result.Error != nil {
-	//	s.logger.Log("Error rolling transaction back", result.Error)
-	//	return result.Error
-	//}
-	//
-	//return nil
 }
 
 func (s *SQLDatastore) UpdateStock(data contracts.Stock) error {

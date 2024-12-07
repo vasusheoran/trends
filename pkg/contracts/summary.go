@@ -43,17 +43,22 @@ type Card struct {
 	AE1        float64 `json:"ae_at_1" description:"AE1 value"`
 	AE2        float64 `json:"ae_at_2" description:"AE2 value"`
 	AO         float64 `json:"ao" description:"AO value"`
-	BI         float64 `json:"buy" description:"Buy value"`
+	BI         float64 `json:"bi" description:"Buy value"`
 	PreviousBI float64 `json:"frozen_buy" description:"Frozen buy value from the previous day"`
-	BJ         float64 `json:"support" description:"Support value"`
-	BK         float64 `json:"bullish" description:"Bullish value"`
-	AR         float64 `json:"avg" description:"Average value"`
-	CR         float64 `json:"rsi" description:"Relative Strength Index"`
-	BN         float64 `json:"bn" description:"BN value"`
-	BRSH       float64 `json:"barsh" description:"Barsh value"`
+	BJ         float64 `json:"bj" description:"Support"`
+	BK         float64 `json:"bk" description:"Bullish"`
+	AR         float64 `json:"ar" description:"Average value"`
+	CR         float64 `json:"cr" description:"rsi"`
+	BN         float64 `json:"bn" description:"BN"`
+	BRSH       float64 `json:"BRSH" description:"Barsh"`
 	BR         float64 `json:"br" description:"BR value"`
 	Barish     float64 `json:"barish" description:"Barish value"`
 	Trend      float64 `json:"trend" description:"Trend value"`
+	//
+	//DA      float64 `json:"da"` //
+	//DB      float64 `json:"db"`
+	//DC      float64 `json:"dc"`
+
 }
 
 func (c Card) ToString() (string, error) {
