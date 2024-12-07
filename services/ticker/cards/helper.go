@@ -90,19 +90,20 @@ func (c *card) calculateC(t *Ticker) {
 		return
 	}
 	t.Data[t.Index].C = t.Data[t.Index].W - t.Data[t.Index-1].W
+
+	t.Data[t.Index].MinC = math.Min(t.Data[t.Index].C, 0.0)
+	t.Data[t.Index].MaxC = math.Max(t.Data[t.Index].C, 0.0)
 }
 
 func (c *card) calculateE(t *Ticker) {
 	if t.Index < 14 {
-		t.Data[t.Index].E = math.Min(t.Data[t.Index].C, 0.0)
 		return
 	}
 
 	if t.Index > 14 {
 		//((E19×13)+IF(C20<0,−C20,0))÷14
 		firstHalf := t.Data[t.Index-1].E * float64(13)
-		secondHalf := 0.00
-		secondHalf = math.Abs(math.Min(t.Data[t.Index].C, 0))
+		secondHalf := math.Abs(t.Data[t.Index].MinC)
 
 		t.Data[t.Index].E = (firstHalf + secondHalf) / float64(14)
 
@@ -111,32 +112,25 @@ func (c *card) calculateE(t *Ticker) {
 
 	sum := 0.00
 	for i := 0; i < t.Index; i++ {
-		sum += t.Data[i].E
+		sum += t.Data[i].MinC
 	}
 	t.Data[t.Index].E = math.Abs(sum) / float64(14)
 }
 
 func (c *card) calculateD(t *Ticker) {
 	if t.Index < 14 {
-
-		t.Data[t.Index].D = math.Max(t.Data[t.Index].C, 0.0)
 		return
 	}
 
 	if t.Index > 14 {
-		//((E19×13)+IF(C20<0,−C20,0))÷14
 		firstHalf := t.Data[t.Index-1].D * float64(13)
-		secondHalf := 0.00
-		secondHalf = math.Abs(math.Max(t.Data[t.Index].C, 0))
-
-		t.Data[t.Index].D = (firstHalf + secondHalf) / float64(14)
-
+		t.Data[t.Index].D = (firstHalf + t.Data[t.Index].MaxC) / float64(14)
 		return
 	}
 
 	sum := 0.00
 	for i := 0; i < t.Index; i++ {
-		sum += t.Data[i].D
+		sum += t.Data[i].MaxC
 	}
 	t.Data[t.Index].D = sum / float64(14)
 
