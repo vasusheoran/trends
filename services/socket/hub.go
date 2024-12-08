@@ -97,15 +97,11 @@ func (h *Hub) run() {
 				continue
 			}
 
-			data, err := h.tickerClient.Get(symbol)
-			if err != nil {
-				level.Error(h.log).Log("msg", "error fetching summary from tickerAPI", "symbol", symbol, "err", err.Error())
-				continue
-			}
+			data := h.tickerClient.Get(symbol)
 
 			for index, client := range clients {
 				select {
-				case client.send <- data:
+				case client.send <- data[symbol]:
 				default:
 					close(client.send)
 					clients = append(clients[:index], clients[index+1:]...)
@@ -118,15 +114,12 @@ func (h *Hub) run() {
 }
 
 func (h *Hub) UpdateStock(symbol string, st contracts.Stock) error {
-	err := h.tickerClient.Update(symbol, st)
+	err := h.tickerClient.Update(symbol, st.Close, st.Open, st.High, st.Low)
 	if err != nil {
-		level.Error(h.log).Log("msg", "failed to ch stock", "err", err.Error())
 		return err
 	}
-
 	level.Info(h.log).Log("msg", "Stock updated successfully")
 
 	h.broadcast <- symbol
-
 	return nil
 }

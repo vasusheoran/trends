@@ -1,8 +1,13 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type Ticker struct {
+	gorm.Model
+
 	Name string    `json:"name"`
 	Date string    `json:"date"`
 	Time time.Time `json:"parsed_date"`

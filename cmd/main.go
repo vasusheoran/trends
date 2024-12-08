@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/vsheoran/trends/pkg/transport"
 	"github.com/vsheoran/trends/services/database"
+	"github.com/vsheoran/trends/services/ticker/cards"
 	"net/http"
 	"os"
 	"os/exec"
@@ -18,7 +19,6 @@ import (
 	"github.com/oklog/run"
 	"github.com/rs/cors"
 
-	"github.com/vsheoran/trends/services/cards"
 	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/services/socket"
 	"github.com/vsheoran/trends/services/ticker"
@@ -76,7 +76,7 @@ func initServer(g *run.Group) {
 	if err != nil {
 		panic(err)
 	}
-	cs := cards.New(logger)
+	cs := cards.NewCard(logger)
 	hs := history.New(logger, sqlDB)
 	ts := ticker.NewTicker(logger, cs, hs)
 	hb := socket.NewHub(logger, ts)

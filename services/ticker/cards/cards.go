@@ -16,6 +16,7 @@ type Card interface {
 	Add(ticker, date string, close, open, high, low float64) error
 	Get(ticker string) []models.Ticker
 	Update(ticker string, close, open, high, low float64) error
+	Remove(ticker string)
 }
 
 type card struct {
@@ -24,6 +25,10 @@ type card struct {
 	ticker map[string]*tickerData
 	ema    ma.ExponentialMovingAverageV2
 	ma     ma.MovingAverageV2
+}
+
+func (c *card) Remove(ticker string) {
+	delete(c.ticker, ticker)
 }
 
 type tickerData struct {
@@ -87,7 +92,15 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 	current.Data[current.Index+1].Y = high
 	current.Data[current.Index+1].Z = low
 
-	return c.calculate(current, current.Index+1)
+	err := c.calculate(current, current.Index+1)
+	if err != nil {
+		return err
+	}
+
+	current.Data[current.Index+1].CE = current.CE
+	current.Data[current.Index+1].BR = current.BR
+
+	return nil
 }
 
 func NewCard(logger log.Logger) Card {

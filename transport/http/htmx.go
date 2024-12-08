@@ -2,13 +2,10 @@ package http
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gorilla/websocket"
-	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
-	"github.com/vsheoran/trends/pkg/transport"
+	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/templates"
-	"github.com/vsheoran/trends/utils"
 	"net/http"
 )
 
@@ -26,15 +23,10 @@ var (
 func HTMXSummaryHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	logger.Log("msg", "HTMXSummaryHandlerFunc")
 
-	data := svc.TickerService.GetAllSummary()
+	data := svc.TickerService.Get("")
 
-	byteData, _ := json.Marshal(data)
-	logger.Log("data", string(byteData))
 	if data == nil {
-		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.Encode(w, transport.ErrorResponse{Error: "no ticker data found"})
-		return
+		data = map[string]models.Ticker{}
 	}
 
 	component := templates.Index(contracts.HTMXData{SummaryMap: data})

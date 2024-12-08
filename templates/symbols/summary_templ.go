@@ -8,7 +8,7 @@ package symbols
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/vsheoran/trends/pkg/contracts"
+import "github.com/vsheoran/trends/services/ticker/cards/models"
 
 var (
 	green    = "text-green-600"
@@ -18,10 +18,10 @@ var (
 	magenta  = "text-fuchsia-500"
 	purple   = "text-purple-500"
 	violet   = "text-violet-500"
-	gold     = "text-yellow-500"
+	gold     = "text-yeltlow-500"
 )
 
-func Summary(id string, symbol contracts.Summary) templ.Component {
+func Summary(id string, ticker models.Ticker) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -42,125 +42,59 @@ func Summary(id string, symbol contracts.Summary) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = Stat("Close", symbol.Close, "").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Stat("W", ticker.W, "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = Stat("High", symbol.High, "").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Stat("X", ticker.X, "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = Stat("Low", symbol.Low, "").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Stat("Y", ticker.Y, "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = Stat("Average", symbol.Average, "").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Stat("Z", ticker.Z, "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = Stat("Ema20", symbol.Ema20, "").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Stat("AD", ticker.AD, "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if symbol.Close > symbol.Trend {
-			templ_7745c5c3_Err = Stat("Trend", symbol.Trend, green).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		} else {
-			templ_7745c5c3_Err = Stat("Trend", symbol.Trend, red).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
+		templ_7745c5c3_Err = Stat("AR", ticker.AR, "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
 		}
-		if symbol.Close > symbol.Ema5 {
-			templ_7745c5c3_Err = Stat("Ema5", symbol.Ema5, green).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		} else if symbol.Close > symbol.Average {
-			templ_7745c5c3_Err = Stat("Ema5", symbol.Ema5, blue).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		} else {
-			templ_7745c5c3_Err = Stat("Ema5", symbol.Ema5, red).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
+		templ_7745c5c3_Err = Stat("AS", ticker.AS, "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
 		}
-		if symbol.Close > symbol.Trend {
-			templ_7745c5c3_Err = Stat("HL3", symbol.HL3, magenta).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		} else {
-			templ_7745c5c3_Err = Stat("HL3", symbol.HL3, violet).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
+		templ_7745c5c3_Err = Stat("BN", ticker.BN, "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
 		}
-		if symbol.RSI > 69 {
-			templ_7745c5c3_Err = Stat("RSI", symbol.RSI, darkblue).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		} else if symbol.RSI > 49 {
-			templ_7745c5c3_Err = Stat("RSI", symbol.RSI, green).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		} else {
-			templ_7745c5c3_Err = Stat("RSI", symbol.RSI, red).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
+		templ_7745c5c3_Err = Stat("BP", ticker.BP, "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
 		}
-		if symbol.Close > symbol.Trend {
-			templ_7745c5c3_Err = Stat("LowerL", symbol.LowerL, green).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		} else {
-			templ_7745c5c3_Err = Stat("LowerL", symbol.LowerL, red).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
+		templ_7745c5c3_Err = Stat("CW", ticker.CW, "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
 		}
-		if symbol.Close > symbol.Trend {
-			templ_7745c5c3_Err = Stat("Barish", symbol.Barish, gold).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		} else {
-			templ_7745c5c3_Err = Stat("Barish", symbol.Barish, red).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
+		templ_7745c5c3_Err = Stat("BR", ticker.BR, "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
 		}
-		if symbol.Close > symbol.Trend {
-			templ_7745c5c3_Err = Stat("Bullish", symbol.Bullish, purple).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		} else {
-			templ_7745c5c3_Err = Stat("Bullish", symbol.Bullish, red).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
+		templ_7745c5c3_Err = Stat("CC", ticker.CC, "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
 		}
-		if symbol.Close > symbol.Trend {
-			templ_7745c5c3_Err = Stat("Sell", symbol.Support, darkblue).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		} else {
-			templ_7745c5c3_Err = Stat("Sell", symbol.Support, red).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
+		templ_7745c5c3_Err = Stat("CE", ticker.CE, "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = Stat("Prev-Buy", symbol.PreviousBuy, "").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Stat("ED", ticker.ED, "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

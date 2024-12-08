@@ -51,9 +51,6 @@ func ServeHTTP(l log.Logger, router *mux.Router, services transport.Services) {
 	router.Path(constants.IndexAPI).
 		HandlerFunc(TickerHandleFunc).
 		Methods(http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions)
-	router.Path(constants.FreezeAPI).
-		HandlerFunc(TickerHandleFunc).
-		Methods(http.MethodPatch, http.MethodOptions)
 	router.Path(constants.CardsAPI).
 		HandlerFunc(GetCardsHandler).
 		Methods(http.MethodGet, http.MethodOptions)

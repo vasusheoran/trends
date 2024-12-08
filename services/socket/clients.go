@@ -3,14 +3,13 @@ package socket
 import (
 	"bytes"
 	"context"
+	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/templates/symbols"
 	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/gorilla/websocket"
-
-	"github.com/vsheoran/trends/pkg/contracts"
 )
 
 const (
@@ -24,8 +23,8 @@ var (
 )
 
 type SocketResponse struct {
-	Summary contracts.Summary `json:"summary"`
-	Message string            `json:msg,omitempty`
+	Summary models.Ticker `json:"summary"`
+	Message string        `json:msg,omitempty`
 }
 
 // Client is a middleman between the websocket connection and the hub.
@@ -41,7 +40,7 @@ type Client struct {
 	uuid string
 
 	// Buffered channel of outbound messages.
-	send chan contracts.Summary
+	send chan models.Ticker
 
 	hub *Hub
 }
@@ -50,7 +49,7 @@ func New(logger log.Logger, conn *websocket.Conn, ticker, uuid string, hub *Hub)
 	client := &Client{
 		logger: logger,
 		conn:   conn,
-		send:   make(chan contracts.Summary),
+		send:   make(chan models.Ticker),
 		ticker: ticker,
 		hub:    hub,
 		uuid:   uuid,
@@ -109,7 +108,7 @@ func (c *Client) writePump() {
 			}
 
 			htmlBytes := &bytes.Buffer{}
-			message := symbols.Message(summary.Ticker, summary, nil)
+			message := symbols.Message(summary.Name, summary, nil)
 			message.Render(context.Background(), htmlBytes)
 
 			// jsonBytes, err := json.Marshal(SocketResponse{

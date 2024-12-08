@@ -3,7 +3,6 @@ package database
 import (
 	"errors"
 	"fmt"
-
 	//"database/sql"
 	"os"
 	"path/filepath"
@@ -126,7 +125,7 @@ func NewSqlDatastore(logger log.Logger, dbPath string) (*SQLDatastore, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&contracts.Summary{})
+	//db.AutoMigrate(&models.Ticker{})
 
 	db.AutoMigrate(&contracts.Stock{})
 

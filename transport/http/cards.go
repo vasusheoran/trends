@@ -14,7 +14,7 @@ func GetCardsHandler(w http.ResponseWriter, r *http.Request) {
 
 	logger.Log("msg", "GetCardsHandler", "path", r.URL.Path, "method", r.Method, "sasSymbol", sasSymbol)
 
-	s, cards := svc.TickerService.Debug()
+	cards := svc.TickerService.Get("")
 	if cards == nil {
 		http.Error(w, fmt.Sprintf("Cards for `%s` does not exist", sasSymbol), http.StatusBadRequest)
 		return
@@ -22,5 +22,5 @@ func GetCardsHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 	w.WriteHeader(http.StatusOK)
-	utils.EncodeMultipleStructs(w, cards[sasSymbol], s[sasSymbol])
+	utils.Encode(w, cards[sasSymbol])
 }

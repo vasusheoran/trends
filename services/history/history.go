@@ -19,13 +19,14 @@ import (
 )
 
 type History interface {
-	Read(path string) ([]contracts.Stock, error)
+	Read(symbol string) ([]contracts.Stock, error)
 	Write(path string, listings []contracts.Stock) error
 	UploadFile(path string, file multipart.File) error
 }
 
 type historyDataIndex struct {
 	Close int
+	Open  int
 	High  int
 	Low   int
 	Date  int
@@ -54,8 +55,8 @@ func (s *history) UploadFile(symbol string, file multipart.File) error {
 	return s.Write(symbol, stocks)
 }
 
-func (s *history) Read(path string) ([]contracts.Stock, error) {
-	return s.sqlDB.ReadStockByTicker(path, "")
+func (s *history) Read(symbol string) ([]contracts.Stock, error) {
+	return s.sqlDB.ReadStockByTicker(symbol, "")
 	//data, err := s.dbSvc.Read(path)
 	//if err != nil {
 	//	level.Error(s.logger).Log("msg", "failed to retieve listings", "err", err.Error())
@@ -81,11 +82,13 @@ func (s *history) parseHeaders(records [][]string, index *historyDataIndex) {
 	for i, val := range records[0] {
 		toLowerVal := strings.Trim(strings.ToLower(val), " ")
 		switch toLowerVal {
-		case "cp", "close":
+		case "w", "close":
 			index.Close = i
-		case "hp", "high":
+		case "x", "open":
+			index.Open = i
+		case "y", "high":
 			index.High = i
-		case "lp", "low":
+		case "z", "low":
 			index.Low = i
 		case "date":
 			index.Date = i
@@ -123,6 +126,10 @@ func (s *history) parseData(symbol string, records [][]string) []contracts.Stock
 		temp.Time = t
 
 		if temp.Close, err = strconv.ParseFloat(row[index.Close], 64); err != nil {
+			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
+			continue
+		}
+		if temp.Open, err = strconv.ParseFloat(row[index.Open], 64); err != nil {
 			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
 			continue
 		}
