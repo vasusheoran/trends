@@ -2,37 +2,14 @@ package cards
 
 import (
 	"errors"
+	"fmt"
 	"math"
 )
 
-// BinarySearchFunc takes input value to be updated. Returns low, high and diff
-type BinarySearchFunc func(c Card, symbol string, value float64) (float64, float64, error)
+// binarySearchFunc takes input value to be updated. Returns low, high and diff
+type binarySearchFunc func(c *card, symbol string, value float64) (float64, float64, error)
 
-func SearchCE(c Card, symbol string, value float64) (float64, float64, error) {
-	result := c.Get(symbol)
-
-	err := c.Update(c.UpdateDataForCE, symbol, value, result[0].X, result[0].Y, result[0].Z)
-	if err != nil {
-		return 0.0, 0.0, err
-	}
-
-	result = c.Get(symbol)
-	return result[0].BP, result[1].BP, nil
-}
-
-func SearchBR(c Card, symbol string, value float64) (float64, float64, error) {
-	result := c.Get(symbol)
-
-	err := c.Update(c.UpdateDataForBR, symbol, value, result[0].X, result[0].Y, result[0].Z)
-	if err != nil {
-		return 0.0, 0.0, err
-	}
-
-	result = c.Get(symbol)
-	return result[2].BP, result[1].BP, nil
-}
-
-func Search(fn BinarySearchFunc, c Card, symbol string, tolerance float64) (float64, error) {
+func search(fn binarySearchFunc, c *card, symbol string, tolerance float64) (float64, error) {
 	high := 99999.0
 	low := 0.0
 
@@ -59,12 +36,48 @@ func Search(fn BinarySearchFunc, c Card, symbol string, tolerance float64) (floa
 	return 0, errors.New("not found") // Not found
 }
 
+func (c *card) updateFuture(fn updateFutureFunc, symbol string, close, open, high, low float64) error {
+	if c.ticker[symbol].NextIndex == 0 {
+		return c.addNextData(symbol, close, open, high, low)
+	}
+
+	if c.ticker[symbol].NextIndex != 3 {
+		return fmt.Errorf("invalid dataFunc for `%s`, remove symbol and upload the dataFunc again", symbol)
+	}
+
+	return fn(symbol, close, open, high, low)
+}
+
+func searchCE(c *card, symbol string, value float64) (float64, float64, error) {
+	result := c.Get(symbol)
+
+	err := c.updateFuture(c.updateFutureDataForCE, symbol, value, result[0].X, result[0].Y, result[0].Z)
+	if err != nil {
+		return 0.0, 0.0, err
+	}
+
+	result = c.Get(symbol)
+	return result[0].BP, result[1].BP, nil
+}
+
+func searchBR(c *card, symbol string, value float64) (float64, float64, error) {
+	result := c.Get(symbol)
+
+	err := c.updateFuture(c.updateFutureDataForBR, symbol, value, result[0].X, result[0].Y, result[0].Z)
+	if err != nil {
+		return 0.0, 0.0, err
+	}
+
+	result = c.Get(symbol)
+	return result[2].BP, result[1].BP, nil
+}
+
 func (c *card) calculateAD(t *tickerData, index int) {
-	if index < 3 {
+	if index < 4 {
 		t.Data[index].AD = 0.00
 		return
 	}
-	t.Data[index].AD = math.Min(math.Min(t.Data[index-1].Y, t.Data[index-2].Y), t.Data[index-3].Y)
+	t.Data[index].AD = math.Min(math.Min(t.Data[index-2].Y, t.Data[index-3].Y), t.Data[index-4].Y)
 }
 
 func (c *card) calculateAS(t *tickerData, index int) error {

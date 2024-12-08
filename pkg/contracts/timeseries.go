@@ -4,7 +4,7 @@ package contracts
 type TickerInfo struct {
 	IsBuyFrozen  bool       `json:"isBuyFrozen" description:"Flag indicating whether buying is frozen"`
 	BI           float64    `json:"bi" description:"BI value"`
-	Future       FutureData `json:"future" description:"Future data"`
+	Future       FutureData `json:"future" description:"future data"`
 	CP           float64    `json:"cp" description:"Current price"`
 	HP           float64    `json:"hp" description:"High price"`
 	LP           float64    `json:"lp" description:"Low price"`

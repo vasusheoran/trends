@@ -8,14 +8,14 @@ import (
 	"time"
 )
 
-type UpdateFuture func(symbol string, close, open, high, low float64) error
+const TOLERANCE = 0.001
+
+type updateFutureFunc func(symbol string, close, open, high, low float64) error
 
 type Card interface {
 	Add(ticker, date string, close, open, high, low float64) error
 	Get(ticker string) []models.Ticker
-	Update(fn UpdateFuture, symbol string, close, open, high, low float64) error
-	UpdateDataForCE(symbol string, close, open, high, low float64) error
-	UpdateDataForBR(symbol string, close, open, high, low float64) error
+	Update(ticker string, close, open, high, low float64) error
 }
 
 type card struct {
@@ -32,18 +32,6 @@ type tickerData struct {
 	NextIndex int
 	CE        float64
 	BR        float64
-}
-
-func (c *card) Update(fn UpdateFuture, symbol string, close, open, high, low float64) error {
-	if c.ticker[symbol].NextIndex == 0 {
-		return c.addNextData(symbol, close, open, high, low)
-	}
-
-	if c.ticker[symbol].NextIndex != 3 {
-		return fmt.Errorf("invalid data for `%s`, remove symbol and upload the data again", symbol)
-	}
-
-	return fn(symbol, close, open, high, low)
 }
 
 func (c *card) Add(symbol, date string, close, open, high, low float64) error {
@@ -82,6 +70,24 @@ func (c *card) Get(symbol string) []models.Ticker {
 		c.ticker[symbol].Data[c.ticker[symbol].Index+2],
 		c.ticker[symbol].Data[c.ticker[symbol].Index+3],
 	}
+}
+
+func (c *card) Update(symbol string, close, open, high, low float64) error {
+	current := c.ticker[symbol]
+
+	if current.NextIndex == 0 {
+		_, err := c.updateFutureData(symbol)
+		if err != nil {
+			return err
+		}
+	}
+
+	current.Data[current.Index+1].W = close
+	current.Data[current.Index+1].X = open
+	current.Data[current.Index+1].Y = high
+	current.Data[current.Index+1].Z = low
+
+	return c.calculate(current, current.Index+1)
 }
 
 func NewCard(logger log.Logger) Card {
@@ -139,31 +145,66 @@ func NewCard(logger log.Logger) Card {
 
 }
 
-func (c *card) search(symbol string) error {
-	actualCE, err := Search(SearchCE, c, symbol, 0.001)
+func (c *card) add(symbol string, tickerData models.Ticker) error {
+	current := c.ticker[symbol]
+
+	currentTickerData, err := c.updateFutureData(symbol)
 	if err != nil {
 		return err
 	}
 
-	// Update CE for future reference
-	c.ticker[symbol].CE = actualCE
-
-	actualBR, err := Search(SearchBR, c, symbol, 0.001)
+	err = c.cleanUpFutureData(symbol, currentTickerData)
 	if err != nil {
 		return err
 	}
 
-	c.ticker[symbol].BR = actualBR
-	return nil
+	current.Index++
+	current.Data = append(current.Data, tickerData)
+
+	return c.calculate(current, current.Index)
 }
 
-func (c *card) add(symbol string, tickerData models.Ticker) error {
-	currentTicker := c.ticker[symbol]
-	currentTicker.Index++
+func (c *card) updateFutureData(symbol string) (models.Ticker, error) {
+	current := c.ticker[symbol]
 
-	currentTicker.Data = append(currentTicker.Data, tickerData)
+	if current.Index < 100 {
+		return models.Ticker{}, nil
+	}
+	currentTickerData := c.ticker[symbol].Data[current.Index]
 
-	return c.calculate(currentTicker, currentTicker.Index)
+	err := c.calculateCE(symbol, TOLERANCE)
+	if err != nil {
+		return models.Ticker{}, nil
+	}
+
+	err = c.calculateBR(symbol, TOLERANCE)
+	if err != nil {
+		return models.Ticker{}, nil
+	}
+
+	return currentTickerData, nil
+}
+
+func (c *card) cleanUpFutureData(symbol string, data models.Ticker) error {
+	current := c.ticker[symbol]
+
+	if current.Index < 100 {
+		return nil
+	}
+
+	err := c.updateEMA()
+	if err != nil {
+		return err
+	}
+
+	current.Data = current.Data[:len(current.Data)-3]
+
+	current.NextIndex = 0
+	c.ticker[symbol].Data[current.Index] = data
+	current.Data[current.Index].CE = current.CE
+	current.Data[current.Index].BR = current.BR
+
+	return nil
 }
 
 func (c *card) calculate(currentTicker *tickerData, index int) error {
@@ -226,5 +267,5 @@ func parseDate(dateString string) (time.Time, error) {
 		}
 	}
 
-	return time.Time{}, fmt.Errorf("unable to parse data: %s", dateString)
+	return time.Time{}, fmt.Errorf("unable to parse dataFunc: %s", dateString)
 }

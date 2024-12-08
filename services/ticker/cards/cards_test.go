@@ -17,12 +17,17 @@ import (
 	"testing"
 )
 
+var (
+	ceCount = 0
+	brCount = 0
+)
+
 func TestNewCard(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()
 
 	const ticker = "test"
 
-	records, err := readInputCSV("test/input/4-12-24.csv")
+	records, err := readInputCSV("test/input/1-11-24.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,20 +37,22 @@ func TestNewCard(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cardSvc := NewCard(logger)
+	cardSvc := getCardService(logger)
 
-	for i, expected := range data {
+	for _, expected := range data {
 		err = cardSvc.Add(ticker, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		actualData := cardSvc.Get(ticker)
-
-		if i > 623 {
-			validateResult(t, expected, actualData[0])
-		}
+		cardSvc.Get(ticker)
 	}
+
+	for i, expectedData := range data {
+		validateResult(t, logger, i, expectedData, cardSvc.ticker[ticker].Data[i])
+	}
+
+	logger.Log("CE validations", ceCount, "BR Validations", brCount)
 }
 
 func getCardService(logger log.Logger) *card {
@@ -103,7 +110,7 @@ func getCardService(logger log.Logger) *card {
 	}
 }
 
-func validateResult(t *testing.T, expected, actualData models.Ticker) {
+func validateResult(t *testing.T, logger log.Logger, index int, expected, actualData models.Ticker) {
 	if expected.AD > 0 && strings.Contains(expected.Date, "25-Oct-2005,12-Apr-2013,6-May-2014,6-Dec-2017") {
 		assert.True(t, test.IsValueWithinTolerance(actualData.AD, expected.AD, 0.1), fmt.Sprintf("actualAD: %f, expected: %f, diff: %f, date: %s", actualData.AD, expected.AD, math.Abs(actualData.AD-expected.AD), actualData.Date))
 	}
@@ -143,9 +150,19 @@ func validateResult(t *testing.T, expected, actualData models.Ticker) {
 		assert.True(t, test.IsValueWithinTolerance(actualData.D, expected.D, 0.5), fmt.Sprintf("actualD: %f, expected: %f, diff: %f, date: %s", actualData.D, expected.D, math.Abs(actualData.D-expected.D), actualData.Date))
 	}
 
-	if expected.CW > 0.1 {
+	if expected.CW > 0.1 && index > 623 {
 		assert.True(t, test.IsValueWithinTolerance(actualData.CW, expected.CW, 0.5), fmt.Sprintf("actualCW: %f, expected: %f, diff: %f, date: %s", actualData.CW, expected.CW, math.Abs(actualData.CW-expected.CW), actualData.Date))
 	}
+	//&& actualData.Date == "1-Nov-2024"
+	//if actualData.Date == "31-Oct-2024" {
+	//	ceCount++
+	//	assert.True(t, test.IsValueWithinTolerance(actualData.CE, expected.CE, 0.01), fmt.Sprintf("actualCE: %f, expected: %f, diff: %f, date: %s", actualData.CE, expected.CE, math.Abs(actualData.CE-expected.CE), actualData.Date))
+	//}
+
+	//if expected.BR > 0.0 {
+	//	brCount++
+	//	assert.True(t, test.IsValueWithinTolerance(actualData.BR, expected.BR, 0.5), fmt.Sprintf("actualBR: %f, expected: %f, diff: %f, date: %s", actualData.BR, expected.BR, math.Abs(actualData.BR-expected.BR), actualData.Date))
+	//}
 }
 
 func parseRecords(logger log.Logger, records [][]string) ([]models.Ticker, error) {
