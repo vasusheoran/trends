@@ -2,8 +2,6 @@ package transport
 
 import (
 	"context"
-	"fmt"
-	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/templates/home"
 	"github.com/vsheoran/trends/utils"
@@ -13,24 +11,18 @@ import (
 )
 
 func InitTicker(key string, svc Services, w http.ResponseWriter, r *http.Request) {
-	_, err0 := svc.TickerService.Init(key, "")
-	if err0 != nil {
-		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.Encode(
-			w,
-			ErrorResponse{Error: fmt.Sprintf("failed to initilize ticker: %s", err0.Error())},
-		)
+	err := svc.TickerService.Init(key)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	data := svc.TickerService.GetAllSummary()
+	data := svc.TickerService.Get(key)
 	if data == nil {
-		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.Encode(w, ErrorResponse{Error: "no ticker data found"})
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	component := home.Home(contracts.HTMXData{SummaryMap: data})
 	component.Render(context.Background(), w)
 }
@@ -40,6 +32,8 @@ type StockV0 struct {
 	CP float64 `json:"CP" description:"Closing price"`
 	// High price
 	HP float64 `json:"HP" description:"High price"`
+	// High price
+	OP float64 `json:"OP" description:"Open price"`
 	// Low price
 	LP float64 `json:"LP" description:"Low price"`
 	// Date of the stock information
@@ -62,5 +56,6 @@ func ParseOlderStocks(body io.ReadCloser, symbol string) (contracts.Stock, error
 		Close:  request.CP,
 		High:   request.HP,
 		Low:    request.LP,
+		Open:   request.OP,
 	}, nil
 }

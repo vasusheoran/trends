@@ -25,7 +25,7 @@ func CommonRoute(l log.Logger, router *mux.Router, services transport.Services) 
 }
 
 func HandleCommonSelectClose(w http.ResponseWriter, r *http.Request) {
-	data := svc.TickerService.GetAllSummary()
+	data := svc.TickerService.Get("")
 	if data == nil {
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 		w.WriteHeader(http.StatusBadRequest)

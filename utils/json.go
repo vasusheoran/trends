@@ -12,3 +12,6 @@ func Decode(r io.Reader, res interface{}) error {
 func Encode(w io.Writer, res interface{}) error {
 	return json.NewEncoder(w).Encode(&res)
 }
+func EncodeMultipleStructs(w io.Writer, res ...interface{}) error {
+	return json.NewEncoder(w).Encode(&res)
+}

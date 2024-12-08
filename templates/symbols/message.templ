@@ -1,11 +1,11 @@
 package symbols
 
 import (
-	"github.com/vsheoran/trends/pkg/contracts"
+	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/templates/common"
 )
 
-templ Message(id string, symbol contracts.Summary, err error) {
+templ Message(id string, symbol models.Ticker, err error) {
 	if err == nil {
 		<div id={ id } hx-swap={ "#" + id }>
 			<div class="row-gap-2 grid grid-cols-15 md:grid-cols-15">
@@ -13,15 +13,15 @@ templ Message(id string, symbol contracts.Summary, err error) {
 					<div class="font-heading text-[2rem] lg:text-2xl xl:text-1xl" name="ticker-name">
 						{ id }
 					</div>
-                  //<span class="material-symbols-outlined cursor-pointer" hx-post={ "/remove-ticker/" + id } hx-trigger="click" hx-swap="multi:#add-ticker-section:outerHTML,#tickers:outerHTML" hx-ext="multi-swap">
-                  <span class="material-symbols-outlined cursor-pointer" hx-delete={ "/ticker/init?ticker-name=" + id } hx-trigger="click" hx-target="#dashboard" hx-swap="innerHTML">
-                      close
-                  </span>
+					//<span class="material-symbols-outlined cursor-pointer" hx-post={ "/remove-ticker/" + id } hx-trigger="click" hx-swap="multi:#add-ticker-section:outerHTML,#tickers:outerHTML" hx-ext="multi-swap">
+					<span class="material-symbols-outlined cursor-pointer" hx-delete={ "/ticker/init?ticker-name=" + id } hx-trigger="click" hx-target="#dashboard" hx-swap="innerHTML">
+						close
+					</span>
 				</div>
 				@Summary(id, symbol)
 			</div>
 		</div>
-	} else if len(symbol.Ticker) == 0 {
+	} else if len(symbol.Name) == 0 {
 		<div id={ id } hx-swap={ "#" + id } class="row-gap-2 grid grid-cols-15 md:grid-cols-15">
 			<div class="mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500">
 				<div class="font-heading text-[2rem] dark:text-white lg:text-2xl xl:text-1xl">

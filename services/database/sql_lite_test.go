@@ -62,7 +62,7 @@ func TestSQLDatastore_DeleteStocks(t *testing.T) {
 	assert.Len(t, tickersAfterDeletion, len(expectedTickers)-1,
 		"Distinct tickers size `%d`, expected value is %d", len(tickersAfterDeletion), len(expectedTickers)-1)
 
-	// Update stocks
+	// Add stocks
 	err = dbSvc.SaveStocks(stocks)
 	if err != nil {
 		t.Fatal(err)
