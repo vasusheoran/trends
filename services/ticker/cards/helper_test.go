@@ -1,11 +1,15 @@
 package cards
 
 import (
+	"fmt"
+	"github.com/stretchr/testify/assert"
+	"github.com/vsheoran/trends/test"
 	"github.com/vsheoran/trends/utils"
+	"math"
 	"testing"
 )
 
-func TestSearch(t *testing.T) {
+func TestSearch_CE(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()
 
 	const ticker = "test"
@@ -20,47 +24,58 @@ func TestSearch(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cardSvc := NewCard(logger)
+	c := getCardService(logger)
 
 	for _, expected := range data {
-		err = cardSvc.Add(ticker, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
+		err = c.Add(ticker, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
-	expectedRecords, err := readInputCSV("test/futures/4-12-24.csv")
+
+	val, err := Search(SearchCE, c, ticker, 0.001)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	expectedData, err := parseRecords(logger, expectedRecords)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = cardSvc.Future(ticker, expectedData[0].W, expectedData[0].X, expectedData[0].Y, expectedData[0].Z)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fn := func(symbol string, value float64) (float64, float64, error) {
-		result := cardSvc.Get(symbol)
-
-		err = cardSvc.Future(symbol, value, result[0].X, result[0].Y, result[0].Z)
-		if err != nil {
-			return 0.0, 0.0, err
-		}
-
-		result = cardSvc.Get(symbol)
-		return result[0].BP, result[1].BP, nil
-	}
-
-	val, err := Search(fn, ticker, 0.09)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	//24311.580357360835
-	//24311.580357360835
 	logger.Log("CE", val)
+}
+
+func TestSearch_BR(t *testing.T) {
+	logger := utils.InitializeDefaultLogger()
+
+	const ticker = "test"
+
+	records, err := readInputCSV("test/input/4-12-24.csv")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	data, err := parseRecords(logger, records)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	c := getCardService(logger)
+
+	for _, expected := range data {
+		err = c.Add(ticker, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	err = c.search(ticker)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actualCE := 24311.2874747
+	actualBR := 24252.21986246109
+
+	assert.True(t, test.IsValueWithinTolerance(c.ticker[ticker].CE, actualCE, 0.001), fmt.Sprintf("actualCE: %f, expected: %f, diff: %f", c.ticker[ticker].CE, actualCE, math.Abs(c.ticker[ticker].CE-actualCE)))
+	assert.True(t, test.IsValueWithinTolerance(c.ticker[ticker].BR, actualBR, 0.001), fmt.Sprintf("actualBR: %f, expected: %f, diff: %f", c.ticker[ticker].BR, actualBR, math.Abs(c.ticker[ticker].BR-actualBR)))
+
+	logger.Log("CE", c.ticker[ticker].CE)
+	logger.Log("BR", c.ticker[ticker].BR)
 }

@@ -34,53 +34,14 @@ func (c *card) addNextData(symbol string, close float64, open float64, high floa
 	c.ticker[symbol].NextIndex++
 	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
 
-	err := c.calculate(c.ticker[symbol], lastDayIndex+1)
-	err = c.calculate(c.ticker[symbol], lastDayIndex+2)
-	err = c.calculate(c.ticker[symbol], lastDayIndex+3)
+	err := c.calculateNextData(c.ticker[symbol], lastDayIndex+1)
+	err = c.calculateNextData(c.ticker[symbol], lastDayIndex+2)
+	err = c.calculateNextData(c.ticker[symbol], lastDayIndex+3)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func (c *card) updateNextData(symbol string, close, open, high, low float64) error {
-	currentTicker := c.ticker[symbol]
-
-	// updateCE day + 1
-	currentTicker.Data[currentTicker.Index+1].W = close
-	currentTicker.Data[currentTicker.Index+1].X = open
-	currentTicker.Data[currentTicker.Index+1].Y = high
-	currentTicker.Data[currentTicker.Index+1].Z = low
-
-	// updateCE day + 2
-	currentTicker.Data[currentTicker.Index+2].W = close
-	currentTicker.Data[currentTicker.Index+2].X = close
-	currentTicker.Data[currentTicker.Index+2].Y = high
-	currentTicker.Data[currentTicker.Index+2].Z = low
-
-	// updateCE day + 3
-	currentTicker.Data[currentTicker.Index+3].W = close
-	currentTicker.Data[currentTicker.Index+3].X = close
-	currentTicker.Data[currentTicker.Index+3].Y = high
-	currentTicker.Data[currentTicker.Index+3].Z = high
-
-	err := c.updateEMA()
-	if err != nil {
-		return err
-	}
-
-	err = c.calculateNextData(c.ticker[symbol], currentTicker.Index+1)
-	if err != nil {
-		return err
-	}
-
-	err = c.calculateNextData(c.ticker[symbol], currentTicker.Index+2)
-	if err != nil {
-		return err
-	}
-
-	return c.calculateNextData(c.ticker[symbol], currentTicker.Index+3)
 }
 
 func (c *card) calculateNextData(currentTicker *tickerData, index int) error {
@@ -122,4 +83,87 @@ func (c *card) calculateNextData(currentTicker *tickerData, index int) error {
 	c.calculateCW(currentTicker, index)
 
 	return nil
+}
+
+func (c *card) calculateCE(symbol string, index int) error {
+	var err error
+	c.ticker[symbol].Data[index].CE, err = Search(SearchCE, c, symbol, 0.09)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *card) calculateBR(symbol string, index int) error {
+	var err error
+	c.ticker[symbol].Data[index].BR, err = Search(SearchBR, c, symbol, 0.09)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *card) UpdateDataForCE(symbol string, close, open, high, low float64) error {
+	currentTicker := c.ticker[symbol]
+
+	// updateCE day + 1
+	currentTicker.Data[currentTicker.Index+1].W = close
+
+	// updateCE day + 2
+	currentTicker.Data[currentTicker.Index+2].W = close
+	currentTicker.Data[currentTicker.Index+2].X = close
+
+	// updateCE day + 3
+	currentTicker.Data[currentTicker.Index+3].X = close
+
+	err := c.updateEMA()
+	if err != nil {
+		return err
+	}
+
+	err = c.calculateNextData(c.ticker[symbol], currentTicker.Index+1)
+	if err != nil {
+		return err
+	}
+
+	err = c.calculateNextData(c.ticker[symbol], currentTicker.Index+2)
+	if err != nil {
+		return err
+	}
+
+	return c.calculateNextData(c.ticker[symbol], currentTicker.Index+3)
+}
+
+func (c *card) UpdateDataForBR(symbol string, close float64, open float64, high float64, low float64) error {
+	currentTicker := c.ticker[symbol]
+
+	// updateCE day + 1
+	currentTicker.Data[currentTicker.Index+1].W = close
+
+	// updateCE day + 2
+	currentTicker.Data[currentTicker.Index+2].W = currentTicker.CE
+	currentTicker.Data[currentTicker.Index+2].X = close
+
+	// updateCE day + 3
+	currentTicker.Data[currentTicker.Index+3].W = currentTicker.CE
+	currentTicker.Data[currentTicker.Index+3].X = close
+
+	err := c.updateEMA()
+	if err != nil {
+		return err
+	}
+
+	err = c.calculateNextData(c.ticker[symbol], currentTicker.Index+1)
+	if err != nil {
+		return err
+	}
+
+	err = c.calculateNextData(c.ticker[symbol], currentTicker.Index+2)
+	if err != nil {
+		return err
+	}
+
+	return c.calculateNextData(c.ticker[symbol], currentTicker.Index+3)
 }

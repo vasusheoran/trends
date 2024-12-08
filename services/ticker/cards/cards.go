@@ -8,10 +8,14 @@ import (
 	"time"
 )
 
+type UpdateFuture func(symbol string, close, open, high, low float64) error
+
 type Card interface {
-	Future(symbol string, close, open, high, low float64) error
 	Add(ticker, date string, close, open, high, low float64) error
 	Get(ticker string) []models.Ticker
+	Update(fn UpdateFuture, symbol string, close, open, high, low float64) error
+	UpdateDataForCE(symbol string, close, open, high, low float64) error
+	UpdateDataForBR(symbol string, close, open, high, low float64) error
 }
 
 type card struct {
@@ -23,21 +27,14 @@ type card struct {
 }
 
 type tickerData struct {
-	Data []models.Ticker // Current row is at Index
-	//Next      []models.Ticker // futures
+	Data      []models.Ticker // Current row is at Index
 	Index     int
 	NextIndex int
+	CE        float64
+	BR        float64
 }
 
-func (c *card) Future(symbol string, close, open, high, low float64) error {
-	err := c.updateCE(symbol, close, open, high, low)
-	if err != nil {
-		return err
-	}
-	return c.calculateCE(symbol, c.ticker[symbol].Index+1)
-}
-
-func (c *card) updateCE(symbol string, close, open, high, low float64) error {
+func (c *card) Update(fn UpdateFuture, symbol string, close, open, high, low float64) error {
 	if c.ticker[symbol].NextIndex == 0 {
 		return c.addNextData(symbol, close, open, high, low)
 	}
@@ -46,7 +43,7 @@ func (c *card) updateCE(symbol string, close, open, high, low float64) error {
 		return fmt.Errorf("invalid data for `%s`, remove symbol and upload the data again", symbol)
 	}
 
-	return c.updateNextData(symbol, close, open, high, low)
+	return fn(symbol, close, open, high, low)
 }
 
 func (c *card) Add(symbol, date string, close, open, high, low float64) error {
@@ -140,6 +137,24 @@ func NewCard(logger log.Logger) Card {
 		ma:     ma.NewMovingAverageV2(logger, maData),
 	}
 
+}
+
+func (c *card) search(symbol string) error {
+	actualCE, err := Search(SearchCE, c, symbol, 0.001)
+	if err != nil {
+		return err
+	}
+
+	// Update CE for future reference
+	c.ticker[symbol].CE = actualCE
+
+	actualBR, err := Search(SearchBR, c, symbol, 0.001)
+	if err != nil {
+		return err
+	}
+
+	c.ticker[symbol].BR = actualBR
+	return nil
 }
 
 func (c *card) add(symbol string, tickerData models.Ticker) error {

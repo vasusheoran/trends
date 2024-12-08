@@ -6,16 +6,40 @@ import (
 )
 
 // BinarySearchFunc takes input value to be updated. Returns low, high and diff
-type BinarySearchFunc func(symbol string, value float64) (float64, float64, error)
+type BinarySearchFunc func(c Card, symbol string, value float64) (float64, float64, error)
 
-func Search(fn BinarySearchFunc, symbol string, tolerance float64) (float64, error) {
+func SearchCE(c Card, symbol string, value float64) (float64, float64, error) {
+	result := c.Get(symbol)
+
+	err := c.Update(c.UpdateDataForCE, symbol, value, result[0].X, result[0].Y, result[0].Z)
+	if err != nil {
+		return 0.0, 0.0, err
+	}
+
+	result = c.Get(symbol)
+	return result[0].BP, result[1].BP, nil
+}
+
+func SearchBR(c Card, symbol string, value float64) (float64, float64, error) {
+	result := c.Get(symbol)
+
+	err := c.Update(c.UpdateDataForBR, symbol, value, result[0].X, result[0].Y, result[0].Z)
+	if err != nil {
+		return 0.0, 0.0, err
+	}
+
+	result = c.Get(symbol)
+	return result[2].BP, result[1].BP, nil
+}
+
+func Search(fn BinarySearchFunc, c Card, symbol string, tolerance float64) (float64, error) {
 	high := 99999.0
 	low := 0.0
 
 	for high > low {
 		mid := (high + low) / 2
 
-		firstValue, secondValue, err := fn(symbol, mid)
+		firstValue, secondValue, err := fn(c, symbol, mid)
 		if err != nil {
 			return 0, err
 		}
@@ -26,35 +50,13 @@ func Search(fn BinarySearchFunc, symbol string, tolerance float64) (float64, err
 		}
 
 		if secondValue > firstValue {
-			high = mid - 0.01
+			high = mid
 		} else {
-			low = mid + 0.01
+			low = mid
 		}
 	}
 
 	return 0, errors.New("not found") // Not found
-}
-
-func (c *card) calculateCE(symbol string, index int) error {
-	fn := func(symbol string, value float64) (float64, float64, error) {
-		result := c.Get(symbol)
-
-		err := c.updateNextData(symbol, value, result[0].X, result[0].Y, result[0].Z)
-		if err != nil {
-			return 0.0, 0.0, err
-		}
-
-		result = c.Get(symbol)
-		return result[0].BP, result[1].BP, nil
-	}
-
-	var err error
-	c.ticker[symbol].Data[index].CE, err = Search(fn, symbol, 0.09)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (c *card) calculateAD(t *tickerData, index int) {
@@ -189,21 +191,6 @@ func (c *card) calculateD(t *tickerData, index int) {
 }
 
 func (c *card) calculateCW(t *tickerData, index int) {
-	if index < 14 {
-		return
-	}
-
-	isValid := ((t.Data[index-1].E * 13) + math.Abs(t.Data[index].MinC)) / float64(14)
-	if isValid == 0 {
-		t.Data[index].CW = 100.00
-		return
-	}
-
-	value := ((t.Data[index-1].D * 13) + t.Data[index].MaxC) / float64(14)
-	t.Data[index].CW = 100 - (100 / (1 + value/isValid))
-}
-
-func (c *card) calculateBR(t *tickerData, index int) {
 	if index < 14 {
 		return
 	}

@@ -2,7 +2,6 @@ package cards
 
 import (
 	"encoding/csv"
-	"encoding/json"
 	"fmt"
 	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +17,7 @@ import (
 	"testing"
 )
 
-func TestCard_Update(t *testing.T) {
+func TestNewCard(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()
 
 	const ticker = "test"
@@ -32,6 +31,25 @@ func TestCard_Update(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	cardSvc := NewCard(logger)
+
+	for i, expected := range data {
+		err = cardSvc.Add(ticker, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		actualData := cardSvc.Get(ticker)
+
+		if i > 623 {
+			validateResult(t, expected, actualData[0])
+		}
+	}
+}
+
+func getCardService(logger log.Logger) *card {
+
 	emaData := map[string]*ma.EMAData{
 		"M5": {
 			Window: 5,
@@ -77,95 +95,11 @@ func TestCard_Update(t *testing.T) {
 		},
 	}
 
-	cardSvc := &card{
+	return &card{
 		logger: logger,
 		ticker: make(map[string]*tickerData),
 		ema:    ma.NewExponentialMovingAverageV2(logger, emaData),
 		ma:     ma.NewMovingAverageV2(logger, maData),
-	}
-
-	for _, expected := range data {
-		err = cardSvc.Add(ticker, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	files, err := GetTestFiles("test/futures")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	//files := []string{"test/futures/first-update.csv"}
-
-	for i, file := range files {
-		if i > 2 {
-			break
-		}
-
-		expectedRecords, err := readInputCSV(file)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		expectedData, err := parseRecords(logger, expectedRecords)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		err = cardSvc.updateCE(ticker, expectedData[0].W, expectedData[0].X, expectedData[0].Y, expectedData[0].Z)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		result := cardSvc.Get(ticker)
-
-		validateResult(t, expectedData[0], result[0])
-		validateResult(t, expectedData[1], result[1])
-		validateResult(t, expectedData[2], result[2])
-
-		err = cardSvc.updateCE(ticker, expectedData[0].W, expectedData[0].X, expectedData[0].Y, expectedData[0].Z)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		result = cardSvc.Get(ticker)
-
-		validateResult(t, expectedData[0], result[0])
-		validateResult(t, expectedData[1], result[1])
-		validateResult(t, expectedData[2], result[2])
-	}
-
-}
-
-func TestNewCard(t *testing.T) {
-	logger := utils.InitializeDefaultLogger()
-
-	const ticker = "test"
-
-	records, err := readInputCSV("test/input/4-12-24-v1.csv")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	data, err := parseRecords(logger, records)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	cardSvc := NewCard(logger)
-
-	for i, expected := range data {
-		err = cardSvc.Add(ticker, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		actualData := cardSvc.Get(ticker)
-
-		if i > 623 {
-			validateResult(t, expected, actualData[0])
-		}
 	}
 }
 
@@ -212,20 +146,6 @@ func validateResult(t *testing.T, expected, actualData models.Ticker) {
 	if expected.CW > 0.1 {
 		assert.True(t, test.IsValueWithinTolerance(actualData.CW, expected.CW, 0.5), fmt.Sprintf("actualCW: %f, expected: %f, diff: %f, date: %s", actualData.CW, expected.CW, math.Abs(actualData.CW-expected.CW), actualData.Date))
 	}
-}
-
-func GetTestCases(path string, response interface{}) error {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(data, &response)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func parseRecords(logger log.Logger, records [][]string) ([]models.Ticker, error) {
@@ -446,24 +366,6 @@ func GetTestFiles(path string) ([]string, error) {
 		}
 	}
 	return testFiles, nil
-}
-
-func writeToJSON(path string, data interface{}) error {
-
-	//file, err := os.Create("test/Nifty-4-12-24.json")
-	file, err := os.Create(path)
-	if err != nil {
-		return err
-
-	}
-	defer file.Close()
-
-	encoder := json.NewEncoder(file)
-	err = encoder.Encode(&data)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 type tickerDataIndex struct {
