@@ -15,7 +15,7 @@ func search(fn binarySearchFunc, c *card, symbol string, tolerance float64, fixe
 	for high > low {
 		mid := (high + low) / 2
 
-		firstValue, secondValue, err := fn(c, symbol, mid)
+		firstValue, secondValue, err := fn(c, symbol, mid, fixed...)
 		if err != nil {
 			return 0, err
 		}
@@ -33,6 +33,20 @@ func search(fn binarySearchFunc, c *card, symbol string, tolerance float64, fixe
 	}
 
 	return 0, errors.New("not found") // Not found
+}
+
+func (c *card) calculateCD(symbol string, index int) error {
+	if c.ticker[symbol].CE == 0 {
+		return nil
+	}
+
+	err := c.ema.Add("CD5", c.ticker[symbol].CE)
+	if err != nil {
+		return err
+	}
+
+	c.ticker[symbol].CD = c.ema.Value("CD5")
+	return nil
 }
 
 func (c *card) calculateAD(t *tickerData, index int) {

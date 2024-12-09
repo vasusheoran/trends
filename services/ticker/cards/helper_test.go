@@ -56,6 +56,7 @@ func TestSearch(t *testing.T) {
 		ce       float64
 		br       float64
 		cc       float64
+		cd       float64
 	}{
 		{
 			name: "1-11-24.csv",
@@ -112,6 +113,7 @@ func TestSearch(t *testing.T) {
 			ce: 24694.624954,
 			br: 24556.796551, // This is if and only if future x,y,z are same as current w
 			cc: 24531.38,
+			cd: 24455.847805,
 		},
 	}
 
@@ -137,7 +139,10 @@ func TestSearch(t *testing.T) {
 
 			assert.True(t, test.IsValueWithinTolerance(currentDay.CE, tc.ce, 0.001), fmt.Sprintf("actualCE: %f, expected: %f, diff: %f", c.ticker[symbol].CE, tc.ce, math.Abs(c.ticker[symbol].CE-tc.ce)))
 			assert.True(t, test.IsValueWithinTolerance(currentDay.BR, tc.br, 0.001), fmt.Sprintf("actualBR: %f, expected: %f, diff: %f", c.ticker[symbol].BR, tc.br, math.Abs(c.ticker[symbol].BR-tc.br)))
-			//assert.True(t, test.IsValueWithinTolerance(currentDay.CC, tc.cc, 0.001), fmt.Sprintf("actualCC: %f, expected: %f, diff: %f", tc.cc, c.ticker[symbol].CC, math.Abs(c.ticker[symbol].CC-tc.cc)))
+
+			if tc.cc > 0.0 {
+				assert.True(t, test.IsValueWithinTolerance(currentDay.CD, tc.cd, 0.001), fmt.Sprintf("actualCD: %f, expected: %f, diff: %f", tc.cd, c.ticker[symbol].CD, math.Abs(c.ticker[symbol].CD-tc.cd)))
+			}
 
 		})
 	}
