@@ -86,21 +86,20 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 	var err error
 	if current.NextIndex == 0 {
 		_, err = c.updateFutureData(symbol)
-	}
+		if err != nil {
+			return err
+		}
 
-	if err != nil {
-		return err
+		err = c.updateEMA(4)
+		if err != nil {
+			return err
+		}
 	}
 
 	current.Data[current.Index+1].W = close
 	current.Data[current.Index+1].X = open
 	current.Data[current.Index+1].Y = high
 	current.Data[current.Index+1].Z = low
-
-	err = c.updateEMA(4)
-	if err != nil {
-		return err
-	}
 
 	err = c.calculate(current, current.Index+1)
 	if err != nil {
