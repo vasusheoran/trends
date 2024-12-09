@@ -60,8 +60,9 @@ func (t *ticker) Init(symbol string) error {
 		}
 	}
 
-	stock := st[len(st)-1]
-	return t.card.Update(stock.Ticker, stock.Close, stock.Open, stock.High, stock.Low)
+	//stock := st[len(st)-1]
+	//return t.card.Update(stock.Ticker, stock.Close, stock.Open, stock.High, stock.Low)
+	return nil
 }
 
 func (t *ticker) Remove(symbol string) {

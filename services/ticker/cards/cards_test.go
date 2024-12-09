@@ -86,6 +86,13 @@ func getCardService(logger log.Logger) *card {
 			Values: []float64{},
 			EMA:    []float64{},
 		},
+		"CD5": {
+			Window: 5,
+			Delay:  0,
+			Decay:  2.0 / 6.0,
+			Values: []float64{},
+			EMA:    []float64{},
+		},
 	}
 
 	maData := map[string]*ma.MAData{

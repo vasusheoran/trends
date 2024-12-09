@@ -10,7 +10,7 @@ import (
 
 const TOLERANCE = 0.001
 
-type updateFutureFunc func(symbol string, close, open, high, low float64) error
+type updateFutureFunc func(symbol string, close, prevClose float64) error
 
 type Card interface {
 	Add(ticker, date string, close, open, high, low float64) error
@@ -35,8 +35,11 @@ type tickerData struct {
 	Data      []models.Ticker // Current row is at Index
 	Index     int
 	NextIndex int
+	futures   bool
 	CE        float64
 	BR        float64
+	CC        float64
+	CD        float64
 }
 
 func (c *card) Add(symbol, date string, close, open, high, low float64) error {
@@ -99,8 +102,52 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 
 	current.Data[current.Index+1].CE = current.CE
 	current.Data[current.Index+1].BR = current.BR
+	current.Data[current.Index+1].CD = current.CD
 
 	return nil
+	//current := c.ticker[symbol]
+	//
+	//// Update future data
+	//_, err := c.updateFutureData(symbol)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//err = c.cleanUpFutureData(symbol, current.Data[current.Index])
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//err = c.calculate(current, current.Index+1)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//current.Data[current.Index].CD = current.CD
+	//current.Data[current.Index].CE = current.CE
+	//current.Data[current.Index].BR = current.BR
+	//
+	//current.Data[current.Index+1].W = close
+	//current.Data[current.Index+1].X = open
+	//current.Data[current.Index+1].Y = high
+	//current.Data[current.Index+1].Z = low
+	//
+	//err = c.calculate(current, current.Index+2)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// Is this required?
+	//current.Data[current.Index+1].BR = current.BR
+	//current.Data[current.Index+1].CE = current.CE
+	//current.Data[current.Index+1].CD = current.CD
+	//
+	//current.Data[current.Index+2].BR = current.BR
+	//current.Data[current.Index+2].CE = current.CE
+	//current.Data[current.Index+2].CD = current.CD
+	//
+	//
+	//return nil
 }
 
 func NewCard(logger log.Logger) Card {
@@ -130,6 +177,13 @@ func NewCard(logger log.Logger) Card {
 			Window: 5,
 			Delay:  0,
 			Decay:  2.0 / 21.0,
+			Values: []float64{},
+			EMA:    []float64{},
+		},
+		"CD5": {
+			Window: 5,
+			Delay:  0,
+			Decay:  2.0 / 6.0,
 			Values: []float64{},
 			EMA:    []float64{},
 		},
@@ -174,7 +228,28 @@ func (c *card) add(symbol string, tickerData models.Ticker) error {
 	current.Index++
 	current.Data = append(current.Data, tickerData)
 
-	return c.calculate(current, current.Index)
+	err = c.calculate(current, current.Index)
+	if err != nil {
+		return err
+	}
+
+	// Update futures
+	current.Data[current.Index].CD = current.CD
+	current.Data[current.Index].CE = current.CE
+	current.Data[current.Index].BR = current.BR
+	current.Data[current.Index].CC = current.CC
+
+	//if current.Index > 5367 {
+	//	offset := 0
+	//	c.logger.Log("date", current.Data[current.Index-offset].Date,
+	//		"CD", current.Data[current.Index-offset].CD,
+	//		"CE", current.Data[current.Index-offset].CE,
+	//		"BR", current.Data[current.Index-offset].BR,
+	//		"CC", current.Data[current.Index-offset].CC,
+	//	)
+	//}
+
+	return nil
 }
 
 func (c *card) updateFutureData(symbol string) (models.Ticker, error) {
@@ -191,6 +266,16 @@ func (c *card) updateFutureData(symbol string) (models.Ticker, error) {
 	}
 
 	err = c.calculateBR(symbol, TOLERANCE)
+	if err != nil {
+		return models.Ticker{}, nil
+	}
+
+	err = c.calculateCD(symbol, current.Index)
+	if err != nil {
+		return models.Ticker{}, nil
+	}
+
+	err = c.calculateCC(symbol, TOLERANCE)
 	if err != nil {
 		return models.Ticker{}, nil
 	}
@@ -214,8 +299,8 @@ func (c *card) cleanUpFutureData(symbol string, data models.Ticker) error {
 
 	current.NextIndex = 0
 	c.ticker[symbol].Data[current.Index] = data
-	current.Data[current.Index].CE = current.CE
-	current.Data[current.Index].BR = current.BR
+	//current.Data[current.Index].CE = current.CE
+	//current.Data[current.Index].BR = current.BR
 
 	return nil
 }

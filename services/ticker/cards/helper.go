@@ -2,21 +2,20 @@ package cards
 
 import (
 	"errors"
-	"fmt"
 	"math"
 )
 
 // binarySearchFunc takes input value to be updated. Returns low, high and diff
-type binarySearchFunc func(c *card, symbol string, value float64) (float64, float64, error)
+type binarySearchFunc func(c *card, symbol string, value float64, fixed ...float64) (float64, float64, error)
 
-func search(fn binarySearchFunc, c *card, symbol string, tolerance float64) (float64, error) {
+func search(fn binarySearchFunc, c *card, symbol string, tolerance float64, fixed ...float64) (float64, error) {
 	high := 99999.0
 	low := 0.0
 
 	for high > low {
 		mid := (high + low) / 2
 
-		firstValue, secondValue, err := fn(c, symbol, mid)
+		firstValue, secondValue, err := fn(c, symbol, mid, fixed...)
 		if err != nil {
 			return 0, err
 		}
@@ -36,40 +35,18 @@ func search(fn binarySearchFunc, c *card, symbol string, tolerance float64) (flo
 	return 0, errors.New("not found") // Not found
 }
 
-func (c *card) updateFuture(fn updateFutureFunc, symbol string, close, open, high, low float64) error {
-	if c.ticker[symbol].NextIndex == 0 {
-		return c.addNextData(symbol, close, open, high, low)
+func (c *card) calculateCD(symbol string, index int) error {
+	if c.ticker[symbol].CE == 0 {
+		return nil
 	}
 
-	if c.ticker[symbol].NextIndex != 3 {
-		return fmt.Errorf("invalid dataFunc for `%s`, remove symbol and upload the dataFunc again", symbol)
-	}
-
-	return fn(symbol, close, open, high, low)
-}
-
-func searchCE(c *card, symbol string, value float64) (float64, float64, error) {
-	result := c.Get(symbol)
-
-	err := c.updateFuture(c.updateFutureDataForCE, symbol, value, result[0].X, result[0].Y, result[0].Z)
+	err := c.ema.Add("CD5", c.ticker[symbol].CE)
 	if err != nil {
-		return 0.0, 0.0, err
+		return err
 	}
 
-	result = c.Get(symbol)
-	return result[0].BP, result[1].BP, nil
-}
-
-func searchBR(c *card, symbol string, value float64) (float64, float64, error) {
-	result := c.Get(symbol)
-
-	err := c.updateFuture(c.updateFutureDataForBR, symbol, value, result[0].X, result[0].Y, result[0].Z)
-	if err != nil {
-		return 0.0, 0.0, err
-	}
-
-	result = c.Get(symbol)
-	return result[2].BP, result[1].BP, nil
+	c.ticker[symbol].CD = c.ema.Value("CD5")
+	return nil
 }
 
 func (c *card) calculateAD(t *tickerData, index int) {
