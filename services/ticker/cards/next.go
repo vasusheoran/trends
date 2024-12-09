@@ -55,7 +55,7 @@ func (c *card) calculateCE(symbol string, tolerance float64) error {
 	return nil
 }
 
-func searchCE(c *card, symbol string, value float64) (float64, float64, error) {
+func searchCE(c *card, symbol string, value float64, fixed ...float64) (float64, float64, error) {
 	var err error
 
 	result := c.Get(symbol)
@@ -102,7 +102,7 @@ func (c *card) calculateBR(symbol string, tolerance float64) error {
 	return nil
 }
 
-func searchBR(c *card, symbol string, value float64) (float64, float64, error) {
+func searchBR(c *card, symbol string, value float64, fixed ...float64) (float64, float64, error) {
 	var err error
 
 	result := c.Get(symbol)

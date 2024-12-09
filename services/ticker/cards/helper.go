@@ -6,9 +6,9 @@ import (
 )
 
 // binarySearchFunc takes input value to be updated. Returns low, high and diff
-type binarySearchFunc func(c *card, symbol string, value float64) (float64, float64, error)
+type binarySearchFunc func(c *card, symbol string, value float64, fixed ...float64) (float64, float64, error)
 
-func search(fn binarySearchFunc, c *card, symbol string, tolerance float64) (float64, error) {
+func search(fn binarySearchFunc, c *card, symbol string, tolerance float64, fixed ...float64) (float64, error) {
 	high := 99999.0
 	low := 0.0
 
