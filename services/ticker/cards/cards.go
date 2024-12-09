@@ -83,11 +83,13 @@ func (c *card) Get(symbol string) []models.Ticker {
 func (c *card) Update(symbol string, close, open, high, low float64) error {
 	current := c.ticker[symbol]
 
+	var err error
 	if current.NextIndex == 0 {
-		_, err := c.updateFutureData(symbol)
-		if err != nil {
-			return err
-		}
+		_, err = c.updateFutureData(symbol)
+	}
+
+	if err != nil {
+		return err
 	}
 
 	current.Data[current.Index+1].W = close
@@ -95,7 +97,12 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 	current.Data[current.Index+1].Y = high
 	current.Data[current.Index+1].Z = low
 
-	err := c.calculate(current, current.Index+1)
+	err = c.updateEMA(4)
+	if err != nil {
+		return err
+	}
+
+	err = c.calculate(current, current.Index+1)
 	if err != nil {
 		return err
 	}

@@ -135,6 +135,16 @@ func TestSearch(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			err = c.Update(symbol, data[len(data)-1].W, data[len(data)-1].X, data[len(data)-1].Y, data[len(data)-1].Z)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = c.Update(symbol, data[len(data)-1].W, data[len(data)-1].X, data[len(data)-1].Y, data[len(data)-1].Z)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			currentDay := c.ticker["test"].Data[c.ticker["test"].Index+1]
 
 			if tc.CE > 0.0 {
