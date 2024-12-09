@@ -104,14 +104,6 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 	current.Data[current.Index+1].BR = current.BR
 	current.Data[current.Index+1].CD = current.CD
 
-	c.logger.Log(
-		"Date", current.Data[current.Index+1].Date,
-		"CE", current.Data[current.Index+1].CE,
-		"BR", current.Data[current.Index+1].BR,
-		"CD", current.Data[current.Index+1].CD,
-		"CC", current.Data[current.Index+1].CC,
-	)
-
 	return nil
 	//current := c.ticker[symbol]
 	//
@@ -283,7 +275,7 @@ func (c *card) updateFutureData(symbol string) (models.Ticker, error) {
 		return models.Ticker{}, nil
 	}
 
-	err = c.calculateCC(symbol, currentTickerData.W, TOLERANCE)
+	err = c.calculateCC(symbol, TOLERANCE)
 	if err != nil {
 		return models.Ticker{}, nil
 	}

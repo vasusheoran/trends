@@ -92,13 +92,13 @@ func searchCE(c *card, symbol string, value float64, fixed ...float64) (float64,
 	return result[0].BP, result[1].BP, nil
 }
 
-func (c *card) calculateCC(symbol string, w float64, tolerance float64) error {
-	cc, err := search(searchCC, c, symbol, tolerance, c.ticker[symbol].BR)
+func (c *card) calculateCC(symbol string, tolerance float64) error {
+	_, err := search(searchCC, c, symbol, tolerance, c.ticker[symbol].BR, c.ticker[symbol].CE, c.ticker[symbol].CD)
 	if err != nil {
 		return err
 	}
 
-	c.ticker[symbol].CC = cc
+	c.ticker[symbol].CC = c.ticker["test"].Data[c.ticker["test"].Index+1].W
 	return nil
 }
 
@@ -108,9 +108,6 @@ func searchCC(c *card, symbol string, value float64, fixed ...float64) (float64,
 	result := c.Get(symbol)
 	currentTicker := c.ticker[symbol]
 
-	if currentTicker.Index == 5372 {
-		c.logger.Log("record", result)
-	}
 	if currentTicker.NextIndex == 0 {
 		err = c.addNextData(symbol, value, result[0].X, result[0].Y, result[0].Z)
 	}
@@ -123,18 +120,19 @@ func searchCC(c *card, symbol string, value float64, fixed ...float64) (float64,
 		return 0.0, 0.0, fmt.Errorf("invalid dataFunc for `%s`, remove symbol and upload the dataFunc again", symbol)
 	}
 
+	currentTicker.Data[currentTicker.Index+1].BR = fixed[0]
+	currentTicker.Data[currentTicker.Index+1].CD = fixed[2]
+	currentTicker.Data[currentTicker.Index+1].CE = fixed[1]
+
 	// Close
-	currentTicker.Data[currentTicker.Index+1].CC = fixed[0]
-	currentTicker.Data[currentTicker.Index+1].W = currentTicker.Data[currentTicker.Index+1].CD
+	//currentTicker.Data[currentTicker.Index+1].CC = fixed[0]
+	currentTicker.Data[currentTicker.Index+2].CE = value
 	currentTicker.Data[currentTicker.Index+2].W = value
-	currentTicker.Data[currentTicker.Index+3].W = currentTicker.Data[currentTicker.Index+2].W
+	currentTicker.Data[currentTicker.Index+3].W = value
 
-	// CE
-	currentTicker.Data[currentTicker.Index+2].CE = currentTicker.Data[currentTicker.Index+2].W
-	currentTicker.Data[currentTicker.Index+2].X = value
-
+	currentTicker.Data[currentTicker.Index+2].CD = 2/6*(value-fixed[2]) + fixed[2]
+	currentTicker.Data[currentTicker.Index+1].W = currentTicker.Data[currentTicker.Index+2].CD
 	// updateCE day + 3
-	currentTicker.Data[currentTicker.Index+3].X = value
 
 	err = c.calculateFutureData(symbol)
 	if err != nil {
@@ -142,10 +140,6 @@ func searchCC(c *card, symbol string, value float64, fixed ...float64) (float64,
 	}
 
 	result = c.Get(symbol)
-
-	if currentTicker.Index == 5372 {
-		c.logger.Log("record", result)
-	}
 
 	return result[1].BP, result[2].BP, nil
 }
