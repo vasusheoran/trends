@@ -98,7 +98,7 @@ func (c *card) calculateCC(symbol string, tolerance float64) error {
 		return err
 	}
 
-	c.ticker[symbol].CC = c.ticker["test"].Data[c.ticker["test"].Index+1].W
+	c.ticker[symbol].CC = c.ticker[symbol].Data[c.ticker[symbol].Index+1].W
 	return nil
 }
 
@@ -194,7 +194,7 @@ func searchBR(c *card, symbol string, value float64, fixed ...float64) (float64,
 }
 
 func (c *card) calculateFutureData(symbol string) error {
-	err := c.updateEMA()
+	err := c.updateEMA(3)
 	if err != nil {
 		return err
 	}
@@ -225,7 +225,7 @@ func (c *card) updateFutureDataForCE(symbol string, close, open, high, low float
 	// updateCE day + 3
 	currentTicker.Data[currentTicker.Index+3].X = close
 
-	err := c.updateEMA()
+	err := c.updateEMA(3)
 	if err != nil {
 		return err
 	}
