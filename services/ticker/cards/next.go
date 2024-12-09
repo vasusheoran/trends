@@ -1,6 +1,7 @@
 package cards
 
 import (
+	"fmt"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"time"
 )
@@ -54,6 +55,43 @@ func (c *card) calculateCE(symbol string, tolerance float64) error {
 	return nil
 }
 
+func searchCE(c *card, symbol string, value float64) (float64, float64, error) {
+	var err error
+
+	result := c.Get(symbol)
+	if c.ticker[symbol].NextIndex == 0 {
+		err = c.addNextData(symbol, value, result[0].X, result[0].Y, result[0].Z)
+	}
+
+	if err != nil {
+		return 0.0, 0.0, err
+	}
+
+	if c.ticker[symbol].NextIndex != 3 {
+		return 0.0, 0.0, fmt.Errorf("invalid dataFunc for `%s`, remove symbol and upload the dataFunc again", symbol)
+	}
+
+	currentTicker := c.ticker[symbol]
+
+	// updateCE day + 1
+	currentTicker.Data[currentTicker.Index+1].W = value
+
+	// updateCE day + 2
+	currentTicker.Data[currentTicker.Index+2].W = value
+	currentTicker.Data[currentTicker.Index+2].X = value
+
+	// updateCE day + 3
+	currentTicker.Data[currentTicker.Index+3].X = value
+
+	err = c.calculateFutureData(symbol)
+	if err != nil {
+		return 0.0, 0.0, err
+	}
+
+	result = c.Get(symbol)
+	return result[0].BP, result[1].BP, nil
+}
+
 func (c *card) calculateBR(symbol string, tolerance float64) error {
 	br, err := search(searchBR, c, symbol, tolerance)
 	if err != nil {
@@ -62,6 +100,64 @@ func (c *card) calculateBR(symbol string, tolerance float64) error {
 
 	c.ticker[symbol].BR = br
 	return nil
+}
+
+func searchBR(c *card, symbol string, value float64) (float64, float64, error) {
+	var err error
+
+	result := c.Get(symbol)
+
+	currentTicker := c.ticker[symbol]
+
+	if currentTicker.NextIndex == 0 {
+		err = c.addNextData(symbol, value, result[0].X, result[0].Y, result[0].Z)
+	}
+
+	if err != nil {
+		return 0.0, 0.0, err
+	}
+
+	if currentTicker.NextIndex != 3 {
+		return 0.0, 0.0, fmt.Errorf("invalid dataFunc for `%s`, remove symbol and upload the dataFunc again", symbol)
+	}
+
+	// updateCE day + 1
+	currentTicker.Data[currentTicker.Index+1].W = value
+
+	// updateCE day + 2
+	currentTicker.Data[currentTicker.Index+2].W = currentTicker.CE
+	//currentTicker.Data[currentTicker.Index+2].X = value
+
+	// updateCE day + 3
+	currentTicker.Data[currentTicker.Index+3].W = currentTicker.CE
+	//currentTicker.Data[currentTicker.Index+3].X = value
+
+	err = c.calculateFutureData(symbol)
+	if err != nil {
+		return 0.0, 0.0, err
+	}
+
+	result = c.Get(symbol)
+	return result[2].BP, result[1].BP, nil
+}
+
+func (c *card) calculateFutureData(symbol string) error {
+	err := c.updateEMA()
+	if err != nil {
+		return err
+	}
+
+	err = c.calculate(c.ticker[symbol], c.ticker[symbol].Index+1)
+	if err != nil {
+		return err
+	}
+
+	err = c.calculate(c.ticker[symbol], c.ticker[symbol].Index+2)
+	if err != nil {
+		return err
+	}
+
+	return c.calculate(c.ticker[symbol], c.ticker[symbol].Index+3)
 }
 
 func (c *card) updateFutureDataForCE(symbol string, close, open, high, low float64) error {
@@ -82,47 +178,15 @@ func (c *card) updateFutureDataForCE(symbol string, close, open, high, low float
 		return err
 	}
 
-	err = c.calculate(c.ticker[symbol], currentTicker.Index+1)
+	err = c.calculate(c.ticker[symbol], c.ticker[symbol].Index+1)
 	if err != nil {
 		return err
 	}
 
-	err = c.calculate(c.ticker[symbol], currentTicker.Index+2)
+	err = c.calculate(c.ticker[symbol], c.ticker[symbol].Index+2)
 	if err != nil {
 		return err
 	}
 
-	return c.calculate(c.ticker[symbol], currentTicker.Index+3)
-}
-
-func (c *card) updateFutureDataForBR(symbol string, close float64, open float64, high float64, low float64) error {
-	currentTicker := c.ticker[symbol]
-
-	// updateCE day + 1
-	currentTicker.Data[currentTicker.Index+1].W = close
-
-	// updateCE day + 2
-	currentTicker.Data[currentTicker.Index+2].W = currentTicker.CE
-	currentTicker.Data[currentTicker.Index+2].X = close
-
-	// updateCE day + 3
-	currentTicker.Data[currentTicker.Index+3].W = currentTicker.CE
-	currentTicker.Data[currentTicker.Index+3].X = close
-
-	err := c.updateEMA()
-	if err != nil {
-		return err
-	}
-
-	err = c.calculate(c.ticker[symbol], currentTicker.Index+1)
-	if err != nil {
-		return err
-	}
-
-	err = c.calculate(c.ticker[symbol], currentTicker.Index+2)
-	if err != nil {
-		return err
-	}
-
-	return c.calculate(c.ticker[symbol], currentTicker.Index+3)
+	return c.calculate(c.ticker[symbol], c.ticker[symbol].Index+3)
 }

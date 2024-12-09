@@ -100,62 +100,13 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 	current.Data[current.Index+1].CE = current.CE
 	current.Data[current.Index+1].BR = current.BR
 
+	c.logger.Log(
+		"Date", current.Data[current.Index+1].Date,
+		"CE", current.Data[current.Index+1].CE,
+		"BR", current.Data[current.Index+1].BR,
+	)
+
 	return nil
-}
-
-func NewCard(logger log.Logger) Card {
-	emaData := map[string]*ma.EMAData{
-		"M5": {
-			Window: 5,
-			Delay:  0,
-			Decay:  2.0 / 6.0,
-			Values: []float64{},
-			EMA:    []float64{},
-		},
-		"AS5": {
-			Window: 5,
-			Delay:  0,
-			Decay:  2.0 / 6.0,
-			Values: []float64{},
-			EMA:    []float64{},
-		},
-		"O21": {
-			Window: 5,
-			Delay:  20,
-			Decay:  2.0 / 21.0,
-			Values: []float64{},
-			EMA:    []float64{},
-		},
-		"BN21": {
-			Window: 5,
-			Delay:  0,
-			Decay:  2.0 / 21.0,
-			Values: []float64{},
-			EMA:    []float64{},
-		},
-	}
-
-	maData := map[string]*ma.MAData{
-		"AR10": {
-			Values:    []float64{},
-			WindowSum: []float64{},
-			Window:    10,
-		},
-		"AR50": {
-			Values:    []float64{},
-			WindowSum: []float64{},
-			Window:    50,
-			Offset:    0,
-		},
-	}
-
-	return &card{
-		logger: logger,
-		ticker: make(map[string]*tickerData),
-		ema:    ma.NewExponentialMovingAverageV2(logger, emaData),
-		ma:     ma.NewMovingAverageV2(logger, maData),
-	}
-
 }
 
 func (c *card) add(symbol string, tickerData models.Ticker) error {
@@ -174,7 +125,23 @@ func (c *card) add(symbol string, tickerData models.Ticker) error {
 	current.Index++
 	current.Data = append(current.Data, tickerData)
 
-	return c.calculate(current, current.Index)
+	err = c.calculate(current, current.Index)
+	if err != nil {
+		return err
+	}
+
+	current.Data[current.Index].CE = current.CE
+	current.Data[current.Index].BR = current.BR
+
+	if current.Index > 5365 {
+		c.logger.Log(
+			"Date", current.Data[current.Index].Date,
+			"CE", current.Data[current.Index].CE,
+			"BR", current.Data[current.Index].BR,
+		)
+	}
+
+	return nil
 }
 
 func (c *card) updateFutureData(symbol string) (models.Ticker, error) {
@@ -214,8 +181,8 @@ func (c *card) cleanUpFutureData(symbol string, data models.Ticker) error {
 
 	current.NextIndex = 0
 	c.ticker[symbol].Data[current.Index] = data
-	current.Data[current.Index].CE = current.CE
-	current.Data[current.Index].BR = current.BR
+	//current.Data[current.Index].CE = current.CE
+	//current.Data[current.Index].BR = current.BR
 
 	return nil
 }
@@ -281,4 +248,59 @@ func parseDate(dateString string) (time.Time, error) {
 	}
 
 	return time.Time{}, fmt.Errorf("unable to parse dataFunc: %s", dateString)
+}
+
+func NewCard(logger log.Logger) Card {
+	emaData := map[string]*ma.EMAData{
+		"M5": {
+			Window: 5,
+			Delay:  0,
+			Decay:  2.0 / 6.0,
+			Values: []float64{},
+			EMA:    []float64{},
+		},
+		"AS5": {
+			Window: 5,
+			Delay:  0,
+			Decay:  2.0 / 6.0,
+			Values: []float64{},
+			EMA:    []float64{},
+		},
+		"O21": {
+			Window: 5,
+			Delay:  20,
+			Decay:  2.0 / 21.0,
+			Values: []float64{},
+			EMA:    []float64{},
+		},
+		"BN21": {
+			Window: 5,
+			Delay:  0,
+			Decay:  2.0 / 21.0,
+			Values: []float64{},
+			EMA:    []float64{},
+		},
+	}
+
+	maData := map[string]*ma.MAData{
+		"AR10": {
+			Values:    []float64{},
+			WindowSum: []float64{},
+			Window:    10,
+		},
+		"AR50": {
+			Values:    []float64{},
+			WindowSum: []float64{},
+			Window:    50,
+			Offset:    0,
+		},
+	}
+
+	return &card{
+		logger: logger,
+		ticker: make(map[string]*tickerData),
+		ema:    ma.NewExponentialMovingAverageV2(logger, emaData),
+		ma:     ma.NewMovingAverageV2(logger, maData),
+	}
+
 }
