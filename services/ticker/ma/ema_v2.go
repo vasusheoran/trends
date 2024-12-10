@@ -20,16 +20,16 @@ type EMAData struct {
 }
 
 type ExponentialMovingAverageV2 struct {
-	logger log.Logger
-	data   map[string]*EMAData
+	Logger log.Logger
+	Data   map[string]*EMAData
 }
 
 func (ema *ExponentialMovingAverageV2) Remove(key string, index int) error {
-	if _, ok := ema.data[key]; !ok {
+	if _, ok := ema.Data[key]; !ok {
 		return fmt.Errorf("key `%s` does not exist", key)
 	}
 
-	st := ema.data[key]
+	st := ema.Data[key]
 
 	delay := st.Window
 	if delay < st.Delay {
@@ -48,11 +48,11 @@ func (ema *ExponentialMovingAverageV2) Remove(key string, index int) error {
 }
 
 func (ema *ExponentialMovingAverageV2) Add(key string, value float64) error {
-	if _, ok := ema.data[key]; !ok {
+	if _, ok := ema.Data[key]; !ok {
 		return fmt.Errorf("key `%s` does not exist", key)
 	}
 
-	st := ema.data[key]
+	st := ema.Data[key]
 
 	delay := st.Window
 	if delay < st.Delay {
@@ -79,11 +79,11 @@ func (ema *ExponentialMovingAverageV2) Add(key string, value float64) error {
 }
 
 func (ema *ExponentialMovingAverageV2) AddWithPreviousEMA(key string, value, previousEMA float64) error {
-	if _, ok := ema.data[key]; !ok {
+	if _, ok := ema.Data[key]; !ok {
 		return fmt.Errorf("key `%s` does not exist", key)
 	}
 
-	st := ema.data[key]
+	st := ema.Data[key]
 
 	newEma := 0.00
 	if !test.IsValueWithinTolerance(previousEMA, 0.00, 0) {
@@ -97,15 +97,15 @@ func (ema *ExponentialMovingAverageV2) AddWithPreviousEMA(key string, value, pre
 }
 
 func (ema *ExponentialMovingAverageV2) Value(key string) float64 {
-	if _, ok := ema.data[key]; !ok {
+	if _, ok := ema.Data[key]; !ok {
 		return 0.00
 	}
 
-	if ema.data[key].count == 0 {
+	if ema.Data[key].count == 0 {
 		return 0.00
 	}
 
-	return ema.data[key].EMA[ema.data[key].count-1]
+	return ema.Data[key].EMA[ema.Data[key].count-1]
 }
 
 func (ema *ExponentialMovingAverageV2) hashCode(key, col string) string {
@@ -119,7 +119,7 @@ func (ema *ExponentialMovingAverageV2) hashCode(key, col string) string {
 
 func NewExponentialMovingAverageV2(logger log.Logger, data map[string]*EMAData) ExponentialMovingAverageV2 {
 	return ExponentialMovingAverageV2{
-		logger: logger,
-		data:   data,
+		Logger: logger,
+		Data:   data,
 	}
 }

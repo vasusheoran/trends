@@ -6,12 +6,12 @@ import (
 	"testing"
 )
 
-func TestSearch_CE(t *testing.T) {
+func TestCard_Update(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()
 
 	const symbol = "test"
 
-	records, err := readInputCSV("test/input/1-11-24.csv")
+	records, err := readInputCSV("test/input/9-12-24.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -22,21 +22,34 @@ func TestSearch_CE(t *testing.T) {
 	}
 
 	c := getCardService(logger)
-
-	for _, expected := range data {
+	i := 0
+	expected := models.Ticker{}
+	for i, expected = range data {
+		if i == 101 {
+			break
+		}
 		err = c.Add(symbol, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 
-	// After inserting historical dataFunc calculate updateFuture
-	val, err := search(searchCE, c, symbol, 0.001)
+	//c.Add(symbol, "10-12-24", data[len(data)-1].W, data[len(data)-1].X, data[len(data)-1].Y, data[len(data)-1].Z)
+
+	err = c.Update(symbol, data[i-1].W, data[i-1].X, data[i-1].Y, data[i-1].Z)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	logger.Log("CE", val)
+	update1 := c.Get(symbol)
+
+	err = c.Update(symbol, data[i-1].W, data[i-1].X, data[i-1].Y, data[i-1].Z)
+	if err != nil {
+		t.Fatal(err)
+	}
+	update2 := c.Get(symbol)
+
+	validateResult(t, logger, 0, update1[0], update2[0])
 }
 
 func TestSearch(t *testing.T) {
@@ -128,9 +141,9 @@ func TestSearch(t *testing.T) {
 				DK: 0,
 				EC: 0,
 				EB: 0,
-				//AR: 24463.00155874219,
-				//O:  24252.14217883612,
-				//M:  24523.053630529823,
+				AR: 24472.541846,
+				O:  24292.681019,
+				M:  24574.635754,
 			},
 		},
 	}
@@ -153,8 +166,6 @@ func TestSearch(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			c.logger.Log("record", c.ticker[symbol].Data[c.ticker[symbol].Index+1])
-
 			err = c.Update(symbol, data[len(data)-1].W, data[len(data)-1].X, data[len(data)-1].Y, data[len(data)-1].Z)
 			if err != nil {
 				t.Fatal(err)
@@ -168,20 +179,6 @@ func TestSearch(t *testing.T) {
 			currentDay := c.ticker[symbol].Data[c.ticker[symbol].Index+1]
 
 			validateResult(t, logger, 0, tc.expected, currentDay)
-			//if tc.CE > 0.0 {
-			//	assert.True(t, test.IsValueWithinTolerance(currentDay.CE, tc.CE, 0.001), fmt.Sprintf("actualCE: %f, expected: %f, diff: %f", c.ticker[symbol].CE, tc.CE, math.Abs(c.ticker[symbol].CE-tc.CE)))
-			//}
-			//
-			//if tc.BR > 0.0 {
-			//	assert.True(t, test.IsValueWithinTolerance(currentDay.BR, tc.BR, 0.001), fmt.Sprintf("actualBR: %f, expected: %f, diff: %f", c.ticker[symbol].BR, tc.BR, math.Abs(c.ticker[symbol].BR-tc.BR)))
-			//}
-			//
-			//if tc.CD > 0.0 {
-			//	assert.True(t, test.IsValueWithinTolerance(currentDay.CD, tc.CD, 0.3), fmt.Sprintf("actualCD: %f, expected: %f, diff: %f", c.ticker[symbol].CD, tc.CD, math.Abs(c.ticker[symbol].CD-tc.CD)))
-			//}
-			//if tc.CC > 0.0 {
-			//	assert.True(t, test.IsValueWithinTolerance(c.ticker[symbol].CC, tc.CC, 0.001), fmt.Sprintf("actualCC: %f, expected: %f, diff: %f", c.ticker[symbol].CC, tc.CC, math.Abs(c.ticker[symbol].CC-tc.CC)))
-			//}
 
 		})
 	}

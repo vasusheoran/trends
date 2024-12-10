@@ -84,16 +84,23 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 	current := c.ticker[symbol]
 
 	var err error
-	if current.NextIndex == 0 {
-		_, err = c.updateFutureData(symbol)
-		if err != nil {
-			return err
+	if current.NextIndex == 3 {
+		if current.Index < 100 {
+			return nil
 		}
 
-		err = c.updateEMA(4)
-		if err != nil {
-			return err
-		}
+		current.Data = current.Data[:len(current.Data)-3]
+		current.NextIndex = 0
+	}
+
+	_, err = c.updateFutureData(symbol)
+	if err != nil {
+		return err
+	}
+
+	err = c.updateEMA(3)
+	if err != nil {
+		return err
 	}
 
 	current.Data[current.Index+1].W = close
@@ -101,7 +108,11 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 	current.Data[current.Index+1].Y = high
 	current.Data[current.Index+1].Z = low
 
-	err = c.calculate(current, current.Index+1)
+	err = c.calculate(symbol, current.Index+1)
+	if err != nil {
+		return err
+	}
+	err = c.updateEMA(1)
 	if err != nil {
 		return err
 	}
@@ -111,6 +122,7 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 	current.Data[current.Index+1].CD = current.CD
 	current.Data[current.Index+1].CC = current.CC
 
+	current.futures = true
 	return nil
 }
 
@@ -192,26 +204,22 @@ func (c *card) add(symbol string, tickerData models.Ticker) error {
 	current.Index++
 	current.Data = append(current.Data, tickerData)
 
-	err = c.calculate(current, current.Index)
+	if current.Data[current.Index].Date == "10-12-24" {
+		c.ticker[symbol].futures = true
+	}
+	err = c.calculate(symbol, current.Index)
 	if err != nil {
 		return err
 	}
 
+	if current.Data[current.Index].Date == "10-12-24" {
+		c.ticker[symbol].futures = false
+	}
 	// Update futures
 	current.Data[current.Index].CD = current.CD
 	current.Data[current.Index].CE = current.CE
 	current.Data[current.Index].BR = current.BR
 	current.Data[current.Index].CC = current.CC
-
-	//if current.Index > 5367 {
-	//	offset := 0
-	//	c.logger.Log("date", current.Data[current.Index-offset].Date,
-	//		"CD", current.Data[current.Index-offset].CD,
-	//		"CE", current.Data[current.Index-offset].CE,
-	//		"BR", current.Data[current.Index-offset].BR,
-	//		"CC", current.Data[current.Index-offset].CC,
-	//	)
-	//}
 
 	return nil
 }
@@ -269,7 +277,8 @@ func (c *card) cleanUpFutureData(symbol string, data models.Ticker) error {
 	return nil
 }
 
-func (c *card) calculate(currentTicker *tickerData, index int) error {
+func (c *card) calculate(symbol string, index int) error {
+	currentTicker := c.ticker[symbol]
 	c.calculateAD(currentTicker, index)
 
 	err := c.calculateM(currentTicker, index)

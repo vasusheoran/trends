@@ -35,9 +35,9 @@ func (c *card) addNextData(symbol string, close float64, open float64, high floa
 	c.ticker[symbol].NextIndex++
 	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
 
-	err := c.calculate(c.ticker[symbol], lastDayIndex+1)
-	err = c.calculate(c.ticker[symbol], lastDayIndex+2)
-	err = c.calculate(c.ticker[symbol], lastDayIndex+3)
+	err := c.calculate(symbol, lastDayIndex+1)
+	err = c.calculate(symbol, lastDayIndex+2)
+	err = c.calculate(symbol, lastDayIndex+3)
 	if err != nil {
 		return err
 	}
@@ -124,8 +124,6 @@ func searchCC(c *card, symbol string, value float64, fixed ...float64) (float64,
 	currentTicker.Data[currentTicker.Index+1].CD = fixed[2]
 	currentTicker.Data[currentTicker.Index+1].CE = fixed[1]
 
-	// Close
-	//currentTicker.Data[currentTicker.Index+1].CC = fixed[0]
 	currentTicker.Data[currentTicker.Index+2].CE = value
 	currentTicker.Data[currentTicker.Index+2].W = value
 	currentTicker.Data[currentTicker.Index+3].W = value
@@ -178,11 +176,9 @@ func searchBR(c *card, symbol string, value float64, fixed ...float64) (float64,
 
 	// updateCE day + 2
 	currentTicker.Data[currentTicker.Index+2].W = currentTicker.CE
-	//currentTicker.Data[currentTicker.Index+2].X = value
 
 	// updateCE day + 3
 	currentTicker.Data[currentTicker.Index+3].W = currentTicker.CE
-	//currentTicker.Data[currentTicker.Index+3].X = value
 
 	err = c.calculateFutureData(symbol)
 	if err != nil {
@@ -199,17 +195,17 @@ func (c *card) calculateFutureData(symbol string) error {
 		return err
 	}
 
-	err = c.calculate(c.ticker[symbol], c.ticker[symbol].Index+1)
+	err = c.calculate(symbol, c.ticker[symbol].Index+1)
 	if err != nil {
 		return err
 	}
 
-	err = c.calculate(c.ticker[symbol], c.ticker[symbol].Index+2)
+	err = c.calculate(symbol, c.ticker[symbol].Index+2)
 	if err != nil {
 		return err
 	}
 
-	return c.calculate(c.ticker[symbol], c.ticker[symbol].Index+3)
+	return c.calculate(symbol, c.ticker[symbol].Index+3)
 }
 
 func (c *card) updateFutureDataForCE(symbol string, close, open, high, low float64) error {
@@ -230,15 +226,15 @@ func (c *card) updateFutureDataForCE(symbol string, close, open, high, low float
 		return err
 	}
 
-	err = c.calculate(c.ticker[symbol], c.ticker[symbol].Index+1)
+	err = c.calculate(symbol, c.ticker[symbol].Index+1)
 	if err != nil {
 		return err
 	}
 
-	err = c.calculate(c.ticker[symbol], c.ticker[symbol].Index+2)
+	err = c.calculate(symbol, c.ticker[symbol].Index+2)
 	if err != nil {
 		return err
 	}
 
-	return c.calculate(c.ticker[symbol], c.ticker[symbol].Index+3)
+	return c.calculate(symbol, c.ticker[symbol].Index+3)
 }
