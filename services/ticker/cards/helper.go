@@ -54,7 +54,7 @@ func (c *card) calculateAD(t *tickerData, index int) {
 		t.Data[index].AD = 0.00
 		return
 	}
-	t.Data[index].AD = math.Min(math.Min(t.Data[index-2].Y, t.Data[index-3].Y), t.Data[index-4].Y)
+	t.Data[index].AD = math.Min(math.Min(t.Data[index-1].Y, t.Data[index-2].Y), t.Data[index-3].Y)
 }
 
 func (c *card) calculateAS(t *tickerData, index int) error {
@@ -123,9 +123,10 @@ func (c *card) calculateAR(t *tickerData, index int) error {
 
 	av50 := c.ma.Value("AR50")
 	av10 := c.ma.Value("AR10")
-	avSum := av10 + av50
+	av := av10 + av50
 
-	t.Data[index].AR = (avSum)/2 - ((avSum) / 2 * (((avSum)/2 - (((((avSum)/2 - ((avSum) / 2 * 0.01)) + (((avSum)/2 - ((avSum) / 2 * 0.01)) * 0.025)) + (avSum)/2) / 2)) / (avSum) / 2 * 100 / 2) / 100)
+	t.Data[index].AR = (av)/2 - ((av) / 2 * (((av)/2 - (((((av)/2 - ((av) / 2 * 0.01)) + (((av)/2 - ((av) / 2 * 0.01)) * 0.025)) + (av)/2) / 2)) / (av) / 2 * 100 / 2) / 100)
+	//(avSum)/2 - ((avSum) / 2 * (((avSum)/2 - (((((avSum)/2 - ((avSum) / 2 * 0.01)) + (((avSum)/2 - ((avSum) / 2 * 0.01)) * 0.025)) + (avSum)/2) / 2)) / (avSum) / 2 * 100 / 2) / 100)
 	return nil
 }
 
@@ -195,28 +196,28 @@ func (c *card) calculateCW(t *tickerData, index int) {
 	t.Data[index].CW = 100 - (100 / (1 + value/isValid))
 }
 
-func (c *card) updateEMA() error {
-	err := c.ema.Remove("AS5", 3)
+func (c *card) updateEMA(indexFromEnd int) error {
+	err := c.ema.Remove("AS5", indexFromEnd)
 	if err != nil {
 		return err
 	}
-	err = c.ema.Remove("M5", 3)
+	err = c.ema.Remove("M5", indexFromEnd)
 	if err != nil {
 		return err
 	}
-	err = c.ema.Remove("O21", 3)
+	err = c.ema.Remove("O21", indexFromEnd)
 	if err != nil {
 		return err
 	}
-	err = c.ema.Remove("BN21", 3)
+	err = c.ema.Remove("BN21", indexFromEnd)
 	if err != nil {
 		return err
 	}
-	err = c.ma.Remove("AR10", 3)
+	err = c.ma.Remove("AR10", indexFromEnd)
 	if err != nil {
 		return err
 	}
-	err = c.ma.Remove("AR50", 3)
+	err = c.ma.Remove("AR50", indexFromEnd)
 	if err != nil {
 		return err
 	}

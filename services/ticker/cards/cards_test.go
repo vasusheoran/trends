@@ -27,7 +27,7 @@ func TestNewCard(t *testing.T) {
 
 	const ticker = "test"
 
-	records, err := readInputCSV("test/input/1-11-24.csv")
+	records, err := readInputCSV("test/input/9-12-24.csv")
 	if err != nil {
 		t.Fatal(err)
 	}

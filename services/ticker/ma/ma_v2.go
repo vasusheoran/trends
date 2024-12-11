@@ -15,16 +15,16 @@ type MAData struct {
 }
 
 type MovingAverageV2 struct {
-	logger log.Logger
-	data   map[string]*MAData
+	Logger log.Logger
+	Data   map[string]*MAData
 }
 
 func (ma *MovingAverageV2) Remove(key string, index int) error {
-	if _, ok := ma.data[key]; !ok {
+	if _, ok := ma.Data[key]; !ok {
 		return fmt.Errorf("key `%s` does not exist", key)
 	}
 
-	st := ma.data[key]
+	st := ma.Data[key]
 
 	if st.count-index <= st.Window {
 		return fmt.Errorf("not supporteed if length after removal is less than delay")
@@ -34,16 +34,23 @@ func (ma *MovingAverageV2) Remove(key string, index int) error {
 	st.WindowSum = st.WindowSum[:len(st.WindowSum)-index]
 	st.count -= index
 
-	st.windowSum = st.WindowSum[st.count-1]
+	st.windowSum = 0
+	for i := st.count - st.Window; i < st.count; i++ {
+		st.windowSum += st.Values[i]
+	}
+
+	//st.WindowSum = append(st.WindowSum, st.windowSum)
+	// TODO: Update window sum on removal
+	//st.windowSum = st.WindowSum[st.count-1]
 	return nil
 }
 
 func (ma *MovingAverageV2) Add(key string, value float64) error {
-	if _, ok := ma.data[key]; !ok {
+	if _, ok := ma.Data[key]; !ok {
 		return fmt.Errorf("key `%s` does not exist", key)
 	}
 
-	st := ma.data[key]
+	st := ma.Data[key]
 
 	st.Values = append(st.Values, value)
 
@@ -60,29 +67,29 @@ func (ma *MovingAverageV2) Add(key string, value float64) error {
 }
 
 func (ma *MovingAverageV2) Value(key string) float64 {
-	if _, ok := ma.data[key]; !ok {
+	if _, ok := ma.Data[key]; !ok {
 		return 0.00
 	}
 
-	if ma.data[key].count == 0 {
+	if ma.Data[key].count == 0 {
 		return 0.00
 	}
 
-	offset := ma.data[key].Offset
-	window := ma.data[key].Window
-	count := ma.data[key].count
+	offset := ma.Data[key].Offset
+	window := ma.Data[key].Window
+	count := ma.Data[key].count
 
 	if count < window+offset {
 		return 0.00
 	}
 
-	return ma.data[key].WindowSum[count-offset-1] / float64(ma.data[key].Window)
+	return ma.Data[key].WindowSum[count-offset-1] / float64(ma.Data[key].Window)
 }
 
 func NewMovingAverageV2(logger log.Logger, data map[string]*MAData) MovingAverageV2 {
 	ma := MovingAverageV2{
-		logger: logger,
-		data:   data,
+		Logger: logger,
+		Data:   data,
 	}
 	return ma
 }

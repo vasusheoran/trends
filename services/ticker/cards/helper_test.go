@@ -1,21 +1,17 @@
 package cards
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
-	"github.com/vsheoran/trends/test"
 	"github.com/vsheoran/trends/utils"
-	"math"
 	"testing"
 )
 
-func TestSearch_CE(t *testing.T) {
+func TestCard_Update(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()
 
 	const symbol = "test"
 
-	records, err := readInputCSV("test/input/1-11-24.csv")
+	records, err := readInputCSV("test/input/9-12-24.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,21 +22,34 @@ func TestSearch_CE(t *testing.T) {
 	}
 
 	c := getCardService(logger)
-
-	for _, expected := range data {
+	i := 0
+	expected := models.Ticker{}
+	for i, expected = range data {
+		if i == 101 {
+			break
+		}
 		err = c.Add(symbol, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 
-	// After inserting historical dataFunc calculate updateFuture
-	val, err := search(searchCE, c, symbol, 0.001)
+	//c.Add(symbol, "10-12-24", data[len(data)-1].W, data[len(data)-1].X, data[len(data)-1].Y, data[len(data)-1].Z)
+
+	err = c.Update(symbol, data[i-1].W, data[i-1].X, data[i-1].Y, data[i-1].Z)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	logger.Log("CE", val)
+	update1 := c.Get(symbol)
+
+	err = c.Update(symbol, data[i-1].W, data[i-1].X, data[i-1].Y, data[i-1].Z)
+	if err != nil {
+		t.Fatal(err)
+	}
+	update2 := c.Get(symbol)
+
+	validateResult(t, logger, 0, update1[0], update2[0])
 }
 
 func TestSearch(t *testing.T) {
@@ -53,10 +62,7 @@ func TestSearch(t *testing.T) {
 	testCases := []struct {
 		name     string
 		dataFunc func() []models.Ticker
-		CE       float64
-		BR       float64
-		CC       float64
-		CD       float64
+		expected models.Ticker
 	}{
 		{
 			name: "1-11-24.csv",
@@ -73,8 +79,10 @@ func TestSearch(t *testing.T) {
 
 				return data
 			},
-			CE: 24105.784636,
-			BR: 24287.624667,
+			expected: models.Ticker{
+				CE: 24105.784636,
+				BR: 24287.624667,
+			},
 		},
 		{
 			name: "4-12-24.csv",
@@ -91,9 +99,11 @@ func TestSearch(t *testing.T) {
 
 				return data
 			},
-			CE: 24311.2874747,
-			BR: 24252.21986246109,
-			CC: 24101.812709,
+			expected: models.Ticker{
+				CE: 24311.2874747,
+				BR: 24252.21986246109,
+				CC: 24101.812709,
+			},
 		},
 		{
 			name: "9-12-24.csv",
@@ -110,10 +120,31 @@ func TestSearch(t *testing.T) {
 
 				return data
 			},
-			CE: 24694.624954,
-			BR: 24556.796551, // This is if and only if future x,y,z are same as current w
-			CC: 24455.847805,
-			CD: 24455.847805,
+			expected: models.Ticker{
+				CE: 24694.624954,
+				BR: 24556.796551, // This is if and only if future x,y,z are same as current w
+				CC: 24455.847805,
+				CD: 24456.07,
+				W:  24677.8,
+				X:  24729.45,
+				Y:  24751.05,
+				Z:  24620.5,
+				AD: 24573.2,
+				AS: 24574.635753686547,
+				BN: 24292.681018946965,
+				BP: 281.9547347395819,
+				CW: 59.419874807143714,
+				ED: 0,
+				E:  62.1279070214002,
+				C:  0,
+				D:  90.97144081485827,
+				DK: 0,
+				EC: 0,
+				EB: 0,
+				AR: 24472.541846,
+				O:  24292.681019,
+				M:  24574.635754,
+			},
 		},
 	}
 
@@ -135,24 +166,19 @@ func TestSearch(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			currentDay := c.ticker["test"].Data[c.ticker["test"].Index+1]
-
-			if tc.CE > 0.0 {
-				assert.True(t, test.IsValueWithinTolerance(currentDay.CE, tc.CE, 0.001), fmt.Sprintf("actualCE: %f, expected: %f, diff: %f", c.ticker[symbol].CE, tc.CE, math.Abs(c.ticker[symbol].CE-tc.CE)))
+			err = c.Update(symbol, data[len(data)-1].W, data[len(data)-1].X, data[len(data)-1].Y, data[len(data)-1].Z)
+			if err != nil {
+				t.Fatal(err)
 			}
 
-			if tc.BR > 0.0 {
-				assert.True(t, test.IsValueWithinTolerance(currentDay.BR, tc.BR, 0.001), fmt.Sprintf("actualBR: %f, expected: %f, diff: %f", c.ticker[symbol].BR, tc.BR, math.Abs(c.ticker[symbol].BR-tc.BR)))
+			err = c.Update(symbol, data[len(data)-1].W, data[len(data)-1].X, data[len(data)-1].Y, data[len(data)-1].Z)
+			if err != nil {
+				t.Fatal(err)
 			}
 
-			if tc.CD > 0.0 {
-				assert.True(t, test.IsValueWithinTolerance(currentDay.CD, tc.CD, 0.001), fmt.Sprintf("actualCD: %f, expected: %f, diff: %f", c.ticker[symbol].CD, tc.CD, math.Abs(c.ticker[symbol].CD-tc.CD)))
-			}
-			if tc.CC > 0.0 {
-				assert.True(t, test.IsValueWithinTolerance(
-					c.ticker["test"].CC, tc.CC, 0.001),
-					fmt.Sprintf("actualCC: %f, expected: %f, diff: %f", c.ticker[symbol].CC, tc.CC, math.Abs(c.ticker[symbol].CC-tc.CC)))
-			}
+			currentDay := c.ticker[symbol].Data[c.ticker[symbol].Index+1]
+
+			validateResult(t, logger, 0, tc.expected, currentDay)
 
 		})
 	}

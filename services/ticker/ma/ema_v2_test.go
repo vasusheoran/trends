@@ -14,7 +14,7 @@ const (
 	testDir = "test"
 )
 
-func TestMovingAverageV2_Value(t *testing.T) {
+func TestExponentialMovingAverageV2_Value(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()
 	testCases := []struct {
 		name     string
