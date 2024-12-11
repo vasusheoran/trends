@@ -2,12 +2,11 @@ package ma
 
 import (
 	"github.com/stretchr/testify/assert"
-	"github.com/vsheoran/trends/test"
+	"github.com/vsheoran/trends/trendstest"
 	"github.com/vsheoran/trends/utils"
-	"testing"
 )
 
-func TestMovingAverageV2_Value(t *testing.T) {
+func TestMovingAverageV2_Value(t *trendstest.T) {
 	logger := utils.InitializeDefaultLogger()
 	testCases := []struct {
 		name     string
@@ -30,7 +29,7 @@ func TestMovingAverageV2_Value(t *testing.T) {
 	const name = "test"
 
 	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
+		t.Run(tc.name, func(t *trendstest.T) {
 			//[]string{"5", "20"}, []int{5, 20}, 0
 			svc := MovingAverageV2{
 				logger,
@@ -64,7 +63,7 @@ func TestMovingAverageV2_Value(t *testing.T) {
 				}
 
 				actual := svc.Value(name)
-				assert.True(t, test.IsValueWithinTolerance(actual, tc.expected[i], 0.0000000001))
+				assert.True(t, trendstest.IsValueWithinTolerance(actual, tc.expected[i], 0.0000000001))
 			}
 
 		})

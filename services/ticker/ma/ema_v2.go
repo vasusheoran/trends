@@ -2,7 +2,7 @@ package ma
 
 import (
 	"fmt"
-	"github.com/vsheoran/trends/test"
+	"github.com/vsheoran/trends/trendstest"
 	"strings"
 	"unicode"
 
@@ -86,7 +86,7 @@ func (ema *ExponentialMovingAverageV2) AddWithPreviousEMA(key string, value, pre
 	st := ema.Data[key]
 
 	newEma := 0.00
-	if !test.IsValueWithinTolerance(previousEMA, 0.00, 0) {
+	if !trendstest.IsValueWithinTolerance(previousEMA, 0.00, 0) {
 		newEma = st.Decay*(value-previousEMA) + previousEMA
 	}
 

@@ -98,6 +98,8 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 		return err
 	}
 
+	c.calculateEB(current, current.Index)
+
 	err = c.updateEMA(3)
 	if err != nil {
 		return err
@@ -112,6 +114,7 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 	if err != nil {
 		return err
 	}
+
 	err = c.updateEMA(1)
 	if err != nil {
 		return err
@@ -221,6 +224,8 @@ func (c *card) add(symbol string, tickerData models.Ticker) error {
 	current.Data[current.Index].BR = current.BR
 	current.Data[current.Index].CC = current.CC
 
+	c.calculateEB(current, current.Index)
+
 	return nil
 }
 
@@ -317,6 +322,13 @@ func (c *card) calculate(symbol string, index int) error {
 	c.calculateCW(currentTicker, index)
 
 	return nil
+}
+
+func (c *card) calculateEB(t *tickerData, index int) {
+	if t.Index < 100 {
+		return
+	}
+	t.Data[index].EB = (t.Data[index].X + t.Data[index].BR) / 2
 }
 
 func parseDate(dateString string) (time.Time, error) {

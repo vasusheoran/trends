@@ -2,7 +2,7 @@ package ma
 
 import (
 	"fmt"
-	"github.com/vsheoran/trends/test"
+	"github.com/vsheoran/trends/trendstest"
 	"math"
 	"testing"
 
@@ -81,7 +81,7 @@ func TestExponentialMovingAverageV2_Value(t *testing.T) {
 func TestExponentialMovingAverage(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()
 
-	testCases, err := test.GetTestCases(testDir)
+	testCases, err := trendstest.GetTestCases(testDir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -122,7 +122,7 @@ func TestExponentialMovingAverage(t *testing.T) {
 				actualValueAt5 := svc.Value("5-0")
 
 				if tc.ExpectedUEMA5[i] > 0.8 {
-					assert.True(t, test.IsValueWithinTolerance(actualValueAt5, tc.ExpectedUEMA5[i], 0.8), fmt.Sprintf("actual: %f, expected: %f, diff: %f, i: %d", actualValueAt5, tc.ExpectedUEMA5[i], math.Abs(tc.ExpectedUEMA5[i]-actualValueAt5), i))
+					assert.True(t, trendstest.IsValueWithinTolerance(actualValueAt5, tc.ExpectedUEMA5[i], 0.8), fmt.Sprintf("actual: %f, expected: %f, diff: %f, i: %d", actualValueAt5, tc.ExpectedUEMA5[i], math.Abs(tc.ExpectedUEMA5[i]-actualValueAt5), i))
 				}
 				err = svc.Add("20-0", tc.U[i])
 				if err != nil {
@@ -130,7 +130,7 @@ func TestExponentialMovingAverage(t *testing.T) {
 				}
 				actualValueAt20 := svc.Value("20-0")
 				if tc.ExpectedUEMA21[i] > 0.8 {
-					assert.True(t, test.IsValueWithinTolerance(actualValueAt20, tc.ExpectedUEMA21[i], 0.8), fmt.Sprintf("actual: %f, expected: %f, diff: %f, i: %d", actualValueAt20, tc.ExpectedUEMA21[i], math.Abs(tc.ExpectedUEMA21[i]-actualValueAt20), i))
+					assert.True(t, trendstest.IsValueWithinTolerance(actualValueAt20, tc.ExpectedUEMA21[i], 0.8), fmt.Sprintf("actual: %f, expected: %f, diff: %f, i: %d", actualValueAt20, tc.ExpectedUEMA21[i], math.Abs(tc.ExpectedUEMA21[i]-actualValueAt20), i))
 				}
 				//err = svc.Add("5-50", tc.CI[i])
 				//if err != nil {
