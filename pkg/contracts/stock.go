@@ -1,8 +1,9 @@
 package contracts
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // swagger:model Stock

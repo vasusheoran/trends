@@ -33,6 +33,12 @@ test:
 build: test
 	go build -o ./tmp/main -v cmd/main.go
 
+## build: build a binary
+.PHONY: windows
+windows: test
+	go env -w CGO_ENABLED=1
+	go build -o tmp/trends_0.0.5.exe -v .\cmd\main.go
+
 ## docker-build: build project into a docker container image
 .PHONY: docker-build
 docker-build: test

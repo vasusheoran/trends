@@ -2,6 +2,7 @@ package ticker
 
 import (
 	"fmt"
+
 	"github.com/go-kit/kit/log"
 	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/services/ticker/cards"
