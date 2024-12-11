@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/services/ticker/ma"
-	"github.com/vsheoran/trends/test"
+	"github.com/vsheoran/trends/trendstest"
 	"github.com/vsheoran/trends/utils"
 	"math"
 	"os"
@@ -119,46 +119,50 @@ func getCardService(logger log.Logger) *card {
 
 func validateResult(t *testing.T, logger log.Logger, index int, expected, actualData models.Ticker) {
 	if expected.AD > 0 && strings.Contains(expected.Date, "25-Oct-2005,12-Apr-2013,6-May-2014,6-Dec-2017") {
-		assert.True(t, test.IsValueWithinTolerance(actualData.AD, expected.AD, 0.1), fmt.Sprintf("actualAD: %f, expected: %f, diff: %f, date: %s", actualData.AD, expected.AD, math.Abs(actualData.AD-expected.AD), actualData.Date))
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.AD, expected.AD, 0.1), fmt.Sprintf("actualAD: %f, expected: %f, diff: %f, date: %s", actualData.AD, expected.AD, math.Abs(actualData.AD-expected.AD), actualData.Date))
 	}
 
 	if expected.M > 0.0 {
-		assert.True(t, test.IsValueWithinTolerance(actualData.M, expected.M, 0.9), fmt.Sprintf("actualM: %f, expected: %f, diff: %f, date: %s", actualData.M, expected.M, math.Abs(actualData.M-expected.M), actualData.Date))
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.M, expected.M, 0.9), fmt.Sprintf("actualM: %f, expected: %f, diff: %f, date: %s", actualData.M, expected.M, math.Abs(actualData.M-expected.M), actualData.Date))
 	}
 
 	if expected.AS > 0.0 {
-		assert.True(t, test.IsValueWithinTolerance(actualData.AS, expected.AS, 0.5), fmt.Sprintf("actualAS: %f, expected: %f, diff: %f, date: %s", actualData.AS, expected.AS, math.Abs(actualData.AS-expected.AS), actualData.Date))
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.AS, expected.AS, 0.5), fmt.Sprintf("actualAS: %f, expected: %f, diff: %f, date: %s", actualData.AS, expected.AS, math.Abs(actualData.AS-expected.AS), actualData.Date))
 	}
 
 	if expected.O > 0 {
-		assert.True(t, test.IsValueWithinTolerance(actualData.O, expected.O, 0.5), fmt.Sprintf("actualO: %f, expected: %f, diff: %f, date: %s", actualData.O, expected.O, math.Abs(actualData.O-expected.O), actualData.Date))
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.O, expected.O, 0.5), fmt.Sprintf("actualO: %f, expected: %f, diff: %f, date: %s", actualData.O, expected.O, math.Abs(actualData.O-expected.O), actualData.Date))
 	}
 	if expected.BN > 0 {
-		assert.True(t, test.IsValueWithinTolerance(actualData.BN, expected.BN, 0.5), fmt.Sprintf("actualBN: %f, expected: %f, diff: %f, date: %s", actualData.BN, expected.BN, math.Abs(actualData.BN-expected.BN), actualData.Date))
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.BN, expected.BN, 0.5), fmt.Sprintf("actualBN: %f, expected: %f, diff: %f, date: %s", actualData.BN, expected.BN, math.Abs(actualData.BN-expected.BN), actualData.Date))
 	}
 
 	if expected.BP > 0 {
-		assert.True(t, test.IsValueWithinTolerance(actualData.BP, expected.BP, 0.5), fmt.Sprintf("actualBP: %f, expected: %f, diff: %f, date: %s", actualData.BP, expected.BP, math.Abs(actualData.BP-expected.BP), actualData.Date))
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.BP, expected.BP, 0.5), fmt.Sprintf("actualBP: %f, expected: %f, diff: %f, date: %s", actualData.BP, expected.BP, math.Abs(actualData.BP-expected.BP), actualData.Date))
 	}
 
 	if expected.AR > 0 {
-		assert.True(t, test.IsValueWithinTolerance(actualData.AR, expected.AR, 0.5), fmt.Sprintf("actualAR: %f, expected: %f, diff: %f, date: %s", actualData.AR, expected.AR, math.Abs(actualData.AR-expected.AR), actualData.Date))
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.AR, expected.AR, 0.5), fmt.Sprintf("actualAR: %f, expected: %f, diff: %f, date: %s", actualData.AR, expected.AR, math.Abs(actualData.AR-expected.AR), actualData.Date))
 	}
 
 	if expected.C > 0.1 {
-		assert.True(t, test.IsValueWithinTolerance(actualData.C, expected.C, 0.1), fmt.Sprintf("actualC: %f, expected: %f, diff: %f, date: %s", actualData.C, expected.C, math.Abs(actualData.C-expected.C), actualData.Date))
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.C, expected.C, 0.1), fmt.Sprintf("actualC: %f, expected: %f, diff: %f, date: %s", actualData.C, expected.C, math.Abs(actualData.C-expected.C), actualData.Date))
 	}
 
 	if expected.E > 0 {
-		assert.True(t, test.IsValueWithinTolerance(actualData.E, expected.E, 0.5), fmt.Sprintf("actualE: %f, expected: %f, diff: %f, date: %s", actualData.E, expected.E, math.Abs(actualData.E-expected.E), actualData.Date))
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.E, expected.E, 0.5), fmt.Sprintf("actualE: %f, expected: %f, diff: %f, date: %s", actualData.E, expected.E, math.Abs(actualData.E-expected.E), actualData.Date))
 	}
 
 	if expected.D > 0 {
-		assert.True(t, test.IsValueWithinTolerance(actualData.D, expected.D, 0.5), fmt.Sprintf("actualD: %f, expected: %f, diff: %f, date: %s", actualData.D, expected.D, math.Abs(actualData.D-expected.D), actualData.Date))
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.D, expected.D, 0.5), fmt.Sprintf("actualD: %f, expected: %f, diff: %f, date: %s", actualData.D, expected.D, math.Abs(actualData.D-expected.D), actualData.Date))
+	}
+
+	if expected.EB > 0 {
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.EB, expected.EB, 0.5), fmt.Sprintf("actualEB: %f, expected: %f, diff: %f, date: %s", actualData.EB, expected.EB, math.Abs(actualData.EB-expected.EB), actualData.Date))
 	}
 
 	if expected.CW > 0.1 && index > 623 {
-		assert.True(t, test.IsValueWithinTolerance(actualData.CW, expected.CW, 0.5), fmt.Sprintf("actualCW: %f, expected: %f, diff: %f, date: %s", actualData.CW, expected.CW, math.Abs(actualData.CW-expected.CW), actualData.Date))
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.CW, expected.CW, 0.5), fmt.Sprintf("actualCW: %f, expected: %f, diff: %f, date: %s", actualData.CW, expected.CW, math.Abs(actualData.CW-expected.CW), actualData.Date))
 	}
 	//&& actualData.Date == "1-Nov-2024"
 	//if actualData.Date == "31-Oct-2024" {
