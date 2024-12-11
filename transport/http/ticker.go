@@ -2,15 +2,12 @@ package http
 
 import (
 	"fmt"
-	"net/http"
-	"strings"
 
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
-	"github.com/vsheoran/trends/pkg/transport"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/utils"
 )
@@ -32,16 +29,6 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 	logger.Log("msg", "TickerHandleFunc", "path", r.URL.Path, "method", r.Method, "sasSymbol", sasSymbol)
 	var err error
 
-	// swagger:route GET /index/{sasSymbol} Index getTicker
-	//
-	// Gets ticker information for a given symbol
-	//
-	// Parameters:
-	//  - tickerSymbol
-	//
-	// Responses:
-	//   200: IndexResponse
-	//   500: ErrorResponse
 	if r.Method == http.MethodGet {
 		var summary models.Ticker
 		data := svc.TickerService.Get(sasSymbol)
@@ -53,16 +40,6 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// swagger:route POST /index/{sasSymbol} Index initTicker
-	//
-	// Initializes a ticker for a given symbol
-	//
-	// Parameters:
-	//  - tickerSymbol
-	//
-	// Responses:
-	//   200: IndexResponse
-	//   500: ErrorResponse
 	if r.Method == http.MethodPost {
 		var summary models.Ticker
 		err = svc.TickerService.Init(sasSymbol)
@@ -73,28 +50,7 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// swagger:route PUT /index/{sasSymbol} Index updateTicker
-	//
-	// Updates ticker information for a given symbol
-	//
-	// Parameters:
-	//  + name: stock
-	//	  in: body
-	//	  description: Ticker update values
-	//	required: true
-	//	type: Stock
-	//
-	//
-	// Responses:
-	//   204:
-	//   500: ErrorResponse
 	if r.Method == http.MethodPut {
-		_, err = svc.TickerService.Get(sasSymbol)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Err: %s", err.Error()), http.StatusInternalServerError)
-			return
-		}
-
 		var st contracts.Stock
 		err = utils.Decode(r.Body, &st)
 		if err != nil {
@@ -102,7 +58,7 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = svc.TickerService.Update(sasSymbol, st)
+		err = svc.TickerService.Update(st.Ticker, st.Close, st.Open, st.High, st.Low)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Err: %s", err.Error()), http.StatusInternalServerError)
 			return
@@ -111,27 +67,6 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 		utils.Encode(w, st.Time.Format("Jan _2 15:04:05"))
-	}
-
-	// swagger:route PATCH /index/{sasSymbol}/freeze Index freezeTicker
-	//
-	// Freezes ticker updates for a given symbol
-	//
-	// Parameters:
-	//  - tickerSymbol
-	//  - Stock
-	// Responses:
-	//  204:
-	//  500: ErrorResponse
-	if r.Method == http.MethodPatch && strings.Contains(r.URL.Path, constants.FreezeKey) {
-		var st contracts.Stock
-		st, err = transport.ParseOlderStocks(r.Body, sasSymbol)
-		if err == nil {
-			err = svc.TickerService.Freeze(sasSymbol, st)
-		}
-		if err == nil {
-			w.WriteHeader(http.StatusNoContent)
-		}
 	}
 
 	if err != nil {
