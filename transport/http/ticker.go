@@ -54,6 +54,7 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 		var st contracts.Stock
 		err = utils.Decode(r.Body, &st)
 		if err != nil {
+			logger.Log("err", err.Error())
 			http.Error(w, fmt.Sprintf("Err: %s", err.Error()), http.StatusInternalServerError)
 			return
 		}
