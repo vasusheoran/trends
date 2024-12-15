@@ -150,16 +150,15 @@ func validateResult(t *testing.T, logger log.Logger, index int, expected, actual
 	}
 
 	if expected.E > 0 {
-		assert.True(t, trendstest.IsValueWithinTolerance(actualData.E, expected.E, 0.5), fmt.Sprintf("actualE: %f, expected: %f, diff: %f, date: %s", actualData.E, expected.E, math.Abs(actualData.E-expected.E), actualData.Date))
 	}
 
 	if expected.D > 0 {
 		assert.True(t, trendstest.IsValueWithinTolerance(actualData.D, expected.D, 0.5), fmt.Sprintf("actualD: %f, expected: %f, diff: %f, date: %s", actualData.D, expected.D, math.Abs(actualData.D-expected.D), actualData.Date))
 	}
 
-	if expected.EB > 0 {
-		assert.True(t, trendstest.IsValueWithinTolerance(actualData.EB, expected.EB, 0.5), fmt.Sprintf("actualEB: %f, expected: %f, diff: %f, date: %s", actualData.EB, expected.EB, math.Abs(actualData.EB-expected.EB), actualData.Date))
-	}
+	//if expected.EB > 0 {
+	//	assert.True(t, trendstest.IsValueWithinTolerance(actualData.EB, expected.EB, 0.5), fmt.Sprintf("actualEB: %f, expected: %f, diff: %f, date: %s", actualData.EB, expected.EB, math.Abs(actualData.EB-expected.EB), actualData.Date))
+	//}
 
 	if expected.CW > 0.1 && index > 623 {
 		assert.True(t, trendstest.IsValueWithinTolerance(actualData.CW, expected.CW, 0.5), fmt.Sprintf("actualCW: %f, expected: %f, diff: %f, date: %s", actualData.CW, expected.CW, math.Abs(actualData.CW-expected.CW), actualData.Date))

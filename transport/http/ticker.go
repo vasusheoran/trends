@@ -2,8 +2,8 @@ package http
 
 import (
 	"fmt"
-
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/vsheoran/trends/pkg/constants"
@@ -54,20 +54,21 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 		var st contracts.Stock
 		err = utils.Decode(r.Body, &st)
 		if err != nil {
-			logger.Log("err", err.Error())
+			go func() { logger.Log("err", err.Error()) }()
 			http.Error(w, fmt.Sprintf("Err: %s", err.Error()), http.StatusInternalServerError)
 			return
 		}
 
-		err = svc.TickerService.Update(st.Ticker, st.Close, st.Open, st.High, st.Low)
+		err = svc.HubService.UpdateStock(st.Ticker, st)
 		if err != nil {
+			go func() { logger.Log("err", err.Error()) }()
 			http.Error(w, fmt.Sprintf("Err: %s", err.Error()), http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 		w.WriteHeader(http.StatusOK)
-		utils.Encode(w, st.Time.Format("Jan _2 15:04:05"))
+		utils.Encode(w, fmt.Sprintf("OK - %s", time.Now().Format(time.TimeOnly)))
 	}
 
 	if err != nil {
