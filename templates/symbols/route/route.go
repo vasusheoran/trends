@@ -21,11 +21,11 @@ func SymbolsRoute(l log.Logger, router *mux.Router, services transport.Services)
 	router.Path("/ticker/init").HandlerFunc(HTMXRemoveInitTickerFunc).Methods(http.MethodDelete)
 	router.Path("/ticker/remove").HandlerFunc(HTMXSelectTickerFunc).Methods(http.MethodGet)
 	router.Path("/ticker/remove").HandlerFunc(HTMXRemoveTicker).Methods(http.MethodPost)
-	router.Path("/update/ticker/{"+constants.SasSymbolKey+"}").
+	router.Path("/update/ticker/{" + constants.SasSymbolKey + "}").
 		HandlerFunc(SocketHandleFunc).
-		Methods(http.MethodPost, http.MethodGet)
+		Methods(http.MethodGet)
 
 	router.Path("/ws/ticker/{"+constants.SasSymbolKey+"}").
 		HandlerFunc(SocketHandleFunc).
-		Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+		Methods(http.MethodGet, http.MethodOptions)
 }

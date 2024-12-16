@@ -113,6 +113,6 @@ func (h *Hub) run() {
 	}
 }
 
-func (h *Hub) UpdateStock(symbol string, st contracts.Stock) error {
+func (h *Hub) UpdateStock(st contracts.Stock) error {
 	return h.tickerClient.Update(st.Ticker, st.Close, st.Open, st.High, st.Low, h.broadcast)
 }
