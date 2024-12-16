@@ -9,7 +9,6 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/vsheoran/trends/pkg/constants"
-	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/services/socket"
 	"github.com/vsheoran/trends/utils"
 )
@@ -59,34 +58,6 @@ func SocketHandleFunc(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
 			w.WriteHeader(http.StatusOK)
 			utils.Encode(w, uid)
-		}
-	}
-
-	if r.Method == http.MethodPost {
-		logger.Log("msg", "SocketHandleFunc", "method", "POST")
-
-		var st contracts.Stock
-		st, err = transport.ParseOlderStocks(r.Body, sasSymbol)
-		if err != nil {
-			logger.Log("msg", "SocketHandleFunc", "err", err.Error())
-			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-			w.WriteHeader(http.StatusInternalServerError)
-			utils.Encode(w, transport.ErrorResponse{Error: err.Error()})
-			return
-		}
-
-		err = svc.HubService.UpdateStock(sasSymbol, st)
-		if err != nil {
-			logger.Log("msg", "SocketHandleFunc", "err", err.Error())
-			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-			w.WriteHeader(http.StatusInternalServerError)
-			utils.Encode(w, transport.ErrorResponse{Error: err.Error()})
-			return
-		}
-
-		if err == nil {
-			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-			w.WriteHeader(http.StatusNoContent)
 		}
 	}
 
