@@ -59,7 +59,7 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = svc.HubService.UpdateStock(st.Ticker, st)
+		err = svc.HubService.UpdateStock(st)
 		if err != nil {
 			go func() { logger.Log("err", err.Error()) }()
 			http.Error(w, fmt.Sprintf("Err: %s", err.Error()), http.StatusInternalServerError)
