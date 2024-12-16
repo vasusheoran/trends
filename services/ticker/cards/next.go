@@ -190,7 +190,7 @@ func searchBR(c *card, symbol string, value float64, fixed ...float64) (float64,
 }
 
 func (c *card) calculateFutureData(symbol string) error {
-	err := c.updateEMA(3)
+	err := c.cleanUpEMA(3)
 	if err != nil {
 		return err
 	}
@@ -221,7 +221,7 @@ func (c *card) updateFutureDataForCE(symbol string, close, open, high, low float
 	// updateCE day + 3
 	currentTicker.Data[currentTicker.Index+3].X = close
 
-	err := c.updateEMA(3)
+	err := c.cleanUpEMA(3)
 	if err != nil {
 		return err
 	}

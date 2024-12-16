@@ -11,7 +11,7 @@ import (
 
 type Ticker interface {
 	Init(symbol string) error
-	Update(symbol string, close, open, high, low float64) error
+	Update(symbol string, close, open, high, low float64, broadcast chan string) error
 	Remove(symbol string)
 	Get(symbol string) map[string]models.Ticker
 }
@@ -70,7 +70,7 @@ func (t *ticker) Remove(symbol string) {
 	delete(t.summary, symbol)
 }
 
-func (t *ticker) Update(symbol string, close, open, high, low float64) error {
+func (t *ticker) Update(symbol string, close, open, high, low float64, broadcast chan string) error {
 	if _, ok := t.summary[symbol]; !ok {
 		return fmt.Errorf("ticker not initialized for symbol `%s`", symbol)
 	}
@@ -78,7 +78,11 @@ func (t *ticker) Update(symbol string, close, open, high, low float64) error {
 		err := t.card.Update(symbol, close, open, high, low)
 		if err != nil {
 			t.logger.Log("msg", fmt.Sprintf("failed to updated symbol `%s`", symbol), "err", err.Error())
+			return
 		}
+
+		t.logger.Log("msg", fmt.Sprintf("updating UI for `%s`", symbol))
+		broadcast <- symbol
 	}()
 	return nil
 }

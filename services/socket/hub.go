@@ -114,12 +114,5 @@ func (h *Hub) run() {
 }
 
 func (h *Hub) UpdateStock(symbol string, st contracts.Stock) error {
-	err := h.tickerClient.Update(st.Ticker, st.Close, st.Open, st.High, st.Low)
-	if err != nil {
-		return err
-	}
-	level.Info(h.log).Log("msg", "Stock updated successfully")
-
-	h.broadcast <- symbol
-	return nil
+	return h.tickerClient.Update(st.Ticker, st.Close, st.Open, st.High, st.Low, h.broadcast)
 }

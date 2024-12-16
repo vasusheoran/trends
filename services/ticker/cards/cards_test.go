@@ -118,6 +118,22 @@ func getCardService(logger log.Logger) *card {
 }
 
 func validateResult(t *testing.T, logger log.Logger, index int, expected, actualData models.Ticker) {
+	if expected.W > 0 {
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.W, expected.W, 0.1), fmt.Sprintf("actualW: %f, expected: %f, diff: %f, date: %s", actualData.W, expected.W, math.Abs(actualData.W-expected.W), actualData.Date))
+	}
+
+	if expected.X > 0 {
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.X, expected.X, 0.1), fmt.Sprintf("actualX: %f, expected: %f, diff: %f, date: %s", actualData.X, expected.X, math.Abs(actualData.X-expected.X), actualData.Date))
+	}
+
+	if expected.Y > 0 {
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.Y, expected.Y, 0.1), fmt.Sprintf("actualY: %f, expected: %f, diff: %f, date: %s", actualData.Y, expected.Y, math.Abs(actualData.Y-expected.Y), actualData.Date))
+	}
+
+	if expected.Z > 0 {
+		assert.True(t, trendstest.IsValueWithinTolerance(actualData.Z, expected.Z, 0.1), fmt.Sprintf("actualZ: %f, expected: %f, diff: %f, date: %s", actualData.Z, expected.Z, math.Abs(actualData.Z-expected.Z), actualData.Date))
+	}
+
 	if expected.AD > 0 && strings.Contains(expected.Date, "25-Oct-2005,12-Apr-2013,6-May-2014,6-Dec-2017") {
 		assert.True(t, trendstest.IsValueWithinTolerance(actualData.AD, expected.AD, 0.1), fmt.Sprintf("actualAD: %f, expected: %f, diff: %f, date: %s", actualData.AD, expected.AD, math.Abs(actualData.AD-expected.AD), actualData.Date))
 	}

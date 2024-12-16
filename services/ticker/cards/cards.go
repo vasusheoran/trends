@@ -106,7 +106,7 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 
 	c.calculateEB(current, current.Index)
 
-	err = c.updateEMA(3)
+	err = c.cleanUpEMA(3)
 	if err != nil {
 		return err
 	}
@@ -121,7 +121,7 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 		return err
 	}
 
-	err = c.updateEMA(1)
+	err = c.cleanUpEMA(1)
 	if err != nil {
 		return err
 	}
@@ -273,7 +273,7 @@ func (c *card) cleanUpFutureData(symbol string, data models.Ticker) error {
 		return nil
 	}
 
-	err := c.updateEMA(3)
+	err := c.cleanUpEMA(3)
 	if err != nil {
 		return err
 	}
