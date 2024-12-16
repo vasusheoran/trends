@@ -1,8 +1,9 @@
 package contracts
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // swagger:model Stock
@@ -14,5 +15,5 @@ type Stock struct {
 	Open   float64   `json:"open"`
 	High   float64   `json:"high"`
 	Low    float64   `json:"low"`
-	Time   time.Time `json:"time"`
+	Time   time.Time `json:"time,omitempty"`
 }

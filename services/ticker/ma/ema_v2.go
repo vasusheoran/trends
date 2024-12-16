@@ -2,9 +2,10 @@ package ma
 
 import (
 	"fmt"
-	"github.com/vsheoran/trends/trendstest"
 	"strings"
 	"unicode"
+
+	"github.com/vsheoran/trends/trendstest"
 
 	"github.com/go-kit/kit/log"
 )

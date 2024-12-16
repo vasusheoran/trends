@@ -196,7 +196,7 @@ func (c *card) calculateCW(t *tickerData, index int) {
 	t.Data[index].CW = 100 - (100 / (1 + value/isValid))
 }
 
-func (c *card) updateEMA(indexFromEnd int) error {
+func (c *card) cleanUpEMA(indexFromEnd int) error {
 	err := c.ema.Remove("AS5", indexFromEnd)
 	if err != nil {
 		return err

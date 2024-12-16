@@ -1,6 +1,7 @@
 package cards
 
 import (
+	"github.com/stretchr/testify/assert"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/utils"
 	"testing"
@@ -177,6 +178,9 @@ func TestSearch(t *testing.T) {
 			}
 
 			currentDay := c.ticker[symbol].Data[c.ticker[symbol].Index+1]
+			currentDayViaGet := c.Get(symbol)
+
+			assert.Equal(t, currentDay, currentDayViaGet[0])
 
 			validateResult(t, logger, 0, tc.expected, currentDay)
 
