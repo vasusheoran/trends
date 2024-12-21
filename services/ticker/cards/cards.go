@@ -10,13 +10,12 @@ import (
 
 const TOLERANCE = 0.001
 
-type updateFutureFunc func(symbol string, close, prevClose float64) error
-
 type Card interface {
-	Add(ticker, date string, close, open, high, low float64) error
-	Get(ticker string) []models.Ticker
-	Update(ticker string, close, open, high, low float64) error
-	Remove(ticker string)
+	Add(symbol, date string, close, open, high, low float64) error
+	Get(symbol string) []models.Ticker
+	Future(symbol string) error
+	Update(symbol string, close, open, high, low float64) error
+	Remove(symbol string)
 }
 
 type card struct {
@@ -25,6 +24,48 @@ type card struct {
 	ticker map[string]*tickerData
 	ema    ma.ExponentialMovingAverageV2
 	ma     ma.MovingAverageV2
+}
+
+func (c *card) Future(symbol string) error {
+	current := c.ticker[symbol]
+	current.futures = true
+
+	var err error
+	if current.NextIndex == 3 {
+		if current.Index < 100 {
+			return nil
+		}
+
+		current.Data = current.Data[:len(current.Data)-3]
+		current.NextIndex = 0
+	}
+
+	_, err = c.updateFutureData(symbol)
+	if err != nil {
+		return err
+	}
+
+	err = c.cleanUpEMA(3)
+	if err != nil {
+		return err
+	}
+
+	err = c.calculate(symbol, current.Index+1)
+	if err != nil {
+		return err
+	}
+
+	err = c.cleanUpEMA(1)
+	if err != nil {
+		return err
+	}
+
+	current.Data[current.Index+1].CE = current.CE
+	current.Data[current.Index+1].BR = current.BR
+	current.Data[current.Index+1].CD = current.CD
+	current.Data[current.Index+1].CC = current.CC
+
+	return nil
 }
 
 func (c *card) Remove(ticker string) {
@@ -68,15 +109,23 @@ func (c *card) Add(symbol, date string, close, open, high, low float64) error {
 }
 
 func (c *card) Get(symbol string) []models.Ticker {
-	if c.ticker[symbol].NextIndex == 0 {
+	if c.ticker[symbol].NextIndex == 3 {
 		return []models.Ticker{
-			c.ticker[symbol].Data[c.ticker[symbol].Index],
+			c.ticker[symbol].Data[c.ticker[symbol].Index+1],
+			c.ticker[symbol].Data[c.ticker[symbol].Index+2],
+			c.ticker[symbol].Data[c.ticker[symbol].Index+3],
+		}
+
+	}
+
+	if c.ticker[symbol].NextIndex == 1 {
+		return []models.Ticker{
+			c.ticker[symbol].Data[c.ticker[symbol].Index+1],
 		}
 	}
+
 	return []models.Ticker{
-		c.ticker[symbol].Data[c.ticker[symbol].Index+1],
-		c.ticker[symbol].Data[c.ticker[symbol].Index+2],
-		c.ticker[symbol].Data[c.ticker[symbol].Index+3],
+		c.ticker[symbol].Data[c.ticker[symbol].Index],
 	}
 }
 
@@ -84,37 +133,31 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 	current := c.ticker[symbol]
 
 	var err error
-	if current.NextIndex == 3 {
+	if current.NextIndex > 0 {
 		if current.Index < 100 {
 			return nil
 		}
 
-		current.Data = current.Data[:len(current.Data)-3]
+		current.Data = current.Data[:len(current.Data)-current.NextIndex]
 		current.NextIndex = 0
 	}
 
-	_, err = c.updateFutureData(symbol)
-	if err != nil {
-		return err
+	ticker := models.Ticker{
+		Name: symbol,
+		Date: time.Now().Format("02-01-06"),
+		Time: time.Now(),
+		W:    close,
+		X:    open,
+		Y:    high,
+		Z:    low,
+		CE:   current.CE,
+		BR:   current.BR,
+		CD:   current.CD,
+		CC:   current.CC,
 	}
 
-	// TODO: Update Current Data
-	// current.Data[current.Index+1].W = close
-	// current.Data[current.Index+1].X = open
-	// current.Data[current.Index+1].Y = high
-	// current.Data[current.Index+1].Z = low
-
-	c.calculateEB(current, current.Index)
-
-	err = c.cleanUpEMA(3)
-	if err != nil {
-		return err
-	}
-
-	current.Data[current.Index+1].W = close
-	current.Data[current.Index+1].X = open
-	current.Data[current.Index+1].Y = high
-	current.Data[current.Index+1].Z = low
+	c.ticker[symbol].NextIndex++
+	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
 
 	err = c.calculate(symbol, current.Index+1)
 	if err != nil {
@@ -125,13 +168,6 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 	if err != nil {
 		return err
 	}
-
-	current.Data[current.Index+1].CE = current.CE
-	current.Data[current.Index+1].BR = current.BR
-	current.Data[current.Index+1].CD = current.CD
-	current.Data[current.Index+1].CC = current.CC
-
-	current.futures = true
 	return nil
 }
 
@@ -213,24 +249,18 @@ func (c *card) add(symbol string, tickerData models.Ticker) error {
 	current.Index++
 	current.Data = append(current.Data, tickerData)
 
-	if current.Data[current.Index].Date == "10-12-24" {
-		c.ticker[symbol].futures = true
-	}
 	err = c.calculate(symbol, current.Index)
 	if err != nil {
 		return err
 	}
 
-	if current.Data[current.Index].Date == "10-12-24" {
-		c.ticker[symbol].futures = false
-	}
 	// Update futures
 	current.Data[current.Index].CD = current.CD
 	current.Data[current.Index].CE = current.CE
 	current.Data[current.Index].BR = current.BR
 	current.Data[current.Index].CC = current.CC
 
-	c.calculateEB(current, current.Index)
+	//c.calculateEB(current, current.Index)
 
 	return nil
 }
@@ -243,7 +273,12 @@ func (c *card) updateFutureData(symbol string) (models.Ticker, error) {
 	}
 	currentTickerData := c.ticker[symbol].Data[current.Index]
 
-	err := c.calculateCE(symbol, TOLERANCE)
+	err := c.addNextData(symbol, current.Data[current.Index].W, current.Data[current.Index].X, current.Data[current.Index].Y, current.Data[current.Index].Z)
+	if err != nil {
+		return models.Ticker{}, err
+	}
+
+	err = c.calculateCE(symbol, TOLERANCE)
 	if err != nil {
 		return models.Ticker{}, nil
 	}

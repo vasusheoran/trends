@@ -56,16 +56,6 @@ func (c *card) calculateCE(symbol string, tolerance float64) error {
 }
 
 func searchCE(c *card, symbol string, value float64, fixed ...float64) (float64, float64, error) {
-	var err error
-
-	result := c.Get(symbol)
-	if c.ticker[symbol].NextIndex == 0 {
-		err = c.addNextData(symbol, value, result[0].X, result[0].Y, result[0].Z)
-	}
-
-	if err != nil {
-		return 0.0, 0.0, err
-	}
 
 	if c.ticker[symbol].NextIndex != 3 {
 		return 0.0, 0.0, fmt.Errorf("invalid dataFunc for `%s`, remove symbol and upload the dataFunc again", symbol)
@@ -83,12 +73,12 @@ func searchCE(c *card, symbol string, value float64, fixed ...float64) (float64,
 	// updateCE day + 3
 	currentTicker.Data[currentTicker.Index+3].X = value
 
-	err = c.calculateFutureData(symbol)
+	err := c.calculateFutureData(symbol)
 	if err != nil {
 		return 0.0, 0.0, err
 	}
 
-	result = c.Get(symbol)
+	result := c.Get(symbol)
 	return result[0].BP, result[1].BP, nil
 }
 
@@ -103,42 +93,38 @@ func (c *card) calculateCC(symbol string, tolerance float64) error {
 }
 
 func searchCC(c *card, symbol string, value float64, fixed ...float64) (float64, float64, error) {
-	var err error
 
-	result := c.Get(symbol)
 	currentTicker := c.ticker[symbol]
-
-	if currentTicker.NextIndex == 0 {
-		err = c.addNextData(symbol, value, result[0].X, result[0].Y, result[0].Z)
-	}
-
-	if err != nil {
-		return 0.0, 0.0, err
-	}
-
 	if currentTicker.NextIndex != 3 {
 		return 0.0, 0.0, fmt.Errorf("invalid dataFunc for `%s`, remove symbol and upload the dataFunc again", symbol)
 	}
 
 	currentTicker.Data[currentTicker.Index+1].BR = fixed[0]
-	currentTicker.Data[currentTicker.Index+1].CD = fixed[2]
 	currentTicker.Data[currentTicker.Index+1].CE = fixed[1]
+	currentTicker.Data[currentTicker.Index+1].CD = fixed[2]
 
 	currentTicker.Data[currentTicker.Index+2].CE = value
 	currentTicker.Data[currentTicker.Index+2].W = value
-	currentTicker.Data[currentTicker.Index+3].W = value
 
-	currentTicker.Data[currentTicker.Index+2].CD = 2/6*(value-fixed[2]) + fixed[2]
+	currentTicker.Data[currentTicker.Index+3].W = value
+	currentTicker.Data[currentTicker.Index+3].X = value
+	currentTicker.Data[currentTicker.Index+3].Y = value
+	currentTicker.Data[currentTicker.Index+3].Z = value
+
+	currentTicker.Data[currentTicker.Index+2].CD = ((value - fixed[2]) * 2 / 6) + fixed[2]
 	currentTicker.Data[currentTicker.Index+1].W = currentTicker.Data[currentTicker.Index+2].CD
+	//currentTicker.Data[currentTicker.Index+2].CE = currentTicker.Data[currentTicker.Index+1].W
+	currentTicker.Data[currentTicker.Index+2].X = currentTicker.Data[currentTicker.Index+1].W
+	currentTicker.Data[currentTicker.Index+2].Y = currentTicker.Data[currentTicker.Index+1].W
+	currentTicker.Data[currentTicker.Index+2].Z = currentTicker.Data[currentTicker.Index+1].W
 	// updateCE day + 3
 
-	err = c.calculateFutureData(symbol)
+	err := c.calculateFutureData(symbol)
 	if err != nil {
 		return 0.0, 0.0, err
 	}
 
-	result = c.Get(symbol)
-
+	result := c.Get(symbol)
 	return result[1].BP, result[2].BP, nil
 }
 
@@ -153,23 +139,8 @@ func (c *card) calculateBR(symbol string, tolerance float64) error {
 }
 
 func searchBR(c *card, symbol string, value float64, fixed ...float64) (float64, float64, error) {
-	var err error
-
-	result := c.Get(symbol)
 
 	currentTicker := c.ticker[symbol]
-
-	if currentTicker.NextIndex == 0 {
-		err = c.addNextData(symbol, value, result[0].X, result[0].Y, result[0].Z)
-	}
-
-	if err != nil {
-		return 0.0, 0.0, err
-	}
-
-	if currentTicker.NextIndex != 3 {
-		return 0.0, 0.0, fmt.Errorf("invalid dataFunc for `%s`, remove symbol and upload the dataFunc again", symbol)
-	}
 
 	// updateCE day + 1
 	currentTicker.Data[currentTicker.Index+1].W = value
@@ -180,12 +151,12 @@ func searchBR(c *card, symbol string, value float64, fixed ...float64) (float64,
 	// updateCE day + 3
 	currentTicker.Data[currentTicker.Index+3].W = currentTicker.CE
 
-	err = c.calculateFutureData(symbol)
+	err := c.calculateFutureData(symbol)
 	if err != nil {
 		return 0.0, 0.0, err
 	}
 
-	result = c.Get(symbol)
+	result := c.Get(symbol)
 	return result[2].BP, result[1].BP, nil
 }
 
