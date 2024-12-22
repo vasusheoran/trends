@@ -1,2 +1,0 @@
-<button type=\"submit\" class=\"flex justify-center bg-white hover:opacity-50 p-3 rounded-2xl border border-black border-solid\">
-</button>
