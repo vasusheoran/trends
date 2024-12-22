@@ -72,7 +72,7 @@ func openbrowser(url string) {
 }
 
 func initServer(g *run.Group) {
-	sqlDB, err := database.NewSqlDatastore(logger, "")
+	sqlDB, err := database.NewSqlDatastore(logger, "data/gorm-1.db")
 	if err != nil {
 		panic(err)
 	}

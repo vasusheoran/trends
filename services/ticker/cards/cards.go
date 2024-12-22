@@ -11,29 +11,28 @@ import (
 const TOLERANCE = 0.001
 
 type Card interface {
-	Add(symbol, date string, close, open, high, low float64) error
+	Add(models.Ticker) error
 	Get(symbol string) []models.Ticker
-	Future(symbol string) error
+	Future(symbol string) ([]models.Ticker, error)
 	Update(symbol string, close, open, high, low float64) error
 	Remove(symbol string)
 }
 
 type card struct {
 	logger log.Logger
-	Name   string `json:"-"`
 	ticker map[string]*tickerData
 	ema    ma.ExponentialMovingAverageV2
 	ma     ma.MovingAverageV2
 }
 
-func (c *card) Future(symbol string) error {
+func (c *card) Future(symbol string) ([]models.Ticker, error) {
 	current := c.ticker[symbol]
 	current.futures = true
 
 	var err error
 	if current.NextIndex == 3 {
 		if current.Index < 100 {
-			return nil
+			return nil, nil
 		}
 
 		current.Data = current.Data[:len(current.Data)-3]
@@ -42,22 +41,22 @@ func (c *card) Future(symbol string) error {
 
 	_, err = c.updateFutureData(symbol)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = c.cleanUpEMA(3)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = c.calculate(symbol, current.Index+1)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = c.cleanUpEMA(1)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	current.Data[current.Index+1].CE = current.CE
@@ -65,7 +64,7 @@ func (c *card) Future(symbol string) error {
 	current.Data[current.Index+1].CD = current.CD
 	current.Data[current.Index+1].CC = current.CC
 
-	return nil
+	return current.Data, err
 }
 
 func (c *card) Remove(ticker string) {
@@ -83,29 +82,29 @@ type tickerData struct {
 	CD        float64
 }
 
-func (c *card) Add(symbol, date string, close, open, high, low float64) error {
-	t, err := parseDate(date)
-	if err != nil {
-		c.logger.Log("err", err.Error(), "date", date)
-	}
-
-	if _, ok := c.ticker[symbol]; !ok {
-		c.ticker[symbol] = &tickerData{
+func (c *card) Add(ticker models.Ticker) error {
+	//t, err := parseDate(date)
+	//if err != nil {
+	//	c.logger.Log("err", err.Error(), "date", date)
+	//}
+	//
+	if _, ok := c.ticker[ticker.Name]; !ok {
+		c.ticker[ticker.Name] = &tickerData{
 			Index: -1,
 			Data:  make([]models.Ticker, 0),
 		}
 	}
+	//
+	//tickerData := models.Ticker{
+	//	Date: date,
+	//	Time: t,
+	//	W:    close,
+	//	X:    open,
+	//	Y:    high,
+	//	Z:    low,
+	//}
 
-	tickerData := models.Ticker{
-		Date: date,
-		Time: t,
-		W:    close,
-		X:    open,
-		Y:    high,
-		Z:    low,
-	}
-
-	return c.add(symbol, tickerData)
+	return c.add(ticker)
 }
 
 func (c *card) Get(symbol string) []models.Ticker {
@@ -233,15 +232,15 @@ func NewCard(logger log.Logger) Card {
 
 }
 
-func (c *card) add(symbol string, tickerData models.Ticker) error {
-	current := c.ticker[symbol]
+func (c *card) add(tickerData models.Ticker) error {
+	current := c.ticker[tickerData.Name]
 
-	currentTickerData, err := c.updateFutureData(symbol)
+	currentTickerData, err := c.updateFutureData(tickerData.Name)
 	if err != nil {
 		return err
 	}
 
-	err = c.cleanUpFutureData(symbol, currentTickerData)
+	err = c.cleanUpFutureData(tickerData.Name, currentTickerData)
 	if err != nil {
 		return err
 	}
@@ -249,7 +248,7 @@ func (c *card) add(symbol string, tickerData models.Ticker) error {
 	current.Index++
 	current.Data = append(current.Data, tickerData)
 
-	err = c.calculate(symbol, current.Index)
+	err = c.calculate(tickerData.Name, current.Index)
 	if err != nil {
 		return err
 	}

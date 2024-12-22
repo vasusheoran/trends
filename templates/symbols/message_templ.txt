@@ -1,0 +1,11 @@
+<div id=\"
+\" hx-swap=\"
+\"><div class=\"row-gap-2 grid grid-cols-15 md:grid-cols-15\"><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] lg:text-2xl xl:text-1xl\" name=\"ticker-name\">
+</div><span class=\"material-symbols-outlined cursor-pointer\" hx-delete=\"
+\" hx-trigger=\"click\" hx-target=\"#dashboard\" hx-swap=\"innerHTML\">close</span></div>
+</div></div>
+<div id=\"
+\" hx-swap=\"
+\" class=\"row-gap-2 grid grid-cols-15 md:grid-cols-15\"><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] dark:text-white lg:text-2xl xl:text-1xl\">
+</div></div>
+</div>

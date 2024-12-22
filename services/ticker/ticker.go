@@ -44,25 +44,40 @@ func (t *ticker) Init(symbol string) error {
 		return nil
 	}
 
-	st, err := t.history.Read(symbol)
+	tkrs, err := t.history.Read(symbol)
 	if err != nil {
 		t.logger.Log("msg", "failed to read stock data from database for symbol `%s`", "err", err.Error())
 		return err
 	}
-	if st == nil || len(st) == 0 {
+	if tkrs == nil || len(tkrs) == 0 {
 		return fmt.Errorf("data not found for symbol `%s`", symbol)
 	}
 
-	for _, stock := range st {
-		err = t.card.Add(stock.Ticker, stock.Date, stock.Close, stock.Open, stock.High, stock.Low)
+	for _, tk := range tkrs {
+		err = t.card.Add(tk)
 		if err != nil {
-			t.logger.Log("msg", fmt.Sprintf("failed to add stock data for symbol `%s` at date `%s`", symbol, stock.Date), "err", err.Error())
+			t.logger.Log("msg", fmt.Sprintf("failed to add stock data for symbol `%s` at date `%s`", symbol, tk.Date), "err", err.Error())
 			continue
 		}
 	}
 
-	stock := st[len(st)-1]
-	return t.card.Future(stock.Ticker)
+	tickerData, err := t.card.Future(tkrs[len(tkrs)-1].Name)
+	if err != nil {
+		return err
+	}
+
+	t.logger.Log("msg", tickerData[:3])
+
+	go func() {
+		err = t.history.Write(symbol, tickerData[:len(tickerData)-3])
+		if err != nil {
+			t.logger.Log("err", err.Error(), "msg", "failed to update ticker data")
+		}
+
+		t.logger.Log("msg", "updated ticker data successfully")
+	}()
+
+	return nil
 }
 
 func (t *ticker) Remove(symbol string) {
