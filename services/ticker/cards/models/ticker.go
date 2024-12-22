@@ -8,9 +8,11 @@ import (
 type Ticker struct {
 	gorm.Model
 
-	Name string    `json:"name"`
-	Date string    `json:"date"`
-	Time time.Time `json:"parsed_date"`
+	Name       string `json:"name" gorm:"index:composite_key_index,unique;not null"`
+	ParsedDate string `json:"parsed_date" gorm:"index:composite_key_index,unique"`
+	Date       string `json:"date"`
+
+	Time time.Time
 
 	W float64 `json:"W" description:"Close"`
 	X float64 `json:"X" description:"Open"`
@@ -24,9 +26,9 @@ type Ticker struct {
 	BP float64 `json:"BP"`
 	CW float64 `json:"CW"`
 	BR float64 `json:"BR"`
-	CC float64 `json:"CC"`
 	CE float64 `json:"CE"`
-	ED float64 `json:"ED"`
+	CC float64 `json:"CC"`
+	CH float64 `json:"CH"`
 
 	E    float64 `json:"E"`
 	C    float64 `json:"C"`

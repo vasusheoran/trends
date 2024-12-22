@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 var (
@@ -25,7 +26,7 @@ var (
 func TestNewCard(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()
 
-	const ticker = "test"
+	const symbol = "test"
 
 	records, err := readInputCSV("test/input/9-12-24.csv")
 	if err != nil {
@@ -40,16 +41,27 @@ func TestNewCard(t *testing.T) {
 	cardSvc := getCardService(logger)
 
 	for _, expected := range data {
-		err = cardSvc.Add(ticker, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
+
+		ticker := models.Ticker{
+			Date: expected.Date,
+			Time: time.Now(),
+			Name: symbol,
+			W:    expected.W,
+			X:    expected.X,
+			Y:    expected.Y,
+			Z:    expected.X,
+		}
+
+		err = cardSvc.Add(ticker)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		cardSvc.Get(ticker)
+		cardSvc.Get(symbol)
 	}
 
 	for i, expectedData := range data {
-		validateResult(t, logger, i, expectedData, cardSvc.ticker[ticker].Data[i])
+		validateResult(t, logger, i, expectedData, cardSvc.ticker[symbol].Data[i])
 	}
 
 	logger.Log("CE validations", ceCount, "BR Validations", brCount)

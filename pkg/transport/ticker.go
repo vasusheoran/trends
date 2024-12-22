@@ -2,16 +2,19 @@ package transport
 
 import (
 	"context"
-	"github.com/vsheoran/trends/pkg/contracts"
-	"github.com/vsheoran/trends/templates/home"
-	"github.com/vsheoran/trends/utils"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/vsheoran/trends/pkg/contracts"
+	"github.com/vsheoran/trends/services/ticker/cards/models"
+	"github.com/vsheoran/trends/templates/home"
+	"github.com/vsheoran/trends/utils"
 )
 
-func InitTicker(key string, svc Services, w http.ResponseWriter, r *http.Request) {
-	err := svc.TickerService.Init(key)
+func InitTicker(key string, tickers []models.Ticker, svc Services, w http.ResponseWriter, r *http.Request) {
+	err := svc.TickerService.Init(key, tickers)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -19,7 +22,7 @@ func InitTicker(key string, svc Services, w http.ResponseWriter, r *http.Request
 
 	data := svc.TickerService.Get(key)
 	if data == nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("failed to get ticker data for symbol `%s`", key), http.StatusInternalServerError)
 		return
 	}
 

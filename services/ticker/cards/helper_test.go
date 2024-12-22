@@ -6,6 +6,7 @@ import (
 	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/utils"
 	"testing"
+	"time"
 )
 
 func TestCard(t *testing.T) {
@@ -31,7 +32,17 @@ func TestCard(t *testing.T) {
 		if i == 101 {
 			break
 		}
-		err = c.Add(symbol, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
+
+		ticker := models.Ticker{
+			Date: expected.Date,
+			Time: time.Now(),
+			Name: symbol,
+			W:    expected.W,
+			X:    expected.X,
+			Y:    expected.Y,
+			Z:    expected.X,
+		}
+		err = c.Add(ticker)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -61,7 +72,17 @@ func TestCard_Update(t *testing.T) {
 		if i == 101 {
 			break
 		}
-		err = c.Add(symbol, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
+
+		ticker := models.Ticker{
+			Date: expected.Date,
+			Time: time.Now(),
+			Name: symbol,
+			W:    expected.W,
+			X:    expected.X,
+			Y:    expected.Y,
+			Z:    expected.X,
+		}
+		err = c.Add(ticker)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -117,7 +138,7 @@ func TestCard_Update(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			err = c.Future(tc.input.Ticker)
+			_, err = c.Future(tc.input.Ticker)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -166,7 +187,17 @@ func TestCard_Future(t *testing.T) {
 		if i == 101 {
 			break
 		}
-		err = c.Add(symbol, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
+
+		ticker := models.Ticker{
+			Date: expected.Date,
+			Time: time.Now(),
+			Name: symbol,
+			W:    expected.W,
+			X:    expected.X,
+			Y:    expected.Y,
+			Z:    expected.X,
+		}
+		err = c.Add(ticker)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -174,14 +205,14 @@ func TestCard_Future(t *testing.T) {
 
 	//c.Add(symbol, "10-12-24", data[len(data)-1].W, data[len(data)-1].X, data[len(data)-1].Y, data[len(data)-1].Z)
 
-	err = c.Future(symbol)
+	_, err = c.Future(symbol)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	update1 := c.Get(symbol)
 
-	err = c.Future(symbol)
+	_, err = c.Future(symbol)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -293,7 +324,17 @@ func TestSearch(t *testing.T) {
 			c := getCardService(logger)
 
 			for _, expected := range data {
-				err := c.Add(symbol, expected.Date, expected.W, expected.X, expected.Y, expected.Z)
+
+				ticker := models.Ticker{
+					Date: expected.Date,
+					Time: time.Now(),
+					Name: symbol,
+					W:    expected.W,
+					X:    expected.X,
+					Y:    expected.Y,
+					Z:    expected.X,
+				}
+				err := c.Add(ticker)
 				if err != nil {
 					t.Fatal(err)
 				}

@@ -40,15 +40,15 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if r.Method == http.MethodPost {
-		var summary models.Ticker
-		err = svc.TickerService.Init(sasSymbol)
-		if err == nil {
-			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-			w.WriteHeader(http.StatusOK)
-			utils.Encode(w, IndexResponse{Summary: summary})
-		}
-	}
+	// if r.Method == http.MethodPost {
+	// 	var summary models.Ticker
+	// 	err = svc.TickerService.Init(sasSymbol)
+	// 	if err == nil {
+	// 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
+	// 		w.WriteHeader(http.StatusOK)
+	// 		utils.Encode(w, IndexResponse{Summary: summary})
+	// 	}
+	// }
 
 	if r.Method == http.MethodPut {
 		var st contracts.Stock

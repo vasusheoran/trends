@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vsheoran/trends/services/ticker/cards/models"
+
 	"github.com/vsheoran/trends/services/database"
 	"gorm.io/gorm"
 
@@ -19,9 +21,9 @@ import (
 )
 
 type History interface {
-	Read(symbol string) ([]contracts.Stock, error)
-	Write(path string, listings []contracts.Stock) error
-	UploadFile(path string, file multipart.File) error
+	Read(symbol string) ([]models.Ticker, error)
+	Write(path string, tickers []models.Ticker) error
+	ParseFile(path string, file multipart.File) ([]models.Ticker, error)
 }
 
 type historyDataIndex struct {
@@ -42,36 +44,29 @@ type history struct {
 	sqlDB  *database.SQLDatastore
 }
 
-func (s *history) UploadFile(symbol string, file multipart.File) error {
+func (s *history) ParseFile(symbol string, file multipart.File) ([]models.Ticker, error) {
 	level.Debug(s.logger).Log("msg", "Parsing uploaded file", "symbol", symbol)
 
 	csvReader := csv.NewReader(file)
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	stocks := s.parseData(symbol, records)
-	return s.Write(symbol, stocks)
+	tickers := s.parseData(symbol, records)
+	return tickers, nil
 }
 
-func (s *history) Read(symbol string) ([]contracts.Stock, error) {
-	return s.sqlDB.ReadStockByTicker(symbol, "")
-	//data, err := s.dbSvc.Read(path)
-	//if err != nil {
-	//	level.Error(s.logger).Log("msg", "failed to retieve listings", "err", err.Error())
-	//	return nil, err
-	//}
-	//
-	//return s.parseData(data), nil
+func (s *history) Read(symbol string) ([]models.Ticker, error) {
+	return s.sqlDB.ReadTickers(symbol, "", "")
 }
 
-func (s *history) Write(path string, stocks []contracts.Stock) error {
-	if stocks == nil {
+func (s *history) Write(path string, tickers []models.Ticker) error {
+	if tickers == nil {
 		return errors.New("failed to write nil history")
 	}
 
-	return s.sqlDB.SaveStocks(stocks)
+	return s.sqlDB.SaveTickers(tickers)
 }
 
 func (s *history) parseHeaders(records [][]string, index *historyDataIndex) {
@@ -98,9 +93,9 @@ func (s *history) parseHeaders(records [][]string, index *historyDataIndex) {
 	}
 }
 
-func (s *history) parseData(symbol string, records [][]string) []contracts.Stock {
+func (s *history) parseData(symbol string, records [][]string) []models.Ticker {
 	if records == nil {
-		return []contracts.Stock{}
+		return []models.Ticker{}
 	}
 
 	var index historyDataIndex
@@ -108,12 +103,12 @@ func (s *history) parseData(symbol string, records [][]string) []contracts.Stock
 
 	records = append(records[:0], records[1:]...)
 
-	var data []contracts.Stock
+	var data []models.Ticker
 	var err error
 	var t time.Time
 
 	for _, row := range records {
-		var temp contracts.Stock
+		var temp models.Ticker
 
 		temp.Date = row[index.Date]
 
@@ -125,24 +120,25 @@ func (s *history) parseData(symbol string, records [][]string) []contracts.Stock
 
 		temp.Time = t
 
-		if temp.Close, err = strconv.ParseFloat(row[index.Close], 64); err != nil {
+		if temp.W, err = strconv.ParseFloat(row[index.Close], 64); err != nil {
 			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
 			continue
 		}
-		if temp.Open, err = strconv.ParseFloat(row[index.Open], 64); err != nil {
+		if temp.X, err = strconv.ParseFloat(row[index.Open], 64); err != nil {
 			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
 			continue
 		}
-		if temp.High, err = strconv.ParseFloat(row[index.High], 64); err != nil {
+		if temp.Y, err = strconv.ParseFloat(row[index.High], 64); err != nil {
 			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
 			continue
 		}
-		if temp.Low, err = strconv.ParseFloat(row[index.Low], 64); err != nil {
+		if temp.Z, err = strconv.ParseFloat(row[index.Low], 64); err != nil {
 			level.Error(s.logger).Log("err", err.Error(), "date", temp.Date)
 			continue
 		}
 
-		temp.Ticker = symbol
+		temp.Name = symbol
+		temp.ParsedDate = temp.Time.Format("02-Jan-06")
 
 		data = append(data, temp)
 	}
