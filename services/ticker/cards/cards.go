@@ -35,7 +35,7 @@ func (c *card) Future(symbol string) ([]models.Ticker, error) {
 			return nil, nil
 		}
 
-		current.Data = current.Data[:len(current.Data)-3]
+		current.Data = current.Data[:len(current.Data)-4]
 		current.NextIndex = 0
 	}
 
@@ -44,7 +44,7 @@ func (c *card) Future(symbol string) ([]models.Ticker, error) {
 		return nil, err
 	}
 
-	err = c.cleanUpEMA(3)
+	err = c.cleanUpEMA(4)
 	if err != nil {
 		return nil, err
 	}
@@ -63,6 +63,7 @@ func (c *card) Future(symbol string) ([]models.Ticker, error) {
 	current.Data[current.Index+1].BR = current.BR
 	current.Data[current.Index+1].CD = current.CD
 	current.Data[current.Index+1].CC = current.CC
+	current.Data[current.Index+1].CH = current.CH
 
 	return current.Data, err
 }
@@ -80,29 +81,17 @@ type tickerData struct {
 	BR        float64
 	CC        float64
 	CD        float64
+	CH        float64
+	NextCE    float64
 }
 
 func (c *card) Add(ticker models.Ticker) error {
-	//t, err := parseDate(date)
-	//if err != nil {
-	//	c.logger.Log("err", err.Error(), "date", date)
-	//}
-	//
 	if _, ok := c.ticker[ticker.Name]; !ok {
 		c.ticker[ticker.Name] = &tickerData{
 			Index: -1,
 			Data:  make([]models.Ticker, 0),
 		}
 	}
-	//
-	//tickerData := models.Ticker{
-	//	Date: date,
-	//	Time: t,
-	//	W:    close,
-	//	X:    open,
-	//	Y:    high,
-	//	Z:    low,
-	//}
 
 	if len(ticker.Name) == 0 {
 		return fmt.Errorf("failed to add ticker, key not found")
@@ -112,11 +101,12 @@ func (c *card) Add(ticker models.Ticker) error {
 }
 
 func (c *card) Get(symbol string) []models.Ticker {
-	if c.ticker[symbol].NextIndex == 3 {
+	if c.ticker[symbol].NextIndex == 4 {
 		return []models.Ticker{
 			c.ticker[symbol].Data[c.ticker[symbol].Index+1],
 			c.ticker[symbol].Data[c.ticker[symbol].Index+2],
 			c.ticker[symbol].Data[c.ticker[symbol].Index+3],
+			c.ticker[symbol].Data[c.ticker[symbol].Index+4],
 		}
 
 	}
@@ -262,6 +252,7 @@ func (c *card) add(tickerData models.Ticker) error {
 	current.Data[current.Index].CE = current.CE
 	current.Data[current.Index].BR = current.BR
 	current.Data[current.Index].CC = current.CC
+	current.Data[current.Index].CH = current.CH
 
 	//c.calculateEB(current, current.Index)
 
@@ -281,24 +272,34 @@ func (c *card) updateFutureData(symbol string) (models.Ticker, error) {
 		return models.Ticker{}, err
 	}
 
-	err = c.calculateCE(symbol, TOLERANCE)
+	c.ticker[symbol].CE, err = c.calculateCE(symbol, TOLERANCE, float64(current.Index), 0.0)
 	if err != nil {
-		return models.Ticker{}, nil
+		return models.Ticker{}, err
+	}
+
+	c.ticker[symbol].NextCE, err = c.calculateNextCE(symbol, TOLERANCE, float64(current.Index+1), 1.0)
+	if err != nil {
+		return models.Ticker{}, err
 	}
 
 	err = c.calculateBR(symbol, TOLERANCE)
 	if err != nil {
-		return models.Ticker{}, nil
+		return models.Ticker{}, err
 	}
 
 	err = c.calculateCD(symbol, current.Index)
 	if err != nil {
-		return models.Ticker{}, nil
+		return models.Ticker{}, err
 	}
 
 	err = c.calculateCC(symbol, TOLERANCE)
 	if err != nil {
-		return models.Ticker{}, nil
+		return models.Ticker{}, err
+	}
+
+	err = c.calculateCH(symbol, TOLERANCE)
+	if err != nil {
+		return models.Ticker{}, err
 	}
 
 	return currentTickerData, nil
@@ -311,12 +312,12 @@ func (c *card) cleanUpFutureData(symbol string, data models.Ticker) error {
 		return nil
 	}
 
-	err := c.cleanUpEMA(3)
+	err := c.cleanUpEMA(4)
 	if err != nil {
 		return err
 	}
 
-	current.Data = current.Data[:len(current.Data)-3]
+	current.Data = current.Data[:len(current.Data)-4]
 
 	current.NextIndex = 0
 	c.ticker[symbol].Data[current.Index] = data

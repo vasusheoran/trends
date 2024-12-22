@@ -26,9 +26,9 @@ type Ticker struct {
 	BP float64 `json:"BP"`
 	CW float64 `json:"CW"`
 	BR float64 `json:"BR"`
-	CC float64 `json:"CC"`
 	CE float64 `json:"CE"`
-	ED float64 `json:"ED"`
+	CC float64 `json:"CC"`
+	CH float64 `json:"CH"`
 
 	E    float64 `json:"E"`
 	C    float64 `json:"C"`

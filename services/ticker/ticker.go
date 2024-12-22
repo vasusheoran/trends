@@ -74,7 +74,7 @@ func (t *ticker) Init(symbol string, tickers []models.Ticker) error {
 	if isNewTicker {
 		t.logger.Log("msg", "updating data", "symbol", symbol)
 		go func() {
-			err = t.history.Write(symbol, tickerData[:len(tickerData)-3])
+			err = t.history.Write(symbol, tickerData[:len(tickerData)-4])
 			if err != nil {
 				t.logger.Log("err", err.Error(), "msg", "failed to update ticker data")
 			}
