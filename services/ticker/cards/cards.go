@@ -104,6 +104,10 @@ func (c *card) Add(ticker models.Ticker) error {
 	//	Z:    low,
 	//}
 
+	if len(ticker.Name) == 0 {
+		return fmt.Errorf("failed to add ticker, key not found")
+	}
+
 	return c.add(ticker)
 }
 

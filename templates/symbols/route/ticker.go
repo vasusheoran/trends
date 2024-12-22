@@ -3,19 +3,19 @@ package route
 import (
 	"context"
 	"fmt"
-	"github.com/go-kit/kit/log/level"
+	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"net/http"
 	"strings"
 
-	"github.com/vsheoran/trends/pkg/constants"
+	"github.com/go-kit/kit/log/level"
+
 	"github.com/vsheoran/trends/pkg/transport"
 	"github.com/vsheoran/trends/templates/upload"
-	"github.com/vsheoran/trends/utils"
 )
 
-// HTMXNewTickerInitFunc returns the template block with the newly added film, as an HTMX response
-func HTMXAddTickerInputFunc(w http.ResponseWriter, r *http.Request) {
-	logger.Log("msg", "HTMXAddTickerInputFunc")
+// TickerAddButton returns the template block with the newly added film, as an HTMX response
+func TickerAddButton(w http.ResponseWriter, r *http.Request) {
+	logger.Log("msg", "TickerAddButton")
 
 	// render component
 	component := upload.AddTickerInput()
@@ -30,9 +30,7 @@ func HTMXNewTickerInitFunc(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 	if len(key) == 0 {
-		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.Encode(w, transport.ErrorResponse{Error: "key cannot be empty"})
+		http.Error(w, "key cannot be empty", http.StatusBadRequest)
 		return
 	}
 
@@ -43,15 +41,13 @@ func HTMXNewTickerInitFunc(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	err = svc.HistoryService.UploadFile(key, file)
+	tickers, err := svc.HistoryService.ParseFile(key, file)
 	if err != nil {
-		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.Encode(w, transport.ErrorResponse{Error: fmt.Sprintf("failed to upload file: %s", err.Error())})
+		http.Error(w, fmt.Sprintf("failed to upload file: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
-	transport.InitTicker(key, svc, w, r)
+	transport.InitTicker(key, tickers, svc, w, r)
 }
 
 // HTMXNewTickerInitFunc returns the template block with the newly added film, as an HTMX response
@@ -60,5 +56,5 @@ func HTMXTickerInitFunc(w http.ResponseWriter, r *http.Request) {
 	key = strings.Trim(key, "\n")
 	logger.Log("msg", "HTMXNewTickerInitFunc", "path", r.URL.Path, "method", r.Method, "key", key)
 
-	transport.InitTicker(key, svc, w, r)
+	transport.InitTicker(key, []models.Ticker{}, svc, w, r)
 }

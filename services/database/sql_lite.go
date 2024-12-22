@@ -3,8 +3,9 @@ package database
 import (
 	"errors"
 	"fmt"
-	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"strings"
+
+	"github.com/vsheoran/trends/services/ticker/cards/models"
 
 	//"database/sql"
 	"os"
@@ -179,7 +180,7 @@ func NewSqlDatastore(logger log.Logger, dbPath string) (*SQLDatastore, error) {
 	}
 
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		CreateBatchSize: 20,
+		CreateBatchSize: 50,
 	})
 	if err != nil {
 		return nil, err

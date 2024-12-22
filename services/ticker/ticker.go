@@ -10,7 +10,7 @@ import (
 )
 
 type Ticker interface {
-	Init(symbol string) error
+	Init(symbol string, tickers []models.Ticker) error
 	Update(symbol string, close, open, high, low float64, broadcast chan string) error
 	Remove(symbol string)
 	Get(symbol string) map[string]models.Ticker
@@ -39,43 +39,49 @@ func (t *ticker) Get(symbol string) map[string]models.Ticker {
 	return t.summary
 }
 
-func (t *ticker) Init(symbol string) error {
-	if _, ok := t.summary[symbol]; ok {
-		return nil
+func (t *ticker) Init(symbol string, tickers []models.Ticker) error {
+	var err error
+	isNewTicker := true
+	if len(tickers) == 0 {
+		isNewTicker = false
+		tickers, err = t.history.Read(symbol)
 	}
 
-	tkrs, err := t.history.Read(symbol)
 	if err != nil {
-		t.logger.Log("msg", "failed to read stock data from database for symbol `%s`", "err", err.Error())
 		return err
 	}
-	if tkrs == nil || len(tkrs) == 0 {
+
+	if len(tickers) == 0 {
 		return fmt.Errorf("data not found for symbol `%s`", symbol)
 	}
 
-	for _, tk := range tkrs {
-		err = t.card.Add(tk)
+	t.logger.Log("msg", "removing symbol if exist", "symbol", symbol)
+	t.card.Remove(symbol)
+
+	for _, tk := range tickers {
+		err := t.card.Add(tk)
 		if err != nil {
 			t.logger.Log("msg", fmt.Sprintf("failed to add stock data for symbol `%s` at date `%s`", symbol, tk.Date), "err", err.Error())
 			continue
 		}
 	}
 
-	tickerData, err := t.card.Future(tkrs[len(tkrs)-1].Name)
+	tickerData, err := t.card.Future(tickers[len(tickers)-1].Name)
 	if err != nil {
 		return err
 	}
 
-	t.logger.Log("msg", tickerData[:3])
+	if isNewTicker {
+		t.logger.Log("msg", "updating data", "symbol", symbol)
+		go func() {
+			err = t.history.Write(symbol, tickerData[:len(tickerData)-3])
+			if err != nil {
+				t.logger.Log("err", err.Error(), "msg", "failed to update ticker data")
+			}
 
-	go func() {
-		err = t.history.Write(symbol, tickerData[:len(tickerData)-3])
-		if err != nil {
-			t.logger.Log("err", err.Error(), "msg", "failed to update ticker data")
-		}
-
-		t.logger.Log("msg", "updated ticker data successfully")
-	}()
+			t.logger.Log("msg", "updated ticker data successfully")
+		}()
+	}
 
 	return nil
 }

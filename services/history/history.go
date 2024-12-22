@@ -4,11 +4,12 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"mime/multipart"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/vsheoran/trends/services/ticker/cards/models"
 
 	"github.com/vsheoran/trends/services/database"
 	"gorm.io/gorm"
@@ -22,7 +23,7 @@ import (
 type History interface {
 	Read(symbol string) ([]models.Ticker, error)
 	Write(path string, tickers []models.Ticker) error
-	UploadFile(path string, file multipart.File) error
+	ParseFile(path string, file multipart.File) ([]models.Ticker, error)
 }
 
 type historyDataIndex struct {
@@ -43,17 +44,17 @@ type history struct {
 	sqlDB  *database.SQLDatastore
 }
 
-func (s *history) UploadFile(symbol string, file multipart.File) error {
+func (s *history) ParseFile(symbol string, file multipart.File) ([]models.Ticker, error) {
 	level.Debug(s.logger).Log("msg", "Parsing uploaded file", "symbol", symbol)
 
 	csvReader := csv.NewReader(file)
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	tickers := s.parseData(symbol, records)
-	return s.Write(symbol, tickers)
+	return tickers, nil
 }
 
 func (s *history) Read(symbol string) ([]models.Ticker, error) {
