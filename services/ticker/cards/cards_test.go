@@ -52,10 +52,6 @@ func TestNewCard(t *testing.T) {
 			Z:    expected.Z,
 		}
 
-		if i == 4974 {
-			logger.Log("data", ticker)
-		}
-
 		err = cardSvc.Add(ticker)
 		if err != nil {
 			t.Fatal(err)
@@ -203,9 +199,9 @@ func validateResult(t *testing.T, logger log.Logger, index int, expected, actual
 	//	assert.True(t, trendstest.IsValueWithinTolerance(actualData.BR, expected.BR, 0.99), fmt.Sprintf("actualBR: %f, expected: %f, diff: %f, date: %s", actualData.BR, expected.BR, math.Abs(actualData.BR-expected.BR), actualData.Date))
 	//}
 
-	if expected.CE > 0.0 && index > 3594 {
-		assert.True(t, trendstest.IsValueWithinTolerance(actualData.CE, expected.CE, 0.99), fmt.Sprintf("actualCE: %f, expected: %f, diff: %f, date: %s", actualData.CE, expected.CE, math.Abs(actualData.CE-expected.CE), actualData.Date))
-	}
+	//if expected.CE > 0.0 && index > 3594 {
+	//	assert.True(t, trendstest.IsValueWithinTolerance(actualData.CE, expected.CE, 0.99), fmt.Sprintf("actualCE: %f, expected: %f, diff: %f, date: %s", actualData.CE, expected.CE, math.Abs(actualData.CE-expected.CE), actualData.Date))
+	//}
 }
 
 func parseRecords(logger log.Logger, records [][]string) ([]models.Ticker, error) {

@@ -66,7 +66,8 @@ func (t *ticker) Init(symbol string, tickers []models.Ticker) error {
 		}
 	}
 
-	tickerData, err := t.card.Future(tickers[len(tickers)-1])
+	tkr := tickers[len(tickers)-1]
+	err = t.card.Update(tkr.Name, tkr.Y, tkr.Y, tkr.Y, tkr.Y)
 	if err != nil {
 		return err
 	}
@@ -74,7 +75,7 @@ func (t *ticker) Init(symbol string, tickers []models.Ticker) error {
 	if isNewTicker {
 		t.logger.Log("msg", "updating data", "symbol", symbol)
 		go func() {
-			err = t.history.Write(symbol, tickerData[:len(tickerData)-4])
+			err = t.history.Write(symbol, t.card.GetAllTickerData(symbol))
 			if err != nil {
 				t.logger.Log("err", err.Error(), "msg", "failed to update ticker data")
 			}

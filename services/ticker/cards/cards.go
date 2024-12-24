@@ -13,16 +13,26 @@ const TOLERANCE = 0.001
 type Card interface {
 	Add(models.Ticker) error
 	Get(symbol string) []models.Ticker
+	GetAllTickerData(symbol string) []models.Ticker
 	Future(ticker models.Ticker) ([]models.Ticker, error)
 	Update(symbol string, close, open, high, low float64) error
 	Remove(symbol string)
 }
 
 type card struct {
-	logger log.Logger
-	ticker map[string]*tickerData
-	ema    ma.ExponentialMovingAverageV2
-	ma     ma.MovingAverageV2
+	logger          log.Logger
+	ticker          map[string]*tickerData
+	ema             ma.ExponentialMovingAverageV2
+	ma              ma.MovingAverageV2
+	forceFutureCalc bool
+}
+
+func (c *card) GetAllTickerData(symbol string) []models.Ticker {
+	if current, ok := c.ticker[symbol]; ok {
+		return current.Data
+	}
+
+	return []models.Ticker{}
 }
 
 func (c *card) Future(ticker models.Ticker) ([]models.Ticker, error) {
@@ -45,11 +55,6 @@ func (c *card) Future(ticker models.Ticker) ([]models.Ticker, error) {
 	}
 
 	err = c.cleanUpEMA(4)
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.ema.Remove("CD5", 1)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +152,11 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 		CH:   current.CH,
 	}
 
-	prevY := current.Data[current.Index+1].Y
+	recalculateCH := false
+	if current.NextIndex == 0 || current.Data[current.Index+1].Y < ticker.Y {
+		recalculateCH = true
+	}
+
 	if current.NextIndex > 0 {
 		if current.Index < 100 {
 			return nil
@@ -162,18 +171,30 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 		current.NextIndex = 0
 	}
 
-	err = c.addNextData(ticker.Name, ticker.W, ticker.X, ticker.Y, ticker.Z)
-	if err != nil {
-		return err
+	if c.forceFutureCalc || recalculateCH {
+		currentTickerData, err := c.updateFutureData(ticker)
+		if err != nil {
+			return err
+		}
+
+		err = c.cleanUpFutureData(ticker.Name, currentTickerData)
+		if err != nil {
+			return err
+		}
+
+		err = c.ema.Remove("CD5", 1)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = c.calculateCH(ticker.Name, TOLERANCE,
-		c.ticker[ticker.Name].BR, c.ticker[ticker.Name].CE, c.ticker[ticker.Name].CD, c.ticker[ticker.Name].NextCE,
-		ticker.W, ticker.X, ticker.Y, ticker.Z,
-	)
-	if err != nil {
-		return err
-	}
+	//err = c.ema.Remove("BN21", indexFromEnd)
+	//if err != nil {
+	//	return err
+	//}
+
+	//	 CD5
+	//}
 
 	c.ticker[symbol].NextIndex++
 	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
@@ -183,7 +204,7 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 		return err
 	}
 
-	if high > prevY {
+	if c.forceFutureCalc || recalculateCH {
 		current.Data[current.Index+1].CD = current.CD
 		current.Data[current.Index+1].CE = current.CE
 		current.Data[current.Index+1].BR = current.BR
