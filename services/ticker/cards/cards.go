@@ -14,7 +14,6 @@ type Card interface {
 	Add(models.Ticker) error
 	Get(symbol string) []models.Ticker
 	GetAllTickerData(symbol string) []models.Ticker
-	Future(ticker models.Ticker) ([]models.Ticker, error)
 	Update(symbol string, close, open, high, low float64) error
 	Remove(symbol string)
 }
@@ -33,49 +32,6 @@ func (c *card) GetAllTickerData(symbol string) []models.Ticker {
 	}
 
 	return []models.Ticker{}
-}
-
-func (c *card) Future(ticker models.Ticker) ([]models.Ticker, error) {
-	current := c.ticker[ticker.Name]
-	current.futures = true
-
-	var err error
-	if current.NextIndex > 0 {
-		if current.Index < 100 {
-			return nil, nil
-		}
-
-		current.Data = current.Data[:len(current.Data)-current.NextIndex]
-		current.NextIndex = 0
-	}
-
-	_, err = c.updateFutureData(ticker)
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.cleanUpEMA(4)
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.calculate(ticker.Name, current.Index+1)
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.cleanUpEMA(1)
-	if err != nil {
-		return nil, err
-	}
-
-	current.Data[current.Index+1].CE = current.CE
-	current.Data[current.Index+1].BR = current.BR
-	current.Data[current.Index+1].CD = current.CD
-	current.Data[current.Index+1].CC = current.CC
-	current.Data[current.Index+1].CH = current.CH
-
-	return current.Data, err
 }
 
 func (c *card) Remove(ticker string) {

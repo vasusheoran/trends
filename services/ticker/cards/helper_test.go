@@ -161,62 +161,6 @@ func TestCard_Update(t *testing.T) {
 
 }
 
-func TestCard_Future(t *testing.T) {
-	logger := utils.InitializeDefaultLogger()
-
-	const symbol = "test"
-
-	records, err := readInputCSV("test/input/9-12-24.csv")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	data, err := parseRecords(logger, records)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	c := getCardService(logger)
-	i := 0
-	expected := models.Ticker{}
-	for i, expected = range data {
-		if i == 101 {
-			break
-		}
-		expected.Name = symbol
-		err = c.Add(expected)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	//c.Add(symbol, "10-12-24", data[len(data)-1].W, data[len(data)-1].X, data[len(data)-1].Y, data[len(data)-1].Z)
-
-	expected.Name = symbol
-	_, err = c.Future(expected)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	update1 := c.Get(symbol)
-
-	_, err = c.Future(expected)
-	if err != nil {
-		t.Fatal(err)
-	}
-	update2 := c.Get(symbol)
-
-	_, err = c.Future(expected)
-	if err != nil {
-		t.Fatal(err)
-	}
-	update3 := c.Get(symbol)
-
-	validateResult(t, logger, 0, update1[0], update2[0])
-
-	assert.Equal(t, update1[0].CH, update3[0].CH)
-}
-
 func TestSearch(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()
 
