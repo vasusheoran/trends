@@ -60,10 +60,10 @@ func (c *card) calculateCE(symbol string, tolerance float64, fixed ...float64) (
 }
 
 func (c *card) calculateNextCE(symbol string, tolerance float64, fixed ...float64) (float64, error) {
-	c.ticker[symbol].Data[c.ticker[symbol].Index+1].W = c.ticker[symbol].Data[c.ticker[symbol].Index].Y
-	c.ticker[symbol].Data[c.ticker[symbol].Index+1].X = c.ticker[symbol].Data[c.ticker[symbol].Index].Y
-	c.ticker[symbol].Data[c.ticker[symbol].Index+1].Y = c.ticker[symbol].Data[c.ticker[symbol].Index].Y
-	c.ticker[symbol].Data[c.ticker[symbol].Index+1].Z = c.ticker[symbol].Data[c.ticker[symbol].Index].Y
+	c.ticker[symbol].Data[c.ticker[symbol].Index+1].W = fixed[4]
+	c.ticker[symbol].Data[c.ticker[symbol].Index+1].X = fixed[3]
+	c.ticker[symbol].Data[c.ticker[symbol].Index+1].Y = fixed[4]
+	c.ticker[symbol].Data[c.ticker[symbol].Index+1].Z = fixed[5]
 	ce, err := search(searchCE, c, symbol, tolerance, fixed...)
 	if err != nil {
 		return 0.0, err
@@ -87,10 +87,14 @@ func searchCE(c *card, symbol string, value float64, fixed ...float64) (float64,
 
 	// updateCE day + 2
 	currentTicker.Data[idx+2].W = value
-	currentTicker.Data[idx+2].X = value
 
-	// updateCE day + 3
-	currentTicker.Data[idx+3].X = value
+	currentTicker.Data[idx+1].X = fixed[3]
+	currentTicker.Data[idx+1].Y = fixed[4]
+	currentTicker.Data[idx+1].Z = fixed[5]
+
+	currentTicker.Data[idx+2].X = fixed[3]
+	currentTicker.Data[idx+2].Y = fixed[4]
+	currentTicker.Data[idx+2].Z = fixed[5]
 
 	err := c.calculateFutureData(symbol)
 	if err != nil {
@@ -101,8 +105,8 @@ func searchCE(c *card, symbol string, value float64, fixed ...float64) (float64,
 	return result[low].BP, result[low+1].BP, nil
 }
 
-func (c *card) calculateCH(symbol string, tolerance float64) error {
-	_, err := search(searchCH, c, symbol, tolerance, c.ticker[symbol].BR, c.ticker[symbol].CE, c.ticker[symbol].CD, c.ticker[symbol].NextCE)
+func (c *card) calculateCH(symbol string, tolerance float64, fixed ...float64) error {
+	_, err := search(searchCH, c, symbol, tolerance, fixed...)
 	if err != nil {
 		return err
 	}
@@ -118,10 +122,10 @@ func searchCH(c *card, symbol string, value float64, fixed ...float64) (float64,
 		return 0.0, 0.0, fmt.Errorf("invalid dataFunc for `%s`, remove symbol and upload the dataFunc again", symbol)
 	}
 
-	currentTicker.Data[currentTicker.Index+1].W = currentTicker.Data[currentTicker.Index].Y
-	currentTicker.Data[currentTicker.Index+1].X = currentTicker.Data[currentTicker.Index].Y
-	currentTicker.Data[currentTicker.Index+1].Y = currentTicker.Data[currentTicker.Index].Y
-	currentTicker.Data[currentTicker.Index+1].Z = currentTicker.Data[currentTicker.Index].Y
+	currentTicker.Data[currentTicker.Index+1].W = fixed[6]
+	currentTicker.Data[currentTicker.Index+1].X = fixed[5]
+	currentTicker.Data[currentTicker.Index+1].Y = fixed[6]
+	currentTicker.Data[currentTicker.Index+1].Z = fixed[7]
 
 	currentTicker.Data[currentTicker.Index+2].X = currentTicker.Data[currentTicker.Index].Y
 	currentTicker.Data[currentTicker.Index+2].Y = currentTicker.Data[currentTicker.Index].Y
@@ -151,7 +155,6 @@ func searchCH(c *card, symbol string, value float64, fixed ...float64) (float64,
 	//currentTicker.Data[currentTicker.Index+2].CE = currentTicker.Data[currentTicker.Index+1].W
 
 	// updateCE day + 3
-
 	err := c.calculateFutureData(symbol)
 	if err != nil {
 		return 0.0, 0.0, err
@@ -207,8 +210,8 @@ func searchCC(c *card, symbol string, value float64, fixed ...float64) (float64,
 	return result[1].BP, result[2].BP, nil
 }
 
-func (c *card) calculateBR(symbol string, tolerance float64) error {
-	br, err := search(searchBR, c, symbol, tolerance)
+func (c *card) calculateBR(symbol string, tolerance float64, fixed ...float64) error {
+	br, err := search(searchBR, c, symbol, tolerance, fixed...)
 	if err != nil {
 		return err
 	}
@@ -225,10 +228,10 @@ func searchBR(c *card, symbol string, value float64, fixed ...float64) (float64,
 	currentTicker.Data[currentTicker.Index+1].W = value
 
 	// updateCE day + 2
-	currentTicker.Data[currentTicker.Index+2].W = currentTicker.CE
+	currentTicker.Data[currentTicker.Index+2].W = fixed[4]
 
 	// updateCE day + 3
-	currentTicker.Data[currentTicker.Index+3].W = currentTicker.CE
+	currentTicker.Data[currentTicker.Index+3].W = fixed[4]
 
 	err := c.calculateFutureData(symbol)
 	if err != nil {

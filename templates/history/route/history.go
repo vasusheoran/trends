@@ -36,7 +36,7 @@ func HistoryDataHandler(w http.ResponseWriter, r *http.Request) {
 		offset = 0
 	}
 
-	tickers, err := svc.SQLDatabaseService.PaginateTickers(symbol, pattern, offset, database.LIMIT, database.ORDER_DESC)
+	tickers, err := svc.SQLDatabaseService.PaginateTickers(symbol, pattern, offset, database.LIMIT, "")
 	if err != nil {
 		logger.Log("err", err)
 		return

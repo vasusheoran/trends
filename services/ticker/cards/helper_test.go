@@ -2,7 +2,6 @@ package cards
 
 import (
 	"github.com/stretchr/testify/assert"
-	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/utils"
 	"testing"
@@ -90,18 +89,18 @@ func TestCard_Update(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		input    contracts.Stock
+		input    models.Ticker
 		expected models.Ticker
 	}{
 		{
 			name: "first update",
-			input: contracts.Stock{
-				Ticker: symbol,
-				Date:   "9-Dec-2024",
-				Close:  24758,
-				Open:   24677.80,
-				High:   24677.80,
-				Low:    24677.80,
+			input: models.Ticker{
+				Name: symbol,
+				Date: "9-Dec-2024",
+				W:    24758,
+				X:    24677.80,
+				Y:    24677.80,
+				Z:    24677.80,
 			},
 			expected: models.Ticker{
 				Name: symbol,
@@ -119,7 +118,6 @@ func TestCard_Update(t *testing.T) {
 				BR:   0,
 				CC:   0,
 				CE:   0,
-				ED:   0,
 				E:    0,
 				C:    0,
 				MinC: 0,
@@ -138,24 +136,24 @@ func TestCard_Update(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			_, err = c.Future(tc.input.Ticker)
+			_, err = c.Future(tc.input)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			err = c.Update(tc.input.Ticker, tc.input.Close, tc.input.Open, tc.input.High, tc.input.Low)
+			err = c.Update(tc.input.Name, tc.input.W, tc.input.X, tc.input.Y, tc.input.Z)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			result1 := c.Get(tc.input.Ticker)
+			result1 := c.Get(tc.input.Name)
 
-			err = c.Update(tc.input.Ticker, tc.input.Close, tc.input.Open, tc.input.High, tc.input.Low)
+			err = c.Update(tc.input.Name, tc.input.W, tc.input.X, tc.input.Y, tc.input.Z)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			result2 := c.Get(tc.input.Ticker)
+			result2 := c.Get(tc.input.Name)
 
 			validateResult(t, logger, 0, result1[0], result2[0])
 			validateResult(t, logger, 0, tc.expected, result2[0])
@@ -205,14 +203,14 @@ func TestCard_Future(t *testing.T) {
 
 	//c.Add(symbol, "10-12-24", data[len(data)-1].W, data[len(data)-1].X, data[len(data)-1].Y, data[len(data)-1].Z)
 
-	_, err = c.Future(symbol)
+	_, err = c.Future(data[len(data)-1])
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	update1 := c.Get(symbol)
 
-	_, err = c.Future(symbol)
+	_, err = c.Future(data[len(data)-1])
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -303,7 +301,6 @@ func TestSearch(t *testing.T) {
 				BN: 24292.681018946965,
 				BP: 281.9547347395819,
 				CW: 59.419874807143714,
-				ED: 0,
 				E:  62.1279070214002,
 				C:  0,
 				D:  90.97144081485827,

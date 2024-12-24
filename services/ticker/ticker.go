@@ -66,7 +66,7 @@ func (t *ticker) Init(symbol string, tickers []models.Ticker) error {
 		}
 	}
 
-	tickerData, err := t.card.Future(tickers[len(tickers)-1].Name)
+	tickerData, err := t.card.Future(tickers[len(tickers)-1])
 	if err != nil {
 		return err
 	}
