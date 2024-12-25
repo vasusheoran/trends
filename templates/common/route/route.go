@@ -32,6 +32,6 @@ func HandleCommonSelectClose(w http.ResponseWriter, r *http.Request) {
 		utils.Encode(w, transport.ErrorResponse{Error: "no ticker data found"})
 		return
 	}
-	component := home.Home(contracts.HTMXData{SummaryMap: data})
+	component := home.Dashboard(contracts.HTMXData{SummaryMap: data})
 	component.Render(context.Background(), w)
 }

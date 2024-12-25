@@ -5,6 +5,13 @@ import (
 	"github.com/vsheoran/trends/templates/home"
 )
 
+templ Index(data contracts.HTMXData) {
+	<html>
+		@Head()
+		@Body(data)
+	</html>
+}
+
 templ Head() {
 	<head>
 		<meta charset="utf-8"/>
@@ -29,19 +36,12 @@ templ Body(data contracts.HTMXData) {
 		<div class="w-screen flex flex-col justify-center items-center relative dark:bg-slate-700">
 			<div class="h-screen w-screen justify-center items-center relative">
 				<div id="container">
-					@home.Buttons()
+					@NavBar()
 				</div>
 				<div id="dashboard" class="text-gray-900 dark:text-white">
-					@home.Home(data)
+					@home.Dashboard(data)
 				</div>
 			</div>
 		</div>
 	</body>
-}
-
-templ Index(data contracts.HTMXData) {
-	<html>
-		@Head()
-		@Body(data)
-	</html>
 }

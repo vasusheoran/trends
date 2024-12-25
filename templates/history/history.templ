@@ -1,6 +1,9 @@
 package history
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/vsheoran/trends/services/ticker/cards/models"
+)
 
 templ HistoryView(symbol string) {
 	<div id="history-section">
@@ -58,4 +61,26 @@ templ HistoryView(symbol string) {
 			</table>
 		</div>
 	</div>
+}
+
+templ HistoryData(tickers []models.Ticker, symbol, pattern string, offset int) {
+	for _, tkr := range tickers {
+		<tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+			<th scope="row" class="text-base px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{ tkr.Date } </th>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.W) } </td>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.X) } </td>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.Y) } </td>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.Z) } </td>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.AD) } </td>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.AR) } </td>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.AS) } </td>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.BN) } </td>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.BP) } </td>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.CW) } </td>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.BR) } </td>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.CC) } </td>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.CE) } </td>
+			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.CH) } </td>
+		</tr>
+	}
 }

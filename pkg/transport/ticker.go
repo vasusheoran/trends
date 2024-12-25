@@ -26,7 +26,7 @@ func InitTicker(key string, tickers []models.Ticker, svc Services, w http.Respon
 		return
 	}
 
-	component := home.Home(contracts.HTMXData{SummaryMap: data})
+	component := home.Dashboard(contracts.HTMXData{SummaryMap: data})
 	component.Render(context.Background(), w)
 }
 
