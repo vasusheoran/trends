@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
+	"github.com/vsheoran/trends/templates/home"
 	"net/http"
 	"strings"
 
 	"github.com/go-kit/kit/log/level"
 
 	"github.com/vsheoran/trends/pkg/transport"
-	"github.com/vsheoran/trends/templates/upload"
 )
 
 // TickerAddButton returns the template block with the newly added film, as an HTMX response
@@ -18,7 +18,8 @@ func TickerAddButton(w http.ResponseWriter, r *http.Request) {
 	logger.Log("msg", "TickerAddButton")
 
 	// render component
-	component := upload.AddTickerInput()
+	//component := upload.AddTickerInput()
+	component := home.UploadFile()
 	component.Render(context.Background(), w)
 }
 

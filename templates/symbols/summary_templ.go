@@ -45,14 +45,14 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"relative overflow-x-auto shadow-md sm:rounded-lg\"><table class=\"w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400\"><thead class=\"text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400\"><tr><th scope=\"col\" class=\"text-lg px-4 py-3\">Action</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Name </th><th scope=\"col\" class=\"text-lg px-4 py-3\">Date </th><th scope=\"col\" class=\"text-lg px-4 py-3\">W  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">X  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">Y  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">Z  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">AD  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">AR  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">AS  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">BN  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">BP  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">CW  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">BR  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">CC  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">CE  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">CH  </th></tr></thead> <tbody id=\"search-results\"><tr class=\"bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600\"><td class=\"text-xl px-4 py-4\"><button class=\"font-medium text-blue-600 dark:text-blue-500 hover:underline\" hx-delete=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<tr class=\"bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600\"><td class=\"text-xl px-4 py-4\"><button class=\"font-medium text-blue-600 dark:text-blue-500 hover:underline\" hx-delete=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("/ticker/init?ticker-name=" + id)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 48, Col: 51}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 24, Col: 48}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -65,7 +65,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(ticker.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 54, Col: 122}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 30, Col: 119}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -78,7 +78,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(ticker.Date)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 55, Col: 48}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 31, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -91,7 +91,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.W))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 56, Col: 66}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 32, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -104,7 +104,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.X))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 57, Col: 81}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 33, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -117,7 +117,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.Y))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 58, Col: 81}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 34, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -130,7 +130,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.Z))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 59, Col: 81}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 35, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -143,7 +143,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.AD))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 60, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 36, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -156,7 +156,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.AR))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 61, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 37, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
@@ -169,7 +169,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.AS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 62, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 38, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
@@ -182,7 +182,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.BN))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 63, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 39, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
@@ -195,7 +195,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var13 string
 		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.BP))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 64, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 40, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
@@ -208,7 +208,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.CW))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 65, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 41, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
@@ -221,7 +221,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.BR))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 66, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 42, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
@@ -234,7 +234,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var16 string
 		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.CC))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 67, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 43, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 		if templ_7745c5c3_Err != nil {
@@ -247,7 +247,7 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.CE))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 68, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 44, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -260,13 +260,13 @@ func Summary(id string, ticker models.Ticker) templ.Component {
 		var templ_7745c5c3_Var18 string
 		templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.CH))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 69, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/symbols/summary.templ`, Line: 45, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</td></tr></tbody></table></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</td></tr>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

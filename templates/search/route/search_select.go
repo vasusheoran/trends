@@ -2,7 +2,7 @@ package route
 
 import (
 	"context"
-	"github.com/vsheoran/trends/templates/common"
+	"github.com/vsheoran/trends/templates/home"
 	"net/http"
 )
 
@@ -15,6 +15,7 @@ func HTMXSearchIndexFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component := common.IndexSelectOption(listings, "/ticker/init", "/select/close", http.MethodGet)
+	component := home.SearchSelect(listings)
+	//component := common.IndexSelectOption(listings, "/ticker/init", "/select/close", http.MethodGet)
 	component.Render(context.Background(), w)
 }

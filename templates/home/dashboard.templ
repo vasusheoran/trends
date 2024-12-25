@@ -3,33 +3,212 @@ package home
 import (
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/templates/common"
-	"github.com/vsheoran/trends/templates/history"
-	"github.com/vsheoran/trends/templates/search"
 	"github.com/vsheoran/trends/templates/symbols"
 )
 
 templ Home(data contracts.HTMXData) {
-	@Buttons()
 	@SummaryData(data)
 }
 
 templ Buttons() {
-	@symbols.AddSymbolButton()
-	@symbols.RemoveSymbolButton()
-	@search.SearchButton()
-	@history.HistoryButton()
+	<nav class="border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+		<div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+			<div class="flex items-center space-x-3 rtl:space-x-reverse">
+				<img src="https://flowbite.com/docs/images/logo.svg" class="h-8" alt="Flowbite Logo"/>
+				<span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Trends</span>
+			</div>
+			<div class="hidden w-full md:block md:w-auto" id="navbar-solid-bg">
+				<ul class="flex flex-col font-medium mt-4 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-transparent dark:bg-gray-800 md:dark:bg-transparent dark:border-gray-700">
+					<li>
+						<a
+							href="#"
+							class="block py-2 px-3 md:p-0 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+							aria-current="page"
+							id="add-ticker-button"
+							hx-get="/ticker/button"
+							hx-trigger="click"
+							hx-target="#dashboard"
+							hx-swap="innerHTML"
+						>Add</a>
+					</li>
+					<li>
+						<a
+							href="#"
+							class="block py-2 px-3 md:p-0 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+							id="remove-ticker-button"
+							hx-get="/ticker/remove"
+							hx-trigger="click"
+							hx-target="#dashboard"
+							hx-swap="innerHTML"
+						>Remove</a>
+					</li>
+					<li>
+						<a
+							href="#"
+							class="block py-2 px-3 md:p-0 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+							id="search-ticker-button"
+							hx-get="/search/button"
+							hx-trigger="click"
+							hx-target="#dashboard"
+							hx-swap="innerHTML"
+						>Search</a>
+					</li>
+					<li>
+						<a
+							href="#"
+							class="block py-2 px-3 md:p-0 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+							id="history-ticker-button"
+							hx-get="/history/button"
+							hx-trigger="click"
+							hx-target="#dashboard"
+							hx-swap="innerHTML"
+						>History</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	//@symbols.AddSymbolButton()
+	//@symbols.RemoveSymbolButton()
+	//@search.SearchButton()
+	//@history.HistoryButton()
+}
+
+templ RemoveSelect(data []string) {
+	<div id="index-select-ticker-section">
+		<form class="max-w-sm mx-auto mt-5">
+			<label for="remove_tickers" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select symbol to remove</label>
+			<select
+				id="remove_tickers"
+				class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+				hx-post="/ticker/remove"
+				hx-target="#dashboard"
+				hx-trigger="change"
+				name="ticker-name"
+			>
+				<option selected value="">Choose a symbol</option>
+				for _, l := range data {
+					<option value={ l }>{ l }</option>
+				}
+			</select>
+		</form>
+	</div>
+}
+
+// TODO: Change to hx-post
+templ SearchSelect(data []string) {
+	<div id="index-select-ticker-section">
+		<form class="max-w-sm mx-auto mt-5">
+			<label for="select_tickers" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select symbol to view current data</label>
+			<select
+				id="select_tickers"
+				class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+				hx-get="/ticker/init"
+				hx-target="#dashboard"
+				hx-trigger="change"
+				name="ticker-name"
+			>
+				<option selected value="">Choose a symbol</option>
+				for _, l := range data {
+					<option value={ l }>{ l }</option>
+				}
+			</select>
+		</form>
+	</div>
+}
+
+// TODO: Change to hx-post
+templ HistorySelect(data []string) {
+	<div id="index-select-ticker-section">
+		<form class="max-w-sm mx-auto mt-5">
+			<label for="history_tickers" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select symbol to view historical data</label>
+			<select
+				id="history_tickers"
+				class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+				hx-get="/history/view"
+				hx-target="#dashboard"
+				hx-trigger="change"
+				name="ticker-name"
+			>
+				<option selected value="">Choose a symbol</option>
+				for _, l := range data {
+					<option value={ l }>{ l }</option>
+				}
+			</select>
+		</form>
+	</div>
+}
+
+templ UploadFile() {
+	<form
+		class="max-w-sm mx-auto"
+		id="add-ticker-section"
+		hx-encoding="multipart/form-data"
+		hx-post="/ticker/init"
+		hx-target="#add-ticker-section"
+		hx-swap="outerHTML"
+		_="on htmx:xhr:progress(loaded, total) set #progress.value to (loaded/total)*100"
+	>
+		<div class="mb-5 mt-5">
+			<label for="ticker-name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Symbol</label>
+			<input type="text" id="ticker-name" name="ticker-name" placeholder="Enter symbol here ..." required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"/>
+		</div>
+		<div class="mb-5">
+			<div class="flex items-center justify-center w-full">
+				<label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+					<div class="flex flex-col items-center justify-center pt-5 pb-6">
+						<svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+							<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"></path>
+						</svg>
+						<p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+						<p class="text-xs text-gray-500 dark:text-gray-400">CSV</p>
+					</div>
+					<input id="dropzone-file" type="file" name="file" class="block text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"/>
+				</label>
+			</div>
+		</div>
+		<button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+		<button type="button" hx-get="/select/close" hx-trigger="click" hx-swap="outerHTML" hx-target="#add-ticker-section" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Close</button>
+	</form>
 }
 
 templ SummaryData(data contracts.HTMXData) {
-	// px-4 py-16 mx-auto md:max-w-full lg:max-w-screen-xl md:px-24 lg:px-8 lg:py-20
-	// TODO: Initialize seperate socket connection for each ticker.
 	<div id="tickers">
 		if data.Error != nil {
 			@common.Error("tickers", data.Error)
 		}
-		for k, s := range data.SummaryMap {
-			<div hx-ext="ws" ws-connect={ "/ws/ticker/" + k }>
-				@symbols.Message(k, s, data.Error)
+		if len(data.SummaryMap) > 0 {
+			<div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+				<table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+					<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+						<tr>
+							<th scope="col" class="text-lg px-4 py-3">Action</th>
+							<th scope="col" class="text-lg px-4 py-3">Name </th>
+							<th scope="col" class="text-lg px-4 py-3">Date </th>
+							<th scope="col" class="text-lg px-4 py-3">W  </th>
+							<th scope="col" class="text-lg px-4 py-3">X  </th>
+							<th scope="col" class="text-lg px-4 py-3">Y  </th>
+							<th scope="col" class="text-lg px-4 py-3">Z  </th>
+							<th scope="col" class="text-lg px-4 py-3">AD  </th>
+							<th scope="col" class="text-lg px-4 py-3">AR  </th>
+							<th scope="col" class="text-lg px-4 py-3">AS  </th>
+							<th scope="col" class="text-lg px-4 py-3">BN  </th>
+							<th scope="col" class="text-lg px-4 py-3">BP  </th>
+							<th scope="col" class="text-lg px-4 py-3">CW  </th>
+							<th scope="col" class="text-lg px-4 py-3">BR  </th>
+							<th scope="col" class="text-lg px-4 py-3">CC  </th>
+							<th scope="col" class="text-lg px-4 py-3">CE  </th>
+							<th scope="col" class="text-lg px-4 py-3">CH  </th>
+						</tr>
+					</thead>
+					<tbody id="search-results">
+						for k, s := range data.SummaryMap {
+							<div hx-ext="ws" ws-connect={ "/ws/ticker/" + k }>
+								@symbols.Message(k, s, data.Error)
+							</div>
+						}
+					</tbody>
+				</table>
 			</div>
 		}
 	</div>
