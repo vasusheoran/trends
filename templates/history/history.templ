@@ -7,9 +7,9 @@ import (
 
 templ HistoryView(tickers []contracts.TickerView) {
 	<div id="history-section">
-        <script src="/static/history.js"></script>
+        <script src="/static/js/history.js"></script>
 		<div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-			<table id="default-table" class="w-full text-sm text-left rtl:text-right text-gray-100 dark:text-gray-100">
+			<table id="default-table">
 				<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
 					<tr>
 						<th data-type="date" data-format="DD-MMM-YYYY" scope="col" class="text-lg px-6 py-3">Date</th>

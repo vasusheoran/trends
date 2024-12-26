@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Define the target architectures and operating systems
-TARGETS="darwin_amd64 darwin_arm64 linux_amd64 linux_arm64 windows_amd64 windows_arm64"
+TARGETS="windows_amd64 darwin_arm64"
 
-VERSION="0.0.2"
+VERSION="0.1.3"
 
 # Function to build for a specific target
 build_for_target() {
@@ -15,6 +15,7 @@ build_for_target() {
       name=tmp/trends_${VERSION}_${os}_${arch}
   fi
 
+  GOOS=$os GOARCH=$arch templ generate .
   GOOS=$os GOARCH=$arch go build -o $name -v cmd/main.go
 }
 
