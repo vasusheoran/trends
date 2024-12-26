@@ -5,6 +5,14 @@ import (
 	"github.com/vsheoran/trends/services/ticker/cards/models"
 )
 
+const (
+	blue   = "text-blue-500"
+	red    = "text-red-600"
+	purple = "text-purple-500"
+	green  = "text-green-500"
+	pink   = "text-pink-400"
+)
+
 type HTMXData struct {
 	SummaryMap map[string]TickerView
 }
@@ -99,25 +107,25 @@ func GetColorValue(first, second float64, trueColor, falseColor string) string {
 }
 
 func GetHighColor(cur, prev models.Ticker) string {
-	return GetColorValue(cur.Y, prev.Y, "dark:text-green-400", "dark:text-red-200")
+	return GetColorValue(cur.Y, prev.Y, green, red)
 }
 
 func GetLowColor(cur, prev models.Ticker) string {
-	return GetColorValue(cur.Z, prev.Z, "", "dark:text-red-200")
+	return GetColorValue(cur.Z, prev.Z, "", red)
 }
 
 func GetHLColor(cur models.Ticker) string {
 	if cur.W > cur.AD {
-		return "dark:text-red-200"
+		return red
 	}
 	return ""
 }
 
 func GetAVGAndEMA5Color(cur models.Ticker) string {
 	if cur.AS > cur.AR {
-		return "dark:text-purple-400"
+		return purple
 	}
-	//return "dark:text-pink-400"
+	//return pink
 	return ""
 }
 
@@ -127,9 +135,9 @@ func GetAVGColor(cur models.Ticker, color string) string {
 	}
 
 	if cur.W > cur.AR {
-		return "dark:text-purple-400"
+		return purple
 	}
-	return "dark:text-pink-400"
+	return pink
 }
 
 func GetEMA5Color(cur models.Ticker, color string) string {
@@ -138,23 +146,23 @@ func GetEMA5Color(cur models.Ticker, color string) string {
 	}
 
 	if cur.W > cur.AS {
-		return "dark:text-pink-400"
+		return pink
 	}
-	return "dark:text-red-200"
+	return red
 }
 
 func GetEMA20Color(cur models.Ticker) string {
 	if cur.W > cur.BN {
-		return "dark:text-blue-400"
+		return blue
 	}
-	return "dark:text-red-200"
+	return red
 }
 
 func GetEMAColor(cur, prev models.Ticker) string {
 	if cur.E > prev.E {
-		return "dark:text-blue-400"
+		return blue
 	}
-	return "dark:text-red-200"
+	return red
 }
 
 func GetBuyColor(cur models.Ticker, color string) string {
@@ -164,11 +172,11 @@ func GetBuyColor(cur models.Ticker, color string) string {
 
 	if cur.W > cur.BR {
 		if cur.Z > cur.BR {
-			return "dark:text-red-200"
+			return red
 		}
-		return "dark:text-purple-400"
+		return purple
 	}
-	return "dark:text-red-200"
+	return red
 }
 
 func GetSupportColor(cur models.Ticker, color string) string {
@@ -178,11 +186,11 @@ func GetSupportColor(cur models.Ticker, color string) string {
 
 	if cur.W > cur.CC {
 		if cur.Z < cur.CC {
-			return "dark:text-green-400"
+			return green
 		}
-		return "dark:text-red-200"
+		return red
 	}
-	return "dark:text-red-200"
+	return red
 }
 
 func GetSMAColor(cur models.Ticker, color string) string {
@@ -191,34 +199,34 @@ func GetSMAColor(cur models.Ticker, color string) string {
 	}
 
 	if cur.W > cur.CE {
-		return "dark:text-purple-400"
+		return purple
 	}
-	return "dark:text-red-200"
+	return red
 }
 
 func GetBuySMASupportColor(cur models.Ticker) string {
 	if cur.W > cur.BR && cur.W > cur.CE && cur.W > cur.CC {
-		return "dark:text-purple-400"
+		return purple
 	}
 	return ""
 }
 
 func GetRSIColor(cur models.Ticker) string {
 	if cur.CW < 50.00 {
-		return "dark:text-red-200"
+		return red
 	} else if cur.CW > 50.00 && cur.CW < 60.00 {
-		return "black"
+		return ""
 	} else if cur.CW > 60.00 && cur.CW < 70.00 {
-		return "dark:text-green-400"
+		return green
 	} else if cur.CW > 70.00 {
-		return "dark:text-blue-400"
+		return blue
 	}
 	return ""
 }
 
 func GetResistanceColor(cur models.Ticker) string {
 	if cur.W > cur.CH {
-		return "dark:text-blue-400"
+		return blue
 	} else if cur.Y < cur.CH {
 		return "pink"
 	}

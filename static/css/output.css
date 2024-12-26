@@ -2168,11 +2168,6 @@ input:checked + .toggle-bg {
   color: rgb(217 70 239 / var(--tw-text-opacity, 1));
 }
 
-.text-gray-100 {
-  --tw-text-opacity: 1;
-  color: rgb(243 244 246 / var(--tw-text-opacity, 1));
-}
-
 .text-gray-400 {
   --tw-text-opacity: 1;
   color: rgb(156 163 175 / var(--tw-text-opacity, 1));
@@ -2525,11 +2520,6 @@ input:checked + .toggle-bg {
   .dark\:text-blue-500 {
     --tw-text-opacity: 1;
     color: rgb(63 131 248 / var(--tw-text-opacity, 1));
-  }
-
-  .dark\:text-gray-100 {
-    --tw-text-opacity: 1;
-    color: rgb(243 244 246 / var(--tw-text-opacity, 1));
   }
 
   .dark\:text-gray-400 {
