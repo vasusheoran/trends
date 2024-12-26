@@ -2,7 +2,7 @@ package route
 
 import (
 	"context"
-	"github.com/vsheoran/trends/services/database"
+	"github.com/vsheoran/trends/pkg/contracts"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,37 +23,18 @@ func HistoryViewHandler(w http.ResponseWriter, r *http.Request) {
 		offset = 0
 	}
 
-	tickers, err := svc.SQLDatabaseService.PaginateTickers(ticker, "", offset, database.LIMIT, "")
+	tickers, err := svc.SQLDatabaseService.PaginateTickers(ticker, "", offset, 0, "")
 	if err != nil {
 		logger.Log("err", err)
 		return
 	}
 
-	component := history.HistoryView(tickers, ticker, "", offset)
+	result := []contracts.TickerView{}
+
+	for i := 0; i < len(tickers)-1; i++ {
+		result = append(result, contracts.GetTickerView(tickers[i+1], tickers[i]))
+	}
+
+	component := history.HistoryView(result)
 	component.Render(context.Background(), w)
 }
-
-//func HistoryDataHandler(w http.ResponseWriter, r *http.Request) {
-//	logger.Log("msg", "HistoryDataHandler")
-//
-//	query := r.URL.Query()
-//	symbol := query.Get("ticker-name")
-//
-//	pattern := r.FormValue("date")
-//	symbol = strings.Trim(symbol, "\n")
-//
-//	off := r.FormValue("offset")
-//	offset, err := strconv.Atoi(off)
-//	if err != nil {
-//		offset = 0
-//	}
-//
-//	tickers, err := svc.SQLDatabaseService.PaginateTickers(symbol, pattern, offset, database.LIMIT, "")
-//	if err != nil {
-//		logger.Log("err", err)
-//		return
-//	}
-//
-//	component := history.HistoryData(tickers, symbol, pattern, offset)
-//	component.Render(context.Background(), w)
-//}

@@ -20,7 +20,4 @@ func HistoryRoute(l log.Logger, router *mux.Router, services transport.Services)
 	router.Path("/history/view").
 		HandlerFunc(HistoryViewHandler).
 		Methods(http.MethodPost, http.MethodGet)
-	//router.Path("/history").
-	//	HandlerFunc(HistoryDataHandler).
-	//	Methods(http.MethodPost)
 }

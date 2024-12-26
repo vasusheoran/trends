@@ -107,7 +107,7 @@
 }
 
 /*
-! tailwindcss v3.4.15 | MIT License | https://tailwindcss.com
+! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com
 */
 
 /*
@@ -1629,10 +1629,6 @@ input:checked + .toggle-bg {
 
 .mr-4 {
   margin-right: 1rem;
-}
-
-.ms-1 {
-  margin-inline-start: 0.25rem;
 }
 
 .mt-2 {

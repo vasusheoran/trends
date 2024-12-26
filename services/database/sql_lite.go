@@ -109,14 +109,20 @@ func (s *SQLDatastore) PaginateTickers(ticker, pattern string, offset, limit int
 
 	var tickers []models.Ticker
 
-	result := s.db.Model(models.Ticker{}).
+	db := s.db.Model(models.Ticker{}).
 		Where("name = ?", ticker).
-		//Where("lower(date) LIKE ?", "%"+strings.ToLower(pattern)+"%").
 		Offset(offset).
-		Limit(limit).
-		Order(fmt.Sprintf("time %s", order)).
-		Find(&tickers)
-	//result := s.db.Model(contracts.Stock{}).Where("ticker = ?", ticker).Limit(500).Find(&stocks)
+		Order(fmt.Sprintf("time %s", order))
+
+	if len(pattern) > 0 {
+		db = db.Where("lower(date) LIKE ?", "%"+strings.ToLower(pattern)+"%")
+	}
+
+	if limit > 0 {
+		db = db.Limit(limit)
+	}
+
+	result := db.Find(&tickers)
 
 	if result.Error != nil {
 		s.logger.Log("error", result.Error)
