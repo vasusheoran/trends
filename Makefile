@@ -17,7 +17,6 @@ init:
 	go mod init ${module}
 	go install github.com/cosmtrek/air@latest
 	asdf reshim golang
-
 ## vet: vet code
 .PHONY: vet
 vet:
@@ -57,7 +56,7 @@ start: build
 ## css: build tailwindcss
 .PHONY: css
 css:
-	tailwindcss -i css/input.css -o css/output.css --minify
+	npx tailwindcss -i css/input.css -o css/output.css --minify
 
 ## css-watch: watch build tailwindcss
 .PHONY: css-watch

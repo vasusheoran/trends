@@ -13,11 +13,6 @@ import (
 	"github.com/vsheoran/trends/utils"
 )
 
-var (
-// mutex   = &sync.Mutex{}
-// connMap = map[string]*websocket.Conn{}
-)
-
 func SocketHandleFunc(w http.ResponseWriter, r *http.Request) {
 	logger.Log("msg", "SocketHandleFunc")
 
@@ -26,21 +21,7 @@ func SocketHandleFunc(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	sasSymbol := params[constants.SasSymbolKey]
 
-	// var conn *websocket.Conn
-
-	// mutex.Lock()
-	//
-	// conn, ok := connMap[sasSymbol]
-	// if !ok {
-	//   conn = &websocker.conn{}
-	//   connMap[sasSymbol] = conn
-	// }
-	//
-	// mutex.Unlock()
-	//
-
 	if r.Method == http.MethodGet {
-
 		conn := &websocket.Conn{}
 		conn, err = (&websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}).Upgrade(
 			w,

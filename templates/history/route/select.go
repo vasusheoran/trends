@@ -2,11 +2,10 @@ package route
 
 import (
 	"context"
-	"github.com/vsheoran/trends/templates/common"
+	"github.com/vsheoran/trends/templates/home"
 	"net/http"
 )
 
-// HistoryButtonHandler
 func HistoryButtonHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Log("msg", "HistoryButtonHandler")
 	listings, err := svc.SQLDatabaseService.GetDistinctTicker("")
@@ -15,6 +14,6 @@ func HistoryButtonHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component := common.IndexSelectOption(listings, "/history/view", "/select/close", http.MethodGet)
+	component := home.HistorySelect(listings)
 	component.Render(context.Background(), w)
 }

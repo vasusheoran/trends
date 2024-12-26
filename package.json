@@ -2,6 +2,26 @@
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.9",
     "@tailwindcss/typography": "^0.5.15",
-    "tailwindcss": "^3.4.15"
-  }
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17"
+  },
+  "dependencies": {
+    "flowbite": "^2.5.2",
+    "simple-datatables": "^9.2.1"
+  },
+  "name": "trends",
+  "version": "1.0.0",
+  "description": "Go based app to visualize market trends.",
+  "main": "postcss.config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "watch-css": "tailwindcss -i css/input.css -o css/output.css --watch",
+    "build-css": "tailwindcss build css/input.css -o css/output.css",
+    "css": "tailwindcss -i css/input.css -o css/output.css --minify"
+  },
+  "author": "",
+  "license": "ISC"
 }

@@ -3,8 +3,9 @@ package socket
 import (
 	"bytes"
 	"context"
+	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
-	"github.com/vsheoran/trends/templates/symbols"
+	"github.com/vsheoran/trends/templates/home"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -13,7 +14,6 @@ import (
 )
 
 const (
-	// Time allowed to write a message to the peer.
 	writeWait = 10 * time.Second
 )
 
@@ -30,26 +30,18 @@ type SocketResponse struct {
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
 	logger log.Logger
-
-	// The websocket connection.
-	conn *websocket.Conn
-
-	// Ticker client is registered with
+	conn   *websocket.Conn
 	ticker string
-
-	uuid string
-
-	// Buffered channel of outbound messages.
-	send chan models.Ticker
-
-	hub *Hub
+	uuid   string
+	send   chan contracts.TickerView
+	hub    *Hub
 }
 
 func New(logger log.Logger, conn *websocket.Conn, ticker, uuid string, hub *Hub) *Client {
 	client := &Client{
 		logger: logger,
 		conn:   conn,
-		send:   make(chan models.Ticker),
+		send:   make(chan contracts.TickerView),
 		ticker: ticker,
 		hub:    hub,
 		uuid:   uuid,
@@ -108,25 +100,9 @@ func (c *Client) writePump() {
 			}
 
 			htmlBytes := &bytes.Buffer{}
-			message := symbols.Message(summary.Name, summary, nil)
+			message := home.Message(summary.Name, summary)
 			message.Render(context.Background(), htmlBytes)
-
-			// jsonBytes, err := json.Marshal(SocketResponse{
-			// 	Summary: summary,
-			// })
-			// if err != nil {
-			// 	level.Error(c.logger).Log("msg", "failed to marshal summary", "err", err.Error())
-			// 	continue
-			// }
-			//
 			_, err = w.Write(htmlBytes.Bytes())
-
-			// Add queued chat messages to the current websocket message.
-			//n := len(c.send)
-			//for i := 0; i < n; i++ {
-			//	w.Write(newline)
-			//	w.Write(<-c.send)
-			//}
 
 			if err := w.Close(); err != nil {
 				level.Error(c.logger).Log("msg", "failed to publish message", "err", err.Error())
@@ -142,19 +118,3 @@ func (c *Client) writePump() {
 		}
 	}
 }
-
-//func (t *Client) UpdateStock(symbol string, st contracts.Stock) error {
-//	err := t.ts.Add(symbol, st)
-//	if err != nil {
-//		level.Error(t.logger).Log("msg", "failed to ch stock", "err", err.Error())
-//		return err
-//	}
-//
-//	level.Info(t.logger).Log("msg", "Stock updated successfully")
-//
-//	t.send <- symbol
-//
-//	return nil
-//}
-
-// ServeWs handles websocket requests from the peer.

@@ -1,0 +1,56 @@
+package history
+
+import (
+	"fmt"
+	"github.com/vsheoran/trends/pkg/contracts"
+)
+
+templ HistoryView(tickers []contracts.TickerView) {
+	<div id="history-section">
+        <script src="/static/history.js"></script>
+		<div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+			<table id="default-table" class="w-full text-sm text-left rtl:text-right text-gray-100 dark:text-gray-100">
+				<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+					<tr>
+						<th data-type="date" data-format="DD-MMM-YYYY" scope="col" class="text-lg px-6 py-3">Date</th>
+						<th scope="col" class="text-lg px-6 py-3">W  </th>
+						<th scope="col" class="text-lg px-6 py-3">X  </th>
+						<th scope="col" class="text-lg px-6 py-3">Y  </th>
+						<th scope="col" class="text-lg px-6 py-3">Z  </th>
+						<th scope="col" class="text-lg px-6 py-3">AD  </th>
+						<th scope="col" class="text-lg px-6 py-3">AR  </th>
+						<th scope="col" class="text-lg px-6 py-3">AS  </th>
+						<th scope="col" class="text-lg px-6 py-3">BN  </th>
+						<th scope="col" class="text-lg px-6 py-3">BP  </th>
+						<th scope="col" class="text-lg px-6 py-3">CW  </th>
+						<th scope="col" class="text-lg px-6 py-3">BR  </th>
+						<th scope="col" class="text-lg px-6 py-3">CC  </th>
+						<th scope="col" class="text-lg px-6 py-3">CE  </th>
+						<th scope="col" class="text-lg px-6 py-3">CH  </th>
+					</tr>
+				</thead>
+				<tbody id="search-results">
+					for _, tkr := range tickers {
+						<tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+							<th scope="row" class="text-base px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{ tkr.Date } </th>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.W.Color) }>{ fmt.Sprintf("%.0f", tkr.W.Value) } </td>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.X.Color) }>{ fmt.Sprintf("%.0f", tkr.X.Value) } </td>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.Y.Color) }>{ fmt.Sprintf("%.0f", tkr.Y.Value) } </td>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.Z.Color) }>{ fmt.Sprintf("%.0f", tkr.Z.Value) } </td>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.AD.Color) }>{ fmt.Sprintf("%.0f", tkr.AD.Value) } </td>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.AR.Color) }>{ fmt.Sprintf("%.0f", tkr.AR.Value) } </td>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.AS.Color) }>{ fmt.Sprintf("%.0f", tkr.AS.Value) } </td>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.BN.Color) }>{ fmt.Sprintf("%.0f", tkr.BN.Value) } </td>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.BP.Color) }>{ fmt.Sprintf("%.0f", tkr.BP.Value) } </td>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.CW.Color) }>{ fmt.Sprintf("%.0f", tkr.CW.Value) } </td>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.BR.Color) }>{ fmt.Sprintf("%.0f", tkr.BR.Value) } </td>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.CC.Color) }>{ fmt.Sprintf("%.0f", tkr.CC.Value) } </td>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.CE.Color) }>{ fmt.Sprintf("%.0f", tkr.CE.Value) } </td>
+							<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", tkr.CH.Color) }>{ fmt.Sprintf("%.0f", tkr.CH.Value) } </td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+}

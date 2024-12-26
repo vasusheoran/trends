@@ -19,16 +19,14 @@
 package http
 
 import (
+	route2 "github.com/vsheoran/trends/templates/home/route"
 	"net/http"
-
-	"github.com/vsheoran/trends/pkg/transport"
-	route4 "github.com/vsheoran/trends/templates/common/route"
-	route3 "github.com/vsheoran/trends/templates/history/route"
-	route2 "github.com/vsheoran/trends/templates/search/route"
-	"github.com/vsheoran/trends/templates/symbols/route"
 
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
+	"github.com/vsheoran/trends/pkg/transport"
+	route4 "github.com/vsheoran/trends/templates/common/route"
+	route3 "github.com/vsheoran/trends/templates/history/route"
 
 	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/utils"
@@ -50,29 +48,27 @@ func ServeHTTP(l log.Logger, router *mux.Router, services transport.Services) {
 
 	UpdateAPI := "/update/index"
 	router.Path(UpdateAPI).
-		HandlerFunc(TickerHandleFunc).
+		HandlerFunc(UpdateTickerHandler).
 		Methods(http.MethodPut)
 	router.Path(constants.IndexAPI).
-		HandlerFunc(TickerHandleFunc).
-		Methods(http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodOptions)
+		HandlerFunc(TickerHandler).
+		Methods(http.MethodGet, http.MethodOptions)
 	router.Path(constants.CardsAPI).
 		HandlerFunc(GetCardsHandler).
+		Methods(http.MethodGet, http.MethodOptions)
+	router.Path(constants.HistoryAPI).
+		HandlerFunc(GetHistoryDataHandler).
 		Methods(http.MethodGet, http.MethodOptions)
 }
 
 func SertHTTP2(l log.Logger, router *mux.Router, services transport.Services) {
 	logger = log.With(l, "method", "ServeHTTP")
 
-	router.Path("/").HandlerFunc(HTMXSummaryHandlerFunc).Methods(http.MethodGet)
+	router.Path("/").HandlerFunc(IndexHandlerFunc).Methods(http.MethodGet)
 
-	route.SymbolsRoute(l, router, services)
-	route2.SearchRoute(l, router, services)
+	route2.SymbolsRoute(l, router, services)
 	route3.HistoryRoute(l, router, services)
 	route4.CommonRoute(l, router, services)
-
-	// router.Path("/ws/ticker/{" + constants.SasSymbolKey + "}").
-	// HandlerFunc(HTMXUpdateData).
-	// Methods(http.MethodGet)
 
 	router.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
 	router.PathPrefix("/static/").

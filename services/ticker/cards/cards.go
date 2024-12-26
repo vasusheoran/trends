@@ -12,60 +12,27 @@ const TOLERANCE = 0.001
 
 type Card interface {
 	Add(models.Ticker) error
+	GetSymbol(symbol string) []models.Ticker
 	Get(symbol string) []models.Ticker
-	Future(symbol string) ([]models.Ticker, error)
+	GetAllTickerData(symbol string) []models.Ticker
 	Update(symbol string, close, open, high, low float64) error
 	Remove(symbol string)
 }
 
 type card struct {
-	logger log.Logger
-	ticker map[string]*tickerData
-	ema    ma.ExponentialMovingAverageV2
-	ma     ma.MovingAverageV2
+	logger          log.Logger
+	ticker          map[string]*tickerData
+	ema             ma.ExponentialMovingAverageV2
+	ma              ma.MovingAverageV2
+	forceFutureCalc bool
 }
 
-func (c *card) Future(symbol string) ([]models.Ticker, error) {
-	current := c.ticker[symbol]
-	current.futures = true
-
-	var err error
-	if current.NextIndex == 3 {
-		if current.Index < 100 {
-			return nil, nil
-		}
-
-		current.Data = current.Data[:len(current.Data)-4]
-		current.NextIndex = 0
+func (c *card) GetAllTickerData(symbol string) []models.Ticker {
+	if current, ok := c.ticker[symbol]; ok {
+		return current.Data
 	}
 
-	_, err = c.updateFutureData(symbol)
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.cleanUpEMA(4)
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.calculate(symbol, current.Index+1)
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.cleanUpEMA(1)
-	if err != nil {
-		return nil, err
-	}
-
-	current.Data[current.Index+1].CE = current.CE
-	current.Data[current.Index+1].BR = current.BR
-	current.Data[current.Index+1].CD = current.CD
-	current.Data[current.Index+1].CC = current.CC
-	current.Data[current.Index+1].CH = current.CH
-
-	return current.Data, err
+	return []models.Ticker{}
 }
 
 func (c *card) Remove(ticker string) {
@@ -100,6 +67,20 @@ func (c *card) Add(ticker models.Ticker) error {
 	return c.add(ticker)
 }
 
+func (c *card) GetSymbol(symbol string) []models.Ticker {
+	if c.ticker[symbol].NextIndex == 0 {
+		return []models.Ticker{
+			c.ticker[symbol].Data[c.ticker[symbol].Index],
+			c.ticker[symbol].Data[c.ticker[symbol].Index],
+		}
+	}
+
+	return []models.Ticker{
+		c.ticker[symbol].Data[c.ticker[symbol].Index],
+		c.ticker[symbol].Data[c.ticker[symbol].Index+1],
+	}
+}
+
 func (c *card) Get(symbol string) []models.Ticker {
 	if c.ticker[symbol].NextIndex == 4 {
 		return []models.Ticker{
@@ -126,14 +107,6 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 	current := c.ticker[symbol]
 
 	var err error
-	if current.NextIndex > 0 {
-		if current.Index < 100 {
-			return nil
-		}
-
-		current.Data = current.Data[:len(current.Data)-current.NextIndex]
-		current.NextIndex = 0
-	}
 
 	ticker := models.Ticker{
 		Name: symbol,
@@ -147,7 +120,52 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 		BR:   current.BR,
 		CD:   current.CD,
 		CC:   current.CC,
+		CH:   current.CH,
 	}
+
+	recalculateCH := false
+	if current.NextIndex == 0 || current.Data[current.Index+1].Y < ticker.Y {
+		recalculateCH = true
+	}
+
+	if current.NextIndex > 0 {
+		if current.Index < 100 {
+			return nil
+		}
+
+		current.Data = current.Data[:len(current.Data)-current.NextIndex]
+
+		err = c.cleanUpEMA(current.NextIndex)
+		if err != nil {
+			return err
+		}
+		current.NextIndex = 0
+	}
+
+	if c.forceFutureCalc || recalculateCH {
+		currentTickerData, err := c.updateFutureData(ticker)
+		if err != nil {
+			return err
+		}
+
+		err = c.cleanUpFutureData(ticker.Name, currentTickerData)
+		if err != nil {
+			return err
+		}
+
+		err = c.ema.Remove("CD5", 1)
+		if err != nil {
+			return err
+		}
+	}
+
+	//err = c.ema.Remove("BN21", indexFromEnd)
+	//if err != nil {
+	//	return err
+	//}
+
+	//	 CD5
+	//}
 
 	c.ticker[symbol].NextIndex++
 	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
@@ -157,10 +175,14 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 		return err
 	}
 
-	err = c.cleanUpEMA(1)
-	if err != nil {
-		return err
+	if c.forceFutureCalc || recalculateCH {
+		current.Data[current.Index+1].CD = current.CD
+		current.Data[current.Index+1].CE = current.CE
+		current.Data[current.Index+1].BR = current.BR
+		current.Data[current.Index+1].CC = current.CC
+		current.Data[current.Index+1].CH = current.CH
 	}
+
 	return nil
 }
 
@@ -226,23 +248,34 @@ func NewCard(logger log.Logger) Card {
 
 }
 
-func (c *card) add(tickerData models.Ticker) error {
-	current := c.ticker[tickerData.Name]
+func (c *card) add(ticker models.Ticker) error {
+	current := c.ticker[ticker.Name]
 
-	currentTickerData, err := c.updateFutureData(tickerData.Name)
+	nextTicker := models.Ticker{
+		Name:       ticker.Name,
+		ParsedDate: ticker.ParsedDate,
+		Date:       ticker.Date,
+		Time:       ticker.Time,
+		W:          ticker.W,
+		X:          ticker.X,
+		Y:          ticker.Y,
+		Z:          ticker.Z,
+	}
+
+	currentTickerData, err := c.updateFutureData(nextTicker)
 	if err != nil {
 		return err
 	}
 
-	err = c.cleanUpFutureData(tickerData.Name, currentTickerData)
+	err = c.cleanUpFutureData(nextTicker.Name, currentTickerData)
 	if err != nil {
 		return err
 	}
 
 	current.Index++
-	current.Data = append(current.Data, tickerData)
+	current.Data = append(current.Data, ticker)
 
-	err = c.calculate(tickerData.Name, current.Index)
+	err = c.calculate(ticker.Name, current.Index)
 	if err != nil {
 		return err
 	}
@@ -259,45 +292,56 @@ func (c *card) add(tickerData models.Ticker) error {
 	return nil
 }
 
-func (c *card) updateFutureData(symbol string) (models.Ticker, error) {
-	current := c.ticker[symbol]
+func (c *card) updateFutureData(ticker models.Ticker) (models.Ticker, error) {
+	current := c.ticker[ticker.Name]
 
 	if current.Index < 100 {
 		return models.Ticker{}, nil
 	}
-	currentTickerData := c.ticker[symbol].Data[current.Index]
+	currentTickerData := c.ticker[ticker.Name].Data[current.Index]
 
-	err := c.addNextData(symbol, current.Data[current.Index].W, current.Data[current.Index].X, current.Data[current.Index].Y, current.Data[current.Index].Z)
+	// Data is repeated here
+	//err := c.addNextData(symbol, current.Data[current.Index].W, current.Data[current.Index].X, current.Data[current.Index].Y, current.Data[current.Index].Z)
+	//if err != nil {
+	//	return models.Ticker{}, err
+	//}
+
+	// Data is repeated here
+	err := c.addNextData(ticker.Name, ticker.W, ticker.X, ticker.Y, ticker.Z)
 	if err != nil {
 		return models.Ticker{}, err
 	}
 
-	c.ticker[symbol].CE, err = c.calculateCE(symbol, TOLERANCE, float64(current.Index), 0.0)
+	c.ticker[ticker.Name].CE, err = c.calculateCE(ticker.Name, TOLERANCE, float64(current.Index), 0.0, ticker.W, ticker.X, ticker.Y, ticker.Z)
 	if err != nil {
 		return models.Ticker{}, err
 	}
 
-	c.ticker[symbol].NextCE, err = c.calculateNextCE(symbol, TOLERANCE, float64(current.Index+1), 1.0)
+	c.ticker[ticker.Name].NextCE, err = c.calculateNextCE(ticker.Name, TOLERANCE, float64(current.Index+1), 1.0, ticker.W, ticker.X, ticker.Y, ticker.Z)
 	if err != nil {
 		return models.Ticker{}, err
 	}
 
-	err = c.calculateBR(symbol, TOLERANCE)
+	err = c.calculateBR(ticker.Name, TOLERANCE, ticker.W, ticker.X, ticker.Y, ticker.Z, c.ticker[ticker.Name].CE)
 	if err != nil {
 		return models.Ticker{}, err
 	}
 
-	err = c.calculateCD(symbol, current.Index)
+	// EMA for CE. We don't need to clean this up as it calculated once per ticker.
+	err = c.calculateCD(ticker.Name, current.Index)
 	if err != nil {
 		return models.Ticker{}, err
 	}
 
-	err = c.calculateCC(symbol, TOLERANCE)
+	err = c.calculateCC(ticker.Name, TOLERANCE)
 	if err != nil {
 		return models.Ticker{}, err
 	}
 
-	err = c.calculateCH(symbol, TOLERANCE)
+	err = c.calculateCH(ticker.Name, TOLERANCE,
+		c.ticker[ticker.Name].BR, c.ticker[ticker.Name].CE, c.ticker[ticker.Name].CD, c.ticker[ticker.Name].NextCE,
+		ticker.W, ticker.X, ticker.Y, ticker.Z,
+	)
 	if err != nil {
 		return models.Ticker{}, err
 	}
