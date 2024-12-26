@@ -66,12 +66,6 @@ func (t *ticker) Init(symbol string, tickers []models.Ticker) error {
 		}
 	}
 
-	tkr := tickers[len(tickers)-1]
-	err = t.card.Update(tkr.Name, tkr.Y, tkr.Y, tkr.Y, tkr.Y)
-	if err != nil {
-		return err
-	}
-
 	if isNewTicker {
 		t.logger.Log("msg", "updating data", "symbol", symbol)
 		go func() {

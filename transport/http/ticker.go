@@ -29,27 +29,6 @@ func TickerHandleFunc(w http.ResponseWriter, r *http.Request) {
 	logger.Log("msg", "TickerHandleFunc", "path", r.URL.Path, "method", r.Method, "sasSymbol", sasSymbol)
 	var err error
 
-	if r.Method == http.MethodGet {
-		var summary models.Ticker
-		data := svc.TickerService.Get(sasSymbol)
-		summary = data[sasSymbol]
-		if err == nil {
-			w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-			w.WriteHeader(http.StatusOK)
-			utils.Encode(w, IndexResponse{Summary: summary})
-		}
-	}
-
-	// if r.Method == http.MethodPost {
-	// 	var summary models.Ticker
-	// 	err = svc.TickerService.Init(sasSymbol)
-	// 	if err == nil {
-	// 		w.Header().Add(constants.HeaderContentTypeKey, constants.HeaderContentTypeJSON)
-	// 		w.WriteHeader(http.StatusOK)
-	// 		utils.Encode(w, IndexResponse{Summary: summary})
-	// 	}
-	// }
-
 	if r.Method == http.MethodPut {
 		var st contracts.Stock
 		err = utils.Decode(r.Body, &st)
