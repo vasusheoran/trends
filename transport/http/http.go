@@ -48,20 +48,23 @@ func ServeHTTP(l log.Logger, router *mux.Router, services transport.Services) {
 
 	UpdateAPI := "/update/index"
 	router.Path(UpdateAPI).
-		HandlerFunc(TickerHandleFunc).
+		HandlerFunc(UpdateTickerHandler).
 		Methods(http.MethodPut)
 	router.Path(constants.IndexAPI).
-		HandlerFunc(TickerHandleFunc).
-		Methods(http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodOptions)
+		HandlerFunc(TickerHandler).
+		Methods(http.MethodGet, http.MethodOptions)
 	router.Path(constants.CardsAPI).
 		HandlerFunc(GetCardsHandler).
+		Methods(http.MethodGet, http.MethodOptions)
+	router.Path(constants.HistoryAPI).
+		HandlerFunc(GetHistoryDataHandler).
 		Methods(http.MethodGet, http.MethodOptions)
 }
 
 func SertHTTP2(l log.Logger, router *mux.Router, services transport.Services) {
 	logger = log.With(l, "method", "ServeHTTP")
 
-	router.Path("/").HandlerFunc(HTMXSummaryHandlerFunc).Methods(http.MethodGet)
+	router.Path("/").HandlerFunc(IndexHandlerFunc).Methods(http.MethodGet)
 
 	route2.SymbolsRoute(l, router, services)
 	route3.HistoryRoute(l, router, services)

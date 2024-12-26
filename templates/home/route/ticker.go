@@ -81,7 +81,11 @@ func CloseTickerHandler(w http.ResponseWriter, r *http.Request) {
 
 	svc.TickerService.Remove(key)
 
-	data := svc.TickerService.Get("")
+	data, err := svc.TickerService.Get("")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
 	if data == nil {
 		http.Error(w, "no ticker data found", http.StatusBadRequest)
 		return
@@ -117,16 +121,17 @@ func RemoveTickerHandlerV2(w http.ResponseWriter, r *http.Request) {
 
 	svc.TickerService.Remove(key)
 
-	err := svc.SQLDatabaseService.DeleteStocks(key)
+	err := svc.SQLDatabaseService.DeleteTicker(key)
 	if err != nil {
 		http.Error(w, "no ticker data found", http.StatusBadRequest)
-		//logger.Log("err", "failed to remove ticker", "msg", err.Error())
-		//c := common.Error("tickers", err)
-		//c.Render(context.Background(), w)
 		return
 	}
 
-	data := svc.TickerService.Get("")
+	data, err := svc.TickerService.Get("")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
 	if data == nil {
 		http.Error(w, "no ticker data found", http.StatusBadRequest)
 		return

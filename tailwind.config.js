@@ -1,7 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     darkMode: 'media',
-    content: ["./templates/**/*.{html,js,templ}"],
+    content: [
+        "./templates/**/*.{html,js,templ}",
+        "./node_modules/flowbite/**/*.js",
+        "/static/history.js"
+    ],
     theme: {
       extend: {
         gridTemplateColumns: {
@@ -14,8 +18,10 @@ module.exports = {
       },
     },
     plugins: [
-      require('@tailwindcss/forms'),
-      require('@tailwindcss/typography'),
+        require('@tailwindcss/forms'),
+        require('flowbite/plugin')({
+            datatables: true,
+        }),
     ],
   }
   

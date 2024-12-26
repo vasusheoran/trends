@@ -17,31 +17,43 @@ func HistoryViewHandler(w http.ResponseWriter, r *http.Request) {
 	ticker := query.Get("ticker-name")
 	ticker = strings.Trim(ticker, "\n")
 
-	component := history.HistoryView(ticker)
-	component.Render(context.Background(), w)
-}
-
-func HistoryDataHandler(w http.ResponseWriter, r *http.Request) {
-	logger.Log("msg", "HistoryViewHandler")
-
-	query := r.URL.Query()
-	symbol := query.Get("ticker-name")
-
-	pattern := r.FormValue("date")
-	symbol = strings.Trim(symbol, "\n")
-
 	off := r.FormValue("offset")
 	offset, err := strconv.Atoi(off)
 	if err != nil {
 		offset = 0
 	}
 
-	tickers, err := svc.SQLDatabaseService.PaginateTickers(symbol, pattern, offset, database.LIMIT, "")
+	tickers, err := svc.SQLDatabaseService.PaginateTickers(ticker, "", offset, database.LIMIT, "")
 	if err != nil {
 		logger.Log("err", err)
 		return
 	}
 
-	component := history.HistoryData(tickers, symbol, pattern, offset)
+	component := history.HistoryView(tickers, ticker, "", offset)
 	component.Render(context.Background(), w)
 }
+
+//func HistoryDataHandler(w http.ResponseWriter, r *http.Request) {
+//	logger.Log("msg", "HistoryDataHandler")
+//
+//	query := r.URL.Query()
+//	symbol := query.Get("ticker-name")
+//
+//	pattern := r.FormValue("date")
+//	symbol = strings.Trim(symbol, "\n")
+//
+//	off := r.FormValue("offset")
+//	offset, err := strconv.Atoi(off)
+//	if err != nil {
+//		offset = 0
+//	}
+//
+//	tickers, err := svc.SQLDatabaseService.PaginateTickers(symbol, pattern, offset, database.LIMIT, "")
+//	if err != nil {
+//		logger.Log("err", err)
+//		return
+//	}
+//
+//	component := history.HistoryData(tickers, symbol, pattern, offset)
+//	component.Render(context.Background(), w)
+//}

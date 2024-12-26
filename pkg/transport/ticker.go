@@ -20,7 +20,12 @@ func InitTicker(key string, tickers []models.Ticker, svc Services, w http.Respon
 		return
 	}
 
-	data := svc.TickerService.Get(key)
+	data, err := svc.TickerService.Get(key)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	if data == nil {
 		http.Error(w, fmt.Sprintf("failed to get ticker data for symbol `%s`", key), http.StatusInternalServerError)
 		return

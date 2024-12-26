@@ -2,6 +2,7 @@ package ticker
 
 import (
 	"fmt"
+	"github.com/vsheoran/trends/pkg/contracts"
 
 	"github.com/go-kit/kit/log"
 	"github.com/vsheoran/trends/services/history"
@@ -13,7 +14,7 @@ type Ticker interface {
 	Init(symbol string, tickers []models.Ticker) error
 	Update(symbol string, close, open, high, low float64, broadcast chan string) error
 	Remove(symbol string)
-	Get(symbol string) map[string]models.Ticker
+	Get(symbol string) (map[string]contracts.TickerView, error)
 }
 
 type ticker struct {
@@ -21,22 +22,22 @@ type ticker struct {
 	card    cards.Card
 	history history.History
 
-	summary map[string]models.Ticker
+	summary map[string]contracts.TickerView
 }
 
-func (t *ticker) Get(symbol string) map[string]models.Ticker {
+func (t *ticker) Get(symbol string) (map[string]contracts.TickerView, error) {
 	if len(symbol) == 0 {
-		return t.summary
+		return t.summary, nil
 	}
 
-	data := t.card.Get(symbol)
+	data := t.card.GetSymbol(symbol)
 
 	if data == nil || len(data) == 0 {
-		return nil
+		return nil, fmt.Errorf("data not found, please check historical data for symbol")
 	}
 
-	t.summary[symbol] = data[0]
-	return t.summary
+	t.summary[symbol] = contracts.GetTickerView(data[1], data[0])
+	return t.summary, nil
 }
 
 func (t *ticker) Init(symbol string, tickers []models.Ticker) error {
@@ -108,6 +109,6 @@ func NewTicker(logger log.Logger, cardService cards.Card, historyService history
 		logger:  logger,
 		card:    cardService,
 		history: historyService,
-		summary: map[string]models.Ticker{},
+		summary: map[string]contracts.TickerView{},
 	}
 }

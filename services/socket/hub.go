@@ -97,7 +97,12 @@ func (h *Hub) run() {
 				continue
 			}
 
-			data := h.tickerClient.Get(symbol)
+			data, err := h.tickerClient.Get(symbol)
+			if err != nil {
+				view := data[symbol]
+				view.Error = err
+				data[symbol] = view
+			}
 
 			for index, client := range clients {
 				select {

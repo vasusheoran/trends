@@ -6,7 +6,6 @@ import (
 	"net/http"
 )
 
-// HistoryButtonHandler
 func HistoryButtonHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Log("msg", "HistoryButtonHandler")
 	listings, err := svc.SQLDatabaseService.GetDistinctTicker("")
@@ -16,6 +15,5 @@ func HistoryButtonHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	component := home.HistorySelect(listings)
-	//component := common.IndexSelectOption(listings, "/history/view", "/select/close", http.MethodGet)
 	component.Render(context.Background(), w)
 }

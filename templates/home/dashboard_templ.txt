@@ -1,0 +1,62 @@
+<div id=\"tickers\">
+<div class=\"relative overflow-x-auto shadow-md sm:rounded-lg\"><table class=\"w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400\"><thead class=\"text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400\"><tr><th scope=\"col\" class=\"text-lg px-4 py-3\">Action</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Name </th><th scope=\"col\" class=\"text-lg px-4 py-3\">Date </th><th scope=\"col\" class=\"text-lg px-4 py-3\">W  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">X  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">Y  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">Z  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">AD  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">AR  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">AS  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">BN  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">BP  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">CW  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">BR  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">CC  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">CE  </th><th scope=\"col\" class=\"text-lg px-4 py-3\">CH  </th></tr></thead> <tbody id=\"search-results\">
+<div hx-ext=\"ws\" ws-connect=\"
+\">
+</div>
+</tbody></table></div>
+</div>
+<div id=\"
+\" hx-swap=\"
+\">
+</div>
+<div id=\"
+\" hx-swap=\"
+\" class=\"row-gap-2 grid grid-cols-15 md:grid-cols-15\"><div class=\"mb-12 text-center md:mb-0 md:border-r-2 dark:md:border-slate-500\"><div class=\"font-heading text-[2rem] dark:text-white lg:text-2xl xl:text-1xl\">
+</div></div>
+</div>
+<tr class=\"bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600\"><td class=\"text-xl px-4 py-4\"><button class=\"font-medium text-blue-600 dark:text-blue-500 hover:underline\" hx-delete=\"
+\" hx-trigger=\"click\" hx-target=\"#dashboard\" hx-swap=\"innerHTML\">Close</button></td><th scope=\"row\" class=\"text-base px-4 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white\">
+</th><td class=\"text-xl px-4 py-4\">
+</td>
+<td class=\"
+\">
+</td>
+<td class=\"
+\">
+</td>
+<td class=\"
+\">
+</td>
+<td class=\"
+\">
+</td>
+<td class=\"
+\">
+</td>
+<td class=\"
+\">
+</td>
+<td class=\"
+\">
+</td>
+<td class=\"
+\">
+</td>
+<td class=\"
+\">
+</td>
+<td class=\"
+\">
+</td>
+<td class=\"
+\">
+</td>
+<td class=\"
+\">
+</td>
+<td class=\"
+\">
+</td>
+<td class=\"
+\">
+</td></tr>

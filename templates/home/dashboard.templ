@@ -4,7 +4,6 @@ import (
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/templates/common"
 
-	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"fmt"
 )
 
@@ -25,9 +24,6 @@ templ Dashboard(data contracts.HTMXData) {
 
 templ SummaryData(data contracts.HTMXData) {
 	<div id="tickers">
-		if data.Error != nil {
-			@common.Error("tickers", data.Error)
-		}
 		if len(data.SummaryMap) > 0 {
 			<div class="relative overflow-x-auto shadow-md sm:rounded-lg">
 				<table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -55,7 +51,7 @@ templ SummaryData(data contracts.HTMXData) {
 					<tbody id="search-results">
 						for k, s := range data.SummaryMap {
 							<div hx-ext="ws" ws-connect={ "/ws/ticker/" + k }>
-								@Message(k, s, data.Error)
+								@Message(k, s)
 							</div>
 						}
 					</tbody>
@@ -65,8 +61,8 @@ templ SummaryData(data contracts.HTMXData) {
 	</div>
 }
 
-templ Message(id string, symbol models.Ticker, err error) {
-	if err == nil {
+templ Message(id string, symbol contracts.TickerView) {
+	if symbol.Error == nil {
 		<div id={ id } hx-swap={ "#" + id }>
 			@Summary(id, symbol)
 		</div>
@@ -79,13 +75,13 @@ templ Message(id string, symbol models.Ticker, err error) {
 			</div>
 			@Summary(id, symbol)
 		</div>
-		@common.Error(id, err)
+		@common.Error(id, symbol.Error)
 	} else {
-		@common.Error(id, err)
+		@common.Error(id, symbol.Error)
 	}
 }
 
-templ Summary(id string, ticker models.Ticker) {
+templ Summary(id string, ticker contracts.TickerView) {
 	<tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
 		<td class="text-xl px-4 py-4">
 			<button
@@ -98,19 +94,19 @@ templ Summary(id string, ticker models.Ticker) {
 		</td>
 		<th scope="row" class="text-base px-4 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{ ticker.Name } </th>
 		<td class="text-xl px-4 py-4">{ ticker.Date } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.W) } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.X) } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.Y) } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.Z) } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.AD) } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.AR) } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.AS) } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.BN) } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.BP) } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.CW) } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.BR) } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.CC) } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.CE) } </td>
-		<td class="text-xl px-4 py-4">{ fmt.Sprintf("%.0f", ticker.CH) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.W.Color) }>{ fmt.Sprintf("%.0f", ticker.W.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.X.Color) }>{ fmt.Sprintf("%.0f", ticker.X.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.Y.Color) }>{ fmt.Sprintf("%.0f", ticker.Y.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.Z.Color) }>{ fmt.Sprintf("%.0f", ticker.Z.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.AD.Color) }>{ fmt.Sprintf("%.0f", ticker.AD.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.AR.Color) }>{ fmt.Sprintf("%.0f", ticker.AR.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.AS.Color) }>{ fmt.Sprintf("%.0f", ticker.AS.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.BN.Color) }>{ fmt.Sprintf("%.0f", ticker.BN.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.BP.Color) }>{ fmt.Sprintf("%.0f", ticker.BP.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.CW.Color) }>{ fmt.Sprintf("%.0f", ticker.CW.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.BR.Color) }>{ fmt.Sprintf("%.0f", ticker.BR.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.CC.Color) }>{ fmt.Sprintf("%.0f", ticker.CC.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.CE.Color) }>{ fmt.Sprintf("%.0f", ticker.CE.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.CH.Color) }>{ fmt.Sprintf("%.0f", ticker.CH.Value) } </td>
 	</tr>
 }

@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"github.com/vsheoran/trends/pkg/contracts"
+	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/utils"
 	"os"
 	"testing"
@@ -15,7 +15,7 @@ func TestSQLDatastore_DeleteStocks(t *testing.T) {
 
 	const ticker = "test_ticker"
 
-	stocks := []contracts.Stock{}
+	stocks := []models.Ticker{}
 
 	for i := 10; i < 20; i++ {
 		var name string
@@ -25,12 +25,13 @@ func TestSQLDatastore_DeleteStocks(t *testing.T) {
 			name = ticker
 		}
 		stocks = append(stocks,
-			contracts.Stock{
-				Ticker: name,
-				Close:  float64(i),
-				Low:    float64(i - 1),
-				High:   float64(i + 1),
-				Date:   fmt.Sprintf("%d-May-2019", i),
+			models.Ticker{
+				Name: name,
+				W:    float64(i),
+				X:    float64(i - 1),
+				Y:    float64(i + 1),
+				Z:    float64(i - 1),
+				Date: fmt.Sprintf("%d-May-2019", i),
 			})
 	}
 
@@ -40,7 +41,7 @@ func TestSQLDatastore_DeleteStocks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = dbSvc.SaveStocks(stocks)
+	err = dbSvc.SaveTickers(stocks)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +51,7 @@ func TestSQLDatastore_DeleteStocks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = dbSvc.DeleteStocks(ticker)
+	err = dbSvc.DeleteTicker(ticker)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,7 +64,7 @@ func TestSQLDatastore_DeleteStocks(t *testing.T) {
 		"Distinct tickers size `%d`, expected value is %d", len(tickersAfterDeletion), len(expectedTickers)-1)
 
 	// Add stocks
-	err = dbSvc.SaveStocks(stocks)
+	err = dbSvc.SaveTickers(stocks)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +85,7 @@ func TestSQLDatastore_GetDistinctTicker(t *testing.T) {
 
 	const ticker = "test_ticker"
 
-	stocks := []contracts.Stock{}
+	stocks := []models.Ticker{}
 
 	for i := 10; i < 20; i++ {
 		var name string
@@ -94,12 +95,13 @@ func TestSQLDatastore_GetDistinctTicker(t *testing.T) {
 			name = ticker
 		}
 		stocks = append(stocks,
-			contracts.Stock{
-				Ticker: name,
-				Close:  float64(i),
-				Low:    float64(i - 1),
-				High:   float64(i + 1),
-				Date:   fmt.Sprintf("%d-May-2019", i),
+			models.Ticker{
+				Name: name,
+				W:    float64(i),
+				X:    float64(i - 1),
+				Y:    float64(i + 1),
+				Z:    float64(i - 1),
+				Date: fmt.Sprintf("%d-May-2019", i),
 			})
 	}
 
@@ -109,7 +111,7 @@ func TestSQLDatastore_GetDistinctTicker(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = dbSvc.SaveStocks(stocks)
+	err = dbSvc.SaveTickers(stocks)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,16 +129,17 @@ func TestSaveStocks(t *testing.T) {
 
 	const ticker = "test_ticker"
 
-	stocks := []contracts.Stock{}
+	stocks := []models.Ticker{}
 
 	for i := 10; i < 20; i++ {
 		stocks = append(stocks,
-			contracts.Stock{
-				Ticker: ticker,
-				Close:  float64(i),
-				Low:    float64(i - 1),
-				High:   float64(i + 1),
-				Date:   fmt.Sprintf("%d-May-2019", i),
+			models.Ticker{
+				Name: ticker,
+				W:    float64(i),
+				X:    float64(i - 1),
+				Y:    float64(i + 1),
+				Z:    float64(i - 1),
+				Date: fmt.Sprintf("%d-May-2019", i),
 			})
 	}
 
@@ -146,7 +149,7 @@ func TestSaveStocks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = dbSvc.SaveStocks(stocks)
+	err = dbSvc.SaveTickers(stocks)
 	if err != nil {
 		t.Fatal(err)
 	}

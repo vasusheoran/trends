@@ -15,6 +15,7 @@ const (
 const (
 	HealthAPI    = "/health"
 	CardsAPI     = "/cards/{sasSymbol}"
+	HistoryAPI   = "/history/{sasSymbol}"
 	IndexAPI     = "/index/{sasSymbol}"
 	SasSymbolKey = "sasSymbol"
 )

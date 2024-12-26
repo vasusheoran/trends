@@ -27,10 +27,10 @@ type ORDER string
 
 const (
 	ORDER_DESC ORDER = "desc"
-	LIMIT            = 250
+	LIMIT            = 10000
 )
 
-func (s *SQLDatastore) DeleteStocks(ticker string) error {
+func (s *SQLDatastore) DeleteTicker(ticker string) error {
 	tx := s.db.Model(models.Ticker{}).Begin()
 	result := tx.Where("name = ?", ticker).Delete(&models.Ticker{})
 	if result.Error != nil {
@@ -87,32 +87,6 @@ func (s *SQLDatastore) ReadStockByTicker(ticker string, order ORDER) ([]contract
 	return stocks, nil
 }
 
-func (s *SQLDatastore) SaveStocks(data []contracts.Stock) error {
-	result := s.db.Model(contracts.Stock{}).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "ticker"}, {Name: "date"}}, // key column
-		UpdateAll: true,
-		//DoUpdates: clause.AssignmentColumns([]string{"close", "high", "low", "time"}), // column needed to be updated
-	}).Create(&data)
-	if result.Error != nil {
-		s.logger.Log("msg", "Error saving stocks", "error", result.Error)
-		return result.Error
-	}
-
-	return nil
-}
-
-func (s *SQLDatastore) UpdateStock(data contracts.Stock) error {
-	result := s.db.Save(&data)
-	if result.Error != nil {
-		s.logger.Log("error", result.Error)
-		return result.Error
-	}
-
-	s.db.Commit()
-
-	return nil
-}
-
 func (s *SQLDatastore) ReadTickers(ticker, pattern string, order ORDER) ([]models.Ticker, error) {
 	var tickers []models.Ticker
 
@@ -136,7 +110,8 @@ func (s *SQLDatastore) PaginateTickers(ticker, pattern string, offset, limit int
 	var tickers []models.Ticker
 
 	result := s.db.Model(models.Ticker{}).
-		Where("name = ?", ticker).Where("lower(date) LIKE ?", "%"+strings.ToLower(pattern)+"%").
+		Where("name = ?", ticker).
+		//Where("lower(date) LIKE ?", "%"+strings.ToLower(pattern)+"%").
 		Offset(offset).
 		Limit(limit).
 		Order(fmt.Sprintf("time %s", order)).
@@ -180,7 +155,7 @@ func NewSqlDatastore(logger log.Logger, dbPath string) (*SQLDatastore, error) {
 	}
 
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		CreateBatchSize: 50,
+		CreateBatchSize: 500,
 	})
 	if err != nil {
 		return nil, err

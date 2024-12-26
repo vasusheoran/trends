@@ -12,6 +12,7 @@ const TOLERANCE = 0.001
 
 type Card interface {
 	Add(models.Ticker) error
+	GetSymbol(symbol string) []models.Ticker
 	Get(symbol string) []models.Ticker
 	GetAllTickerData(symbol string) []models.Ticker
 	Update(symbol string, close, open, high, low float64) error
@@ -64,6 +65,20 @@ func (c *card) Add(ticker models.Ticker) error {
 	}
 
 	return c.add(ticker)
+}
+
+func (c *card) GetSymbol(symbol string) []models.Ticker {
+	if c.ticker[symbol].NextIndex == 0 {
+		return []models.Ticker{
+			c.ticker[symbol].Data[c.ticker[symbol].Index],
+			c.ticker[symbol].Data[c.ticker[symbol].Index],
+		}
+	}
+
+	return []models.Ticker{
+		c.ticker[symbol].Data[c.ticker[symbol].Index],
+		c.ticker[symbol].Data[c.ticker[symbol].Index+1],
+	}
 }
 
 func (c *card) Get(symbol string) []models.Ticker {

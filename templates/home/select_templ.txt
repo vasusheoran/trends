@@ -1,0 +1,15 @@
+<div id=\"index-select-ticker-section\"><form class=\"max-w-sm mx-auto mt-5\"><label for=\"remove_tickers\" class=\"block mb-2 text-sm font-medium text-gray-900 dark:text-white\">Select symbol to remove</label> <select id=\"remove_tickers\" class=\"bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500\" hx-post=\"/ticker/remove\" hx-target=\"#dashboard\" hx-trigger=\"change\" name=\"ticker-name\"><option selected value=\"\">Choose a symbol</option> 
+<option value=\"
+\">
+</option>
+</select></form></div>
+<div id=\"index-select-ticker-section\"><form class=\"max-w-sm mx-auto mt-5\"><label for=\"select_tickers\" class=\"block mb-2 text-sm font-medium text-gray-900 dark:text-white\">Select symbol to view current data</label> <select id=\"select_tickers\" class=\"bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500\" hx-get=\"/ticker/init\" hx-target=\"#dashboard\" hx-trigger=\"change\" name=\"ticker-name\"><option selected value=\"\">Choose a symbol</option> 
+<option value=\"
+\">
+</option>
+</select></form></div>
+<div id=\"index-select-ticker-section\"><form class=\"max-w-sm mx-auto mt-5\"><label for=\"history_tickers\" class=\"block mb-2 text-sm font-medium text-gray-900 dark:text-white\">Select symbol to view historical data</label> <select id=\"history_tickers\" class=\"bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500\" hx-get=\"/history/view\" hx-target=\"#dashboard\" hx-trigger=\"change\" name=\"ticker-name\"><option selected value=\"\">Choose a symbol</option> 
+<option value=\"
+\">
+</option>
+</select></form></div>

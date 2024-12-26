@@ -5,82 +5,59 @@ import (
 	"github.com/vsheoran/trends/services/ticker/cards/models"
 )
 
-templ HistoryView(symbol string) {
-	<div id="history-section">
-		<div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-			<div class="pb-4 bg-white dark:bg-gray-900">
-				<label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
-				<div class="relative">
-					<div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-						<svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-							<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"></path>
-						</svg>
-					</div>
-					<input
-						type="search"
-						id="table-search"
-						class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-						placeholder="Search for date"
-						required
-						name="date"
-						hx-post={ fmt.Sprintf("/history?ticker-name=%s", symbol) }
-						hx-trigger="input changed delay:500ms, keyup[key=='Enter'], load"
-						hx-target="#search-results"
-					/>
-					<button
-						type="submit"
-						class="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-						hx-get="/select/close"
-						hx-trigger="click"
-						hx-swap="outerHTML"
-						hx-target="#history-section"
-					>Close</button>
-				</div>
-			</div>
-			<table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-				<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-					<tr>
-						<th scope="col" class="text-lg px-6 py-3">Date </th>
-						<th scope="col" class="text-lg px-6 py-3">W  </th>
-						<th scope="col" class="text-lg px-6 py-3">X  </th>
-						<th scope="col" class="text-lg px-6 py-3">Y  </th>
-						<th scope="col" class="text-lg px-6 py-3">Z  </th>
-						<th scope="col" class="text-lg px-6 py-3">AD  </th>
-						<th scope="col" class="text-lg px-6 py-3">AR  </th>
-						<th scope="col" class="text-lg px-6 py-3">AS  </th>
-						<th scope="col" class="text-lg px-6 py-3">BN  </th>
-						<th scope="col" class="text-lg px-6 py-3">BP  </th>
-						<th scope="col" class="text-lg px-6 py-3">CW  </th>
-						<th scope="col" class="text-lg px-6 py-3">BR  </th>
-						<th scope="col" class="text-lg px-6 py-3">CC  </th>
-						<th scope="col" class="text-lg px-6 py-3">CE  </th>
-						<th scope="col" class="text-lg px-6 py-3">CH  </th>
-					</tr>
-				</thead>
-				<tbody id="search-results"></tbody>
-			</table>
-		</div>
-	</div>
+templ HistoryView(tickers []models.Ticker, symbol, pattern string, offset int) {
+	<div id="history-section" >
+          <script type="module"  src="/static/history.js" rel="stylesheet"></script>
+          <table id="default-table" class="w-full text-sm mt-5 text-left rtl:text-right text-gray-100 dark:text-gray-100">
+              <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                  <tr>
+                      <th data-type="date" data-format="DD-MMM-YYYY" scope="col" class="text-lg px-6 py-3">
+                      <span class="flex items-center">Date
+                      <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4"/>
+                                          </svg>
+                                          </span>
+                                          </th>
+                      <th scope="col" class="text-lg px-6 py-3">W  </th>
+                      <th scope="col" class="text-lg px-6 py-3">X  </th>
+                      <th scope="col" class="text-lg px-6 py-3">Y  </th>
+                      <th scope="col" class="text-lg px-6 py-3">Z  </th>
+                      <th scope="col" class="text-lg px-6 py-3">AD  </th>
+                      <th scope="col" class="text-lg px-6 py-3">AR  </th>
+                      <th scope="col" class="text-lg px-6 py-3">AS  </th>
+                      <th scope="col" class="text-lg px-6 py-3">BN  </th>
+                      <th scope="col" class="text-lg px-6 py-3">BP  </th>
+                      <th scope="col" class="text-lg px-6 py-3">CW  </th>
+                      <th scope="col" class="text-lg px-6 py-3">BR  </th>
+                      <th scope="col" class="text-lg px-6 py-3">CC  </th>
+                      <th scope="col" class="text-lg px-6 py-3">CE  </th>
+                      <th scope="col" class="text-lg px-6 py-3">CH  </th>
+                  </tr>
+              </thead>
+              <tbody id="search-results">
+                  for _, tkr := range tickers {
+                      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                          <th scope="row" class="text-base px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{ tkr.Date } </th>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.W) } </td>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.X) } </td>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.Y) } </td>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.Z) } </td>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.AD) } </td>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.AR) } </td>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.AS) } </td>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.BN) } </td>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.BP) } </td>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.CW) } </td>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.BR) } </td>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.CC) } </td>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.CE) } </td>
+                          <td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.CH) } </td>
+                      </tr>
+                  }
+              </tbody>
+          </table>
+      </div>
 }
 
 templ HistoryData(tickers []models.Ticker, symbol, pattern string, offset int) {
-	for _, tkr := range tickers {
-		<tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-			<th scope="row" class="text-base px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{ tkr.Date } </th>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.W) } </td>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.X) } </td>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.Y) } </td>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.Z) } </td>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.AD) } </td>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.AR) } </td>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.AS) } </td>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.BN) } </td>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.BP) } </td>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.CW) } </td>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.BR) } </td>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.CC) } </td>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.CE) } </td>
-			<td class="text-xl px-6 py-4">{ fmt.Sprintf("%.0f", tkr.CH) } </td>
-		</tr>
-	}
 }

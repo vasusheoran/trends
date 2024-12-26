@@ -3,6 +3,7 @@ package socket
 import (
 	"bytes"
 	"context"
+	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/templates/home"
 	"time"
@@ -32,7 +33,7 @@ type Client struct {
 	conn   *websocket.Conn
 	ticker string
 	uuid   string
-	send   chan models.Ticker
+	send   chan contracts.TickerView
 	hub    *Hub
 }
 
@@ -40,7 +41,7 @@ func New(logger log.Logger, conn *websocket.Conn, ticker, uuid string, hub *Hub)
 	client := &Client{
 		logger: logger,
 		conn:   conn,
-		send:   make(chan models.Ticker),
+		send:   make(chan contracts.TickerView),
 		ticker: ticker,
 		hub:    hub,
 		uuid:   uuid,
@@ -99,7 +100,7 @@ func (c *Client) writePump() {
 			}
 
 			htmlBytes := &bytes.Buffer{}
-			message := home.Message(summary.Name, summary, nil)
+			message := home.Message(summary.Name, summary)
 			message.Render(context.Background(), htmlBytes)
 			_, err = w.Write(htmlBytes.Bytes())
 
