@@ -100,7 +100,7 @@ func (c *Client) writePump() {
 			}
 
 			htmlBytes := &bytes.Buffer{}
-			message := home.Message(summary.Name, summary)
+			message := home.Summary(summary.Name, summary)
 			message.Render(context.Background(), htmlBytes)
 			_, err = w.Write(htmlBytes.Bytes())
 

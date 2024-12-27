@@ -34,29 +34,29 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"history-section\"><script src=\"/static/js/history.js\"></script><div class=\"relative overflow-x-auto shadow-md sm:rounded-lg\"><table id=\"default-table\"><thead class=\"text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400\"><tr><th data-type=\"date\" data-format=\"DD-MMM-YYYY\" scope=\"col\" class=\"text-lg px-6 py-3\">Date</th><th scope=\"col\" class=\"text-lg px-6 py-3\">W  </th><th scope=\"col\" class=\"text-lg px-6 py-3\">X  </th><th scope=\"col\" class=\"text-lg px-6 py-3\">Y  </th><th scope=\"col\" class=\"text-lg px-6 py-3\">Z  </th><th scope=\"col\" class=\"text-lg px-6 py-3\">AD  </th><th scope=\"col\" class=\"text-lg px-6 py-3\">AR  </th><th scope=\"col\" class=\"text-lg px-6 py-3\">AS  </th><th scope=\"col\" class=\"text-lg px-6 py-3\">BN  </th><th scope=\"col\" class=\"text-lg px-6 py-3\">BP  </th><th scope=\"col\" class=\"text-lg px-6 py-3\">CW  </th><th scope=\"col\" class=\"text-lg px-6 py-3\">BR  </th><th scope=\"col\" class=\"text-lg px-6 py-3\">CC  </th><th scope=\"col\" class=\"text-lg px-6 py-3\">CE  </th><th scope=\"col\" class=\"text-lg px-6 py-3\">CH  </th></tr></thead> <tbody id=\"search-results\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"history-section\"><script src=\"/static/js/history.js\"></script><div class=\"relative overflow-x-auto shadow-md sm:rounded-lg\"><table id=\"default-table\"><thead class=\"text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400\"><tr><th data-type=\"date\" data-format=\"DD-MMM-YYYY\" scope=\"col\" class=\"text-lg px-6 py-3\">Date</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- W: -->Close </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- X: -->Open </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- Y: -->High </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- Z: -->Low </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- AD: -->H/L </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- AR: -->AVG </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- AS: -->EMA-5 </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- BN: -->EMA-20 </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- BP: -->EMA </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- BR: -->Buy </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- CC: -->Support </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- CE: -->SMA </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- CW: -->RSI </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- CH: -->Resistance </th></tr></thead> <tbody id=\"search-results\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		for _, tkr := range tickers {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<tr class=\"bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600\"><th scope=\"row\" class=\"text-base px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white\">")
+		for _, ticker := range tickers {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<tr class=\"bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600\"><td scope=\"row\" class=\"text-base px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var2 string
-			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(tkr.Date)
+			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(ticker.Date)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 35, Col: 121}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 35, Col: 124}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</th>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</td>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var3 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.W.Color)}
+			var templ_7745c5c3_Var3 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.W.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var3...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -79,9 +79,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
-			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.W.Value))
+			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.W.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 36, Col: 104}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 36, Col: 131}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -91,7 +91,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var6 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.X.Color)}
+			var templ_7745c5c3_Var6 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.X.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var6...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -114,9 +114,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
-			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.X.Value))
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.X.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 37, Col: 104}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 37, Col: 131}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -126,7 +126,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var9 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.Y.Color)}
+			var templ_7745c5c3_Var9 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.Y.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var9...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -149,9 +149,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var11 string
-			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.Y.Value))
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.Y.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 38, Col: 104}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 38, Col: 131}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -161,7 +161,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var12 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.Z.Color)}
+			var templ_7745c5c3_Var12 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.Z.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var12...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -184,9 +184,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var14 string
-			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.Z.Value))
+			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.Z.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 39, Col: 104}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 39, Col: 131}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
@@ -196,7 +196,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var15 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.AD.Color)}
+			var templ_7745c5c3_Var15 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.AD.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var15...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -219,9 +219,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 string
-			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.AD.Value))
+			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.AD.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 40, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 40, Col: 133}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -231,7 +231,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var18 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.AR.Color)}
+			var templ_7745c5c3_Var18 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.AR.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var18...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -254,9 +254,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var20 string
-			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.AR.Value))
+			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.AR.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 41, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 41, Col: 133}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {
@@ -266,7 +266,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var21 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.AS.Color)}
+			var templ_7745c5c3_Var21 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.AS.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var21...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -289,9 +289,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var23 string
-			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.AS.Value))
+			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.AS.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 42, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 42, Col: 133}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
@@ -301,7 +301,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var24 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.BN.Color)}
+			var templ_7745c5c3_Var24 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.BN.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var24...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -324,9 +324,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var26 string
-			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.BN.Value))
+			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.BN.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 43, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 43, Col: 133}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 			if templ_7745c5c3_Err != nil {
@@ -336,7 +336,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var27 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.BP.Color)}
+			var templ_7745c5c3_Var27 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.BP.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var27...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -359,9 +359,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var29 string
-			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.BP.Value))
+			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.BP.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 44, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 44, Col: 133}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 			if templ_7745c5c3_Err != nil {
@@ -371,7 +371,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var30 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.CW.Color)}
+			var templ_7745c5c3_Var30 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.BR.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var30...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -394,9 +394,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var32 string
-			templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.CW.Value))
+			templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.BR.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 45, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 45, Col: 133}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 			if templ_7745c5c3_Err != nil {
@@ -406,7 +406,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var33 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.BR.Color)}
+			var templ_7745c5c3_Var33 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.CC.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var33...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -429,9 +429,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var35 string
-			templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.BR.Value))
+			templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.CC.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 46, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 46, Col: 133}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 			if templ_7745c5c3_Err != nil {
@@ -441,7 +441,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var36 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.CC.Color)}
+			var templ_7745c5c3_Var36 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.CE.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var36...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -464,9 +464,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var38 string
-			templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.CC.Value))
+			templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.CE.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 47, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 47, Col: 133}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 			if templ_7745c5c3_Err != nil {
@@ -476,7 +476,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var39 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.CE.Color)}
+			var templ_7745c5c3_Var39 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.CW.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var39...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -499,9 +499,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var41 string
-			templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.CE.Value))
+			templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.CW.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 48, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 48, Col: 133}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
 			if templ_7745c5c3_Err != nil {
@@ -511,7 +511,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var42 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", tkr.CH.Color)}
+			var templ_7745c5c3_Var42 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.CH.Color)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var42...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -534,9 +534,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var44 string
-			templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", tkr.CH.Value))
+			templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.CH.Value))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 49, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 49, Col: 133}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
 			if templ_7745c5c3_Err != nil {

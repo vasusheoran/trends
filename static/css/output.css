@@ -1611,10 +1611,6 @@ input:checked + .toggle-bg {
   margin-bottom: 0.25rem;
 }
 
-.mb-12 {
-  margin-bottom: 3rem;
-}
-
 .mb-2 {
   margin-bottom: 0.5rem;
 }
@@ -1791,10 +1787,6 @@ input:checked + .toggle-bg {
 
 .resize {
   resize: both;
-}
-
-.grid-cols-15 {
-  grid-template-columns: repeat(15, minmax(0, 1fr));
 }
 
 .grid-cols-4 {
@@ -2095,10 +2087,6 @@ input:checked + .toggle-bg {
   line-height: 2rem;
 }
 
-.text-\[2rem\] {
-  font-size: 2rem;
-}
-
 .text-base {
   font-size: 1rem;
   line-height: 1.5rem;
@@ -2383,10 +2371,6 @@ input:checked + .toggle-bg {
 }
 
 @media (min-width: 768px) {
-  .md\:mb-0 {
-    margin-bottom: 0px;
-  }
-
   .md\:mt-0 {
     margin-top: 0px;
   }
@@ -2397,10 +2381,6 @@ input:checked + .toggle-bg {
 
   .md\:w-auto {
     width: auto;
-  }
-
-  .md\:grid-cols-15 {
-    grid-template-columns: repeat(15, minmax(0, 1fr));
   }
 
   .md\:flex-row {
@@ -2415,10 +2395,6 @@ input:checked + .toggle-bg {
 
   .md\:border-0 {
     border-width: 0px;
-  }
-
-  .md\:border-r-2 {
-    border-right-width: 2px;
   }
 
   .md\:bg-transparent {
@@ -2440,9 +2416,9 @@ input:checked + .toggle-bg {
 }
 
 @media (min-width: 1024px) {
-  .lg\:text-2xl {
-    font-size: 1.5rem;
-    line-height: 2rem;
+  .lg\:text-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
   }
 }
 
@@ -2600,13 +2576,6 @@ input:checked + .toggle-bg {
   .dark\:focus\:ring-blue-800:focus {
     --tw-ring-opacity: 1;
     --tw-ring-color: rgb(30 66 159 / var(--tw-ring-opacity, 1));
-  }
-
-  @media (min-width: 768px) {
-    .dark\:md\:border-slate-500 {
-      --tw-border-opacity: 1;
-      border-color: rgb(100 116 139 / var(--tw-border-opacity, 1));
-    }
   }
 }
 
