@@ -14,7 +14,7 @@ if (document.getElementById("default-table") && typeof simpleDatatables.DataTabl
             dropdown: "datatable-dropdown mr-5",
             ellipsis: "datatable-ellipsis",
             empty: "datatable-empty",
-            headercontainer: "datatable-headercontainer",
+            headercontainer: "datatable-headercontainer text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400",
             info: "datatable-info",
             input: "datatable-input ml-5",
             loading: "datatable-loading",
