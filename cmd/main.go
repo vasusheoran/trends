@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"github.com/vsheoran/trends/pkg/transport"
 	"github.com/vsheoran/trends/services/database"
@@ -91,6 +92,10 @@ func initServer(g *run.Group) {
 	initHTTP(g, services)
 }
 
+//go:embed static/js
+//go:embed static/css
+var content embed.FS
+
 func initHTTP(g *run.Group, services transport.Services) {
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{
@@ -105,6 +110,8 @@ func initHTTP(g *run.Group, services transport.Services) {
 
 	router := mux.NewRouter()
 	handler := c.Handler(router)
+
+	router.PathPrefix("/static/").Handler(http.FileServer(http.FS(content)))
 
 	subRouter := router.PathPrefix("/api").Subrouter()
 
