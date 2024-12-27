@@ -27,31 +27,72 @@ templ SummaryData(data contracts.HTMXData) {
 				<table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
 					<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
 						<tr>
-						    <th scope="col" class="text-lg px-4 py-3"> Name </th>
-                            <th scope="col" class="text-lg px-4 py-3"> Date </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- W: -->  Close </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- X: -->  Open </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- Y: -->  High </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- Z: -->  Low </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- AD: --> H/L </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- AR: --> AVG </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- AS: --> EMA-5 </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- BN: --> EMA-20 </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- BP: --> EMA </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- BR: --> Buy </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- CC: --> Support </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- CE: --> SMA </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- CW: --> RSI </th>
-                            <th scope="col" class="text-lg px-4 py-3"> <!-- CH: --> Resistance </th>
-                            <th scope="col" class="text-lg px-4 py-3">Action </th>
+							<th scope="col" class="text-lg px-4 py-3">Name </th>
+							<th scope="col" class="text-lg px-4 py-3">Date </th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- X: -->
+								Open 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- Y: -->
+								High 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- Z: -->
+								Low 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- AD: -->
+								H/L 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- AR: -->
+								AVG 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- AS: -->
+								EMA-5 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- BN: -->
+								EMA-20 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- BP: -->
+								EMA 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- BR: -->
+								Buy 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- CC: -->
+								Support 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- CE: -->
+								SMA 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- CW: -->
+								RSI 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- CH: -->
+								Resistance 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">
+								<!-- W: -->
+								Close 
+							</th>
+							<th scope="col" class="text-lg px-4 py-3">Action </th>
 						</tr>
 					</thead>
 					<tbody id="search-results">
-                    for k, s := range data.SummaryMap {
-                        <span hx-ext="ws" ws-connect={ "/ws/ticker/" + k }>
-                        </span>
-                        @Summary(k, s)
-                    }
+						for k, s := range data.SummaryMap {
+							<span hx-ext="ws" ws-connect={ "/ws/ticker/" + k }></span>
+							@Summary(k, s)
+						}
 					</tbody>
 				</table>
 			</div>
@@ -60,10 +101,9 @@ templ SummaryData(data contracts.HTMXData) {
 }
 
 templ Summary(id string, ticker contracts.TickerView) {
-    <tr id={ id } hx-swap={ "#" + id } class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+	<tr id={ id } hx-swap={ "#" + id } class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
 		<td class="lg:text-xl px-4 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{ ticker.Name } </td>
-		<td class="text-base px-4 py-4">{ ticker.Date } </td>
-		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.W.Color) }>{ fmt.Sprintf("%.0f", ticker.W.Value) } </td>
+		<td class="text-base px-4 py-4">{ ticker.ParsedDate } </td>
 		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.X.Color) }>{ fmt.Sprintf("%.0f", ticker.X.Value) } </td>
 		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.Y.Color) }>{ fmt.Sprintf("%.0f", ticker.Y.Value) } </td>
 		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.Z.Color) }>{ fmt.Sprintf("%.0f", ticker.Z.Value) } </td>
@@ -77,6 +117,7 @@ templ Summary(id string, ticker contracts.TickerView) {
 		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.CE.Color) }>{ fmt.Sprintf("%.0f", ticker.CE.Value) } </td>
 		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.CW.Color) }>{ fmt.Sprintf("%.0f", ticker.CW.Value) } </td>
 		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.CH.Color) }>{ fmt.Sprintf("%.0f", ticker.CH.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.W.Color) }>{ fmt.Sprintf("%.0f", ticker.W.Value) } </td>
 		<td class="text-base px-4 py-4">
 			<button
 				class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
@@ -86,5 +127,5 @@ templ Summary(id string, ticker contracts.TickerView) {
 				hx-swap="innerHTML"
 			>Close</button>
 		</td>
-    </tr>
+	</tr>
 }

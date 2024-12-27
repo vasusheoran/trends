@@ -67,7 +67,7 @@ func GetTickerView(cur, prev models.Ticker) TickerView {
 		W:  View{Color: "", Name: "Close", Value: cur.W},
 		X:  View{Color: "", Name: "Open", Value: cur.X},
 		Y:  View{Color: GetHighColor(cur, prev), Name: "High", Value: cur.Y},
-		Z:  View{Color: GetLowColor(cur, prev), Name: "Low", Value: cur.Z},
+		Z:  View{Color: "", Name: "Low", Value: cur.Z}, //GetLowColor(cur, prev)
 		AD: View{Color: GetHLColor(cur), Name: "H/L", Value: cur.AD},
 		AR: View{Color: fmt.Sprintf("%s %s", GetAVGAndEMA5BackgroundColor(cur), GetAVGColor(cur)), Name: "AVG", Value: cur.AR},
 		AS: View{Color: fmt.Sprintf("%s %s", GetAVGAndEMA5BackgroundColor(cur), GetEMA5Color(cur)), Name: "EMA-5", Value: cur.AS},
@@ -204,7 +204,7 @@ func GetAVGAndEMA5BackgroundColor(cur models.Ticker) string {
 
 func GetBuySMASupportBackgroundColor(cur models.Ticker) string {
 	if cur.W > cur.BR && cur.W > cur.CE && cur.W > cur.CC {
-		return "bg-yellow-50"
+		return "bg-yellow-100"
 	}
 	return ""
 }

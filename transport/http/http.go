@@ -69,9 +69,6 @@ func SertHTTP2(l log.Logger, router *mux.Router, services transport.Services) {
 	route2.SymbolsRoute(l, router, services)
 	route3.HistoryRoute(l, router, services)
 	route4.CommonRoute(l, router, services)
-
-	router.PathPrefix("/static/js/").Handler(http.StripPrefix("/static/js/", http.FileServer(http.Dir("static/js"))))
-	router.PathPrefix("/static/css/").Handler(http.StripPrefix("/static/css/", http.FileServer(http.Dir("static/css"))))
 }
 
 // swagger:parameters deleteListing replaceListing updateListing getTicker getHistory initTicker updateTicker freezeTicker

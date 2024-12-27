@@ -18,9 +18,9 @@
     "test": "test"
   },
   "scripts": {
-    "watch-css": "tailwindcss -i static/css/input.css -o static/css/output.css --watch",
-    "build-css": "tailwindcss build static/css/input.css -o static/css/output.css",
-    "css": "tailwindcss -i static/css/input.css -o static/css/output.css --minify"
+    "watch-css": "tailwindcss -i cmd/static/css/input.css -o cmd/static/css/output.css --watch",
+    "build-css": "tailwindcss build cmd/static/css/input.css -o cmd/static/css/output.css",
+    "css": "tailwindcss -i cmd/static/css/input.css -o cmd/static/css/output.css --minify"
   },
   "author": "",
   "license": "ISC"
