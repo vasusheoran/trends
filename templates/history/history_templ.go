@@ -34,7 +34,7 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"history-section\"><script src=\"static/js/history.js\"></script><table id=\"default-table\"><thead><tr><th scope=\"col\" class=\"text-lg px-6 py-3\">Date</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Open</th><th scope=\"col\" class=\"text-lg px-4 py-3\">High</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Low</th><th scope=\"col\" class=\"text-lg px-4 py-3\">H/L</th><th scope=\"col\" class=\"text-lg px-4 py-3\">AVG</th><th scope=\"col\" class=\"text-lg px-4 py-3\">EMA-5</th><th scope=\"col\" class=\"text-lg px-4 py-3\">EMA-20</th><th scope=\"col\" class=\"text-lg px-4 py-3\">EMA</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Buy</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Support</th><th scope=\"col\" class=\"text-lg px-4 py-3\">SMA</th><th scope=\"col\" class=\"text-lg px-4 py-3\">RSI</th><th scope=\"col\" class=\"text-base px-2 py-3\">Resistance</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Close</th></tr></thead> <tbody id=\"search-results\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"history-section\"><script src=\"static/js/history.js\"></script><table id=\"export-table\"><thead><tr><th scope=\"col\" class=\"text-lg px-6 py-3\">Date</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Open</th><th scope=\"col\" class=\"text-lg px-4 py-3\">High</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Low</th><th scope=\"col\" class=\"text-lg px-4 py-3\">H/L</th><th scope=\"col\" class=\"text-lg px-4 py-3\">AVG</th><th scope=\"col\" class=\"text-lg px-4 py-3\">EMA-5</th><th scope=\"col\" class=\"text-lg px-4 py-3\">EMA-20</th><th scope=\"col\" class=\"text-lg px-4 py-3\">EMA</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Buy</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Support</th><th scope=\"col\" class=\"text-lg px-4 py-3\">SMA</th><th scope=\"col\" class=\"text-lg px-4 py-3\">RSI</th><th scope=\"col\" class=\"text-base px-2 py-3\">Resistance</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Close</th></tr></thead> <tbody id=\"search-results\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -44,9 +44,9 @@ func HistoryView(tickers []contracts.TickerView) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var2 string
-			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(ticker.ParsedDate)
+			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(ticker.Date)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 34, Col: 58}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/history/history.templ`, Line: 34, Col: 52}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {

@@ -8,7 +8,7 @@ import (
 templ HistoryView(tickers []contracts.TickerView) {
 	<div id="history-section">
 		<script src="static/js/history.js"></script>
-		<table id="default-table">
+		<table id="export-table">
 			<thead>
 				<tr>
 					<th scope="col" class="text-lg px-6 py-3">Date</th>
@@ -31,7 +31,7 @@ templ HistoryView(tickers []contracts.TickerView) {
 			<tbody id="search-results">
 				for _, ticker := range tickers {
 					<tr>
-						<td class="text-base px-4 py-4 ">{ ticker.ParsedDate } </td>
+						<td class="text-base px-4 py-4 ">{ ticker.Date } </td>
 						<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.X.Color) }>{ fmt.Sprintf("%.0f", ticker.X.Value) } </td>
 						<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.Y.Color) }>{ fmt.Sprintf("%.0f", ticker.Y.Value) } </td>
 						<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.Z.Color) }>{ fmt.Sprintf("%.0f", ticker.Z.Value) } </td>

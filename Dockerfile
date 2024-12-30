@@ -1,10 +1,21 @@
-FROM alpine:3.14.0
+# Stage 1: Build
+FROM golang:1.23 AS builder
 
 WORKDIR /app
-RUN mkdir -p data/hd
 
-COPY main ./main
-COPY cmd/data/symbols.csv data/
+COPY go.mod go.sum ./
 
-# ENTRYPOINT ["/bin/sh","-c","sleep infinity"]
-CMD ["./main"]
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /app/trends -v cmd/main.go
+
+# Stage 2: Minimal Runtime
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=builder /app/trends . 
+
+CMD ["./trends"]
