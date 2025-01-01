@@ -1,32 +1,14 @@
-version: "3.3"
 services:
-  web:
-    environment:
-      - TZ=Asia/Kolkata
-      - API_URL=3.83.16.61
-    image: h20180061/dashboard:5.0.5
+  trends:
+    env_file:
+      - .env
+    image: trends:${VERSION}
     ports:
-      - "80:80"
-    container_name: web
-    depends_on:
-      - app
+      - 5001:5001
+    container_name: trends
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
     volumes:
-      - ./data/web:/home/app/data
-    networks:
-      - network1
-
-  app:
-    environment:
-      - TZ=Asia/Kolkata
-    image: h20180061/trends:5.0.5
-    ports:
-      - "5000:5000"
-      - "5001:5001"
-    container_name: app
-    volumes:
-      - ./data/golang:/home/app/data
-    networks:
-      - network1
-
-networks:
-  network1: null
+      - ./trends/data:/app/data

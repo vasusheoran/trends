@@ -3,7 +3,7 @@
 # Define the target architectures and operating systems
 TARGETS="darwin_arm64_clang windows_amd64_x86_64-w64-mingw32-gcc"
 
-VERSION="0.1.5"
+set -a && source .env && set +a
 
 # Function to build for a specific target
 build_for_target() {
