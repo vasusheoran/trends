@@ -75,7 +75,7 @@ func Head() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<head><title>Trends</title><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link href=\"static/css/output.css\" rel=\"stylesheet\"><script src=\"/static/js/flowbite.min.js\"></script><script src=\"/static/js/htmx.min.js\"></script><script src=\"/static/js/htmx-multiswap.js\"></script><script src=\"/static/js/ws.js\"></script><script src=\"/static/js/tailwindcss.min.js\"></script><script src=\"/static/js/simple-datatables.min.js\"></script></head>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<head><title>Trends</title><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"icon\" href=\"static/images/money-graph-with-up-arrow.png\" type=\"image/x-icon\"><link rel=\"stylesheet\" href=\"static/css/dist/output.css\"><script src=\"/static/js/flowbite.min.js\"></script><script src=\"/static/js/htmx.min.js\"></script><script src=\"/static/js/htmx-multiswap.js\"></script><script src=\"/static/js/ws.js\"></script><script src=\"/static/js/simple-datatables.min.js\"></script></head>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

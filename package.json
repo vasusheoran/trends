@@ -1,9 +1,10 @@
 {
   "devDependencies": {
-    "@tailwindcss/forms": "^0.5.9",
-    "@tailwindcss/typography": "^0.5.15",
+    "@tailwindcmd/static/css/forms": "^0.5.9",
+    "@tailwindcmd/static/css/typography": "^0.5.15",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
+    "postcss-import": "^16.1.0",
     "tailwindcss": "^3.4.17"
   },
   "dependencies": {
@@ -18,9 +19,11 @@
     "test": "test"
   },
   "scripts": {
-    "watch-css": "tailwindcss -i cmd/static/css/input.css -o cmd/static/css/output.css --watch",
-    "build-css": "tailwindcss build cmd/static/css/input.css -o cmd/static/css/output.css",
-    "css": "tailwindcss -i cmd/static/css/input.css -o cmd/static/css/output.css --minify"
+    "css": "tailwindcss -i cmd/static/css/input.css -o cmd/static/css/output.css --minify",
+    "css:watch": "tailwindcss -i cmd/static/css/input.css -o cmd/static/css/output.css --watch",
+    "css:build": "tailwindcss build cmd/static/css/input.css -o cmd/static/css/output.css",
+    "postcss": "postcss cmd/static/css/output.css --use postcss-import --dir cmd/static/css/dist",
+    "postcss:watch": "postcss cmd/static/css/output.css --use postcss-import --dir cmd/static/css/dist --watch"
   },
   "author": "",
   "license": "ISC"

@@ -31,6 +31,11 @@ const (
 	httpPort = "5001"
 )
 
+//go:embed static/js
+//go:embed static/css/dist
+//go:embed static/images
+var content embed.FS
+
 var logger log.Logger
 
 // cancelInterrupt type definition for channel
@@ -91,10 +96,6 @@ func initServer(g *run.Group) {
 
 	initHTTP(g, services)
 }
-
-//go:embed static/js
-//go:embed static/css
-var content embed.FS
 
 func initHTTP(g *run.Group, services transport.Services) {
 	c := cors.New(cors.Options{
