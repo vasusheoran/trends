@@ -60,9 +60,9 @@ type TickerView struct {
 func GetTickerView(cur, prev models.Ticker) TickerView {
 	result := TickerView{
 		Error:      nil,
-		Name:       prev.Name,
-		ParsedDate: prev.ParsedDate,
-		Date:       prev.Date,
+		Name:       cur.Name,
+		ParsedDate: cur.ParsedDate,
+		Date:       cur.Date,
 
 		W:  View{Color: "", Name: "Close", Value: cur.W},
 		X:  View{Color: "", Name: "Open", Value: cur.X},
