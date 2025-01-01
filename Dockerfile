@@ -9,7 +9,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /app/trends -v cmd/main.go
+RUN CGO_ENABLED=1 go build -o /app/trends -v cmd/main.go
 
 # Stage 2: Minimal Runtime
 FROM alpine:latest

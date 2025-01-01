@@ -110,7 +110,7 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 
 	ticker := models.Ticker{
 		Name: symbol,
-		Date: time.Now().Format("02-01-06"),
+		Date: time.Now().Format("02-Jan-06"),
 		Time: time.Now(),
 		W:    close,
 		X:    open,

@@ -10,7 +10,7 @@ func (c *card) addNextData(symbol string, close float64, open float64, high floa
 	lastDayIndex := c.ticker[symbol].Index
 	ticker := models.Ticker{
 		Name: symbol,
-		Date: time.Now().Format("02-01-06"),
+		Date: time.Now().Format("02-Jan-06"),
 		Time: time.Now(),
 		W:    close,
 		X:    open,
@@ -23,20 +23,20 @@ func (c *card) addNextData(symbol string, close float64, open float64, high floa
 	// Add dummy day
 	ticker.X = ticker.W
 	ticker.Time = time.Now().AddDate(0, 0, 1)
-	ticker.Date = ticker.Time.Format("02-01-06")
+	ticker.Date = ticker.Time.Format("02-Jan-06")
 	c.ticker[symbol].NextIndex++
 	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
 
 	// Add dummy day + 1
 	ticker.Time = time.Now().AddDate(0, 0, 2)
-	ticker.Date = ticker.Time.Format("02-01-06")
+	ticker.Date = ticker.Time.Format("02-Jan-06")
 	c.ticker[symbol].NextIndex++
 	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
 
 	// Add dummy day + 2
 	c.ticker[symbol].NextIndex++
 	ticker.Time = time.Now().AddDate(0, 0, 3)
-	ticker.Date = ticker.Time.Format("02-01-06")
+	ticker.Date = ticker.Time.Format("02-Jan-06")
 	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
 
 	err := c.calculate(symbol, lastDayIndex+1)
