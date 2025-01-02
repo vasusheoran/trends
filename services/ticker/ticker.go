@@ -2,7 +2,10 @@ package ticker
 
 import (
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/vsheoran/trends/pkg/contracts"
+	"github.com/vsheoran/trends/services/metrics"
+	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/vsheoran/trends/services/history"
@@ -21,11 +24,13 @@ type ticker struct {
 	logger  log.Logger
 	card    cards.Card
 	history history.History
+	mr      *prometheus.Registry
 
 	summary map[string]contracts.TickerView
 }
 
 func (t *ticker) Get(symbol string) (map[string]contracts.TickerView, error) {
+	startTime := time.Now()
 	if len(symbol) == 0 {
 		return t.summary, nil
 	}
@@ -37,10 +42,13 @@ func (t *ticker) Get(symbol string) (map[string]contracts.TickerView, error) {
 	}
 
 	t.summary[symbol] = contracts.GetTickerView(data[1], data[0])
+
+	t.recordLatencyMetric(metrics.TickerGetLatency, startTime)
 	return t.summary, nil
 }
 
 func (t *ticker) Init(symbol string, tickers []models.Ticker) error {
+	startTime := time.Now()
 	var err error
 	isNewTicker := true
 	if len(tickers) == 0 {
@@ -79,6 +87,7 @@ func (t *ticker) Init(symbol string, tickers []models.Ticker) error {
 		}()
 	}
 
+	t.recordLatencyMetric(metrics.TickerInitLatency, startTime)
 	return nil
 }
 
@@ -88,6 +97,7 @@ func (t *ticker) Remove(symbol string) {
 }
 
 func (t *ticker) Update(symbol string, close, open, high, low float64, broadcast chan string) error {
+	startTime := time.Now()
 	if _, ok := t.summary[symbol]; !ok {
 		return fmt.Errorf("ticker not initialized for symbol `%s`", symbol)
 	}
@@ -101,14 +111,25 @@ func (t *ticker) Update(symbol string, close, open, high, low float64, broadcast
 		t.logger.Log("msg", fmt.Sprintf("updating UI for `%s`", symbol))
 		broadcast <- symbol
 	}()
+	go t.recordLatencyMetric(metrics.TickerUpdateLatency, startTime)
 	return nil
 }
 
-func NewTicker(logger log.Logger, cardService cards.Card, historyService history.History) Ticker {
+func (t *ticker) recordLatencyMetric(name string, startTime time.Time) {
+	metrics.GetSummary(
+		name,
+		"",
+		t.mr,
+		map[float64]float64{0.25: 0.1, 0.5: 0.1, 0.95: 0.1, 0.99: 0.1, 1.0: 0.1},
+	).Observe(time.Since(startTime).Seconds())
+}
+
+func NewTicker(logger log.Logger, cardService cards.Card, historyService history.History, mr *prometheus.Registry) Ticker {
 	return &ticker{
 		logger:  logger,
 		card:    cardService,
 		history: historyService,
+		mr:      mr,
 		summary: map[string]contracts.TickerView{},
 	}
 }
