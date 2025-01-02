@@ -4,6 +4,8 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/vsheoran/trends/services/metrics"
 	"mime/multipart"
 	"strconv"
 	"strings"
@@ -41,10 +43,12 @@ type StocksORM struct {
 
 type history struct {
 	logger log.Logger
+	mr     *prometheus.Registry
 	sqlDB  *database.SQLDatastore
 }
 
 func (s *history) ParseFile(symbol string, file multipart.File) ([]models.Ticker, error) {
+	startTime := time.Now()
 	level.Debug(s.logger).Log("msg", "Parsing uploaded file", "symbol", symbol)
 
 	csvReader := csv.NewReader(file)
@@ -54,6 +58,8 @@ func (s *history) ParseFile(symbol string, file multipart.File) ([]models.Ticker
 	}
 
 	tickers := s.parseData(symbol, records)
+
+	s.recordLatencyMetric(metrics.ParseFileLatency, startTime)
 	return tickers, nil
 }
 
@@ -167,9 +173,19 @@ func (s *history) parseDate(dateString string) (time.Time, error) {
 	return time.Time{}, fmt.Errorf("unable to parse date: %s", dateString)
 }
 
-func New(logger log.Logger, sqlDB *database.SQLDatastore) History {
+func (h *history) recordLatencyMetric(name string, startTime time.Time) {
+	metrics.GetSummary(
+		name,
+		"",
+		h.mr,
+		map[float64]float64{0.25: 0.1, 0.5: 0.1, 0.95: 0.1, 0.99: 0.1, 1.0: 0.1},
+	).Observe(time.Since(startTime).Seconds())
+}
+
+func New(logger log.Logger, sqlDB *database.SQLDatastore, mr *prometheus.Registry) History {
 	return &history{
 		logger: logger,
 		sqlDB:  sqlDB,
+		mr:     mr,
 	}
 }

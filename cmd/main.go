@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vsheoran/trends/pkg/transport"
 	"github.com/vsheoran/trends/services/database"
 	"github.com/vsheoran/trends/services/ticker/cards"
@@ -25,18 +26,29 @@ import (
 	"github.com/vsheoran/trends/services/ticker"
 	http2 "github.com/vsheoran/trends/transport/http"
 	"github.com/vsheoran/trends/utils"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 )
 
 const (
 	httpPort = "5001"
 )
 
-//go:embed static/js
-//go:embed static/css/dist
-//go:embed static/images
-var content embed.FS
+var (
+	//go:embed static/js
+	//go:embed static/css/dist
+	//go:embed static/images
+	content         embed.FS
+	logger          log.Logger
+	metricsRegistry = prometheus.NewRegistry()
+)
 
-var logger log.Logger
+func init() {
+	// Register go runtime metric collectors
+	metricsRegistry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	metricsRegistry.MustRegister(collectors.NewGoCollector())
+}
 
 // cancelInterrupt type definition for channel
 type cancelInterrupt struct{}
@@ -79,13 +91,13 @@ func openbrowser(url string) {
 }
 
 func initServer(g *run.Group) {
-	sqlDB, err := database.NewSqlDatastore(logger, "data/gorm-1.db")
+	sqlDB, err := database.NewSqlDatastore(logger, "data/gorm-1.db", metricsRegistry)
 	if err != nil {
 		panic(err)
 	}
 	cs := cards.NewCard(logger)
-	hs := history.New(logger, sqlDB)
-	ts := ticker.NewTicker(logger, cs, hs)
+	hs := history.New(logger, sqlDB, metricsRegistry)
+	ts := ticker.NewTicker(logger, cs, hs, metricsRegistry)
 	hb := socket.NewHub(logger, ts)
 
 	services := transport.Services{
@@ -113,6 +125,9 @@ func initHTTP(g *run.Group, services transport.Services) {
 	router := mux.NewRouter()
 	handler := c.Handler(router)
 
+	router.Handle("/metrics", promhttp.InstrumentMetricHandler(
+		metricsRegistry, promhttp.HandlerFor(metricsRegistry, promhttp.HandlerOpts{}),
+	))
 	router.PathPrefix("/static/").Handler(http.FileServer(http.FS(content)))
 
 	subRouter := router.PathPrefix("/api").Subrouter()
