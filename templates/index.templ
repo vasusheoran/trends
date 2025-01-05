@@ -3,6 +3,7 @@ package templates
 import (
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/templates/home"
+	"fmt"
 )
 
 templ Index(data contracts.HTMXData) {
@@ -20,9 +21,10 @@ templ Head() {
 		<link rel="icon" href="static/images/money-graph-with-up-arrow.png" type="image/x-icon" />
 		<link rel="stylesheet" href="static/css/dist/output.css"/>
 		<script src="/static/js/flowbite.min.js"></script>
-		<script src="/static/js/htmx.min.js"></script>
-		<script src="/static/js/htmx-multiswap.js"></script>
-		<script src="/static/js/ws.js"></script>
+		<script src="/static/js/htmx@2.0.0.min.js"></script>
+        <script src="/static/js/htmx-ext-sse@2.2.2.js"></script>
+        <script src="/static/js/ws.js"></script>
+        <script src="/static/js/htmx-multiswap.js"></script>
 		<script src="/static/js/simple-datatables.min.js"></script>
 	</head>
 }
@@ -36,8 +38,63 @@ templ Body(data contracts.HTMXData) {
 				</div>
 				<div id="dashboard" class="text-gray-900 dark:text-white">
 					@home.Dashboard(data)
+                    //@TestSSE()
 				</div>
 			</div>
 		</div>
 	</body>
 }
+
+templ TestSSE() {
+    <div class="relative overflow-x-auto">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                    <th scope="col" class="px-6 py-3">
+                        Product name
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Color
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Category
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Price
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <div hx-ext="sse" sse-connect={ "/sse" } >
+                  <div sse-swap="test1" hx-target="#test1" hx-swap="outerHTML">
+                  </div>
+                </div>
+                @EventData("test1", "Red", "Laptop", 1)
+                @EventData("test2", "Red", "Laptop", 1)
+            </tbody>
+        </table>
+    </div>
+}
+
+templ TestEventData(name string) {
+  <div>{name}</div>
+}
+
+templ EventData(name, color, model string, value int) {
+                              <tr id={ name } class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+        { name }
+    </th>
+    <td class="px-6 py-4">
+        { color }
+    </td>
+    <td class="px-6 py-4">
+        { model }
+    </td>
+    <td class="px-6 py-4">
+        ${ fmt.Sprintf("%d", value) }
+    </td>
+                              </tr>
+}
+

@@ -15,7 +15,6 @@ import (
 )
 
 func SelectTickerViewHandler(w http.ResponseWriter, r *http.Request) {
-	logger.Log("msg", "SelectTickerViewHandler")
 	listings, err := svc.SQLDatabaseService.GetDistinctTicker("")
 	if err != nil {
 		logger.Log("err", err)
@@ -29,13 +28,11 @@ func SelectTickerViewHandler(w http.ResponseWriter, r *http.Request) {
 func SelectTickerHandler(w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("ticker-name")
 	key = strings.Trim(key, "\n")
-	logger.Log("msg", "UploadFileHandler", "path", r.URL.Path, "method", r.Method, "key", key)
 
 	transport.InitTicker(key, []models.Ticker{}, svc, w, r)
 }
 
 func UploadFileViewHandler(w http.ResponseWriter, r *http.Request) {
-	logger.Log("msg", "UploadFileViewHandler")
 	component := home.UploadFile()
 	component.Render(context.Background(), w)
 }
@@ -43,7 +40,6 @@ func UploadFileViewHandler(w http.ResponseWriter, r *http.Request) {
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("ticker-name")
 	key = strings.Trim(key, "\n")
-	logger.Log("msg", "UploadFileHandler", "path", r.URL.Path, "method", r.Method, "key", key)
 
 	var err error
 	if len(key) == 0 {
@@ -70,7 +66,6 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 func CloseTickerHandler(w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("ticker-name")
 	key = strings.Trim(key, "\n")
-	logger.Log("msg", "CloseTickerHandler", "path", r.URL.Path, "method", r.Method, "key", key)
 
 	if len(key) == 0 {
 		http.Error(w, "no ticker data found", http.StatusBadRequest)
@@ -91,13 +86,11 @@ func CloseTickerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Log("msg", "ticker removed successfully", "key", key)
 	component := home.Dashboard(contracts.HTMXData{SummaryMap: data})
 	component.Render(context.Background(), w)
 }
 
 func RemoveTickerViewHandler(w http.ResponseWriter, r *http.Request) {
-	logger.Log("msg", "SelectTickerViewHandler")
 	listings, err := svc.SQLDatabaseService.GetDistinctTicker("")
 	if err != nil {
 		logger.Log("err", err)
@@ -111,13 +104,11 @@ func RemoveTickerViewHandler(w http.ResponseWriter, r *http.Request) {
 func RemoveTickerHandlerV2(w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("ticker-name")
 	key = strings.Trim(key, "\n")
-	logger.Log("msg", "RemoveTickerHandlerV2", "path", r.URL.Path, "method", r.Method, "key", key)
 
 	if len(key) == 0 {
 		http.Error(w, "no ticker data found", http.StatusBadRequest)
 		return
 	}
-	logger.Log("msg", "removing ticker", "key", key)
 
 	svc.TickerService.Remove(key)
 

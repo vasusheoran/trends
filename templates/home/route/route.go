@@ -25,7 +25,10 @@ func SymbolsRoute(l log.Logger, router *mux.Router, services transport.Services)
 	router.Path("/ticker/remove").HandlerFunc(RemoveTickerHandlerV2).Methods(http.MethodPost)
 	router.Path("/ticker/init").HandlerFunc(CloseTickerHandler).Methods(http.MethodDelete)
 
-	router.Path("/ws/ticker/{"+constants.SasSymbolKey+"}").
-		HandlerFunc(SocketHandleFunc).
+	router.Path("/ws/ticker/{"+constants.SasSymbolKey+"}").HandlerFunc(SocketHandleFunc).
 		Methods(http.MethodGet, http.MethodDelete, http.MethodOptions)
+	router.Path("/watch/{"+constants.SasSymbolKey+"}").HandlerFunc(WatchHandlerFunc).
+		Methods(http.MethodGet, http.MethodOptions)
+	router.Path("/sse").HandlerFunc(TestWatchHandlerFunc).
+		Methods(http.MethodGet, http.MethodOptions)
 }
