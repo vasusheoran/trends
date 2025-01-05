@@ -3,9 +3,15 @@ package main
 import (
 	"embed"
 	"fmt"
+	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/log/level"
+	"github.com/gorilla/mux"
+	"github.com/oklog/run"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/cors"
 	"github.com/vsheoran/trends/pkg/transport"
 	"github.com/vsheoran/trends/services/database"
+	"github.com/vsheoran/trends/services/sse"
 	"github.com/vsheoran/trends/services/ticker/cards"
 	"net/http"
 	"os"
@@ -13,13 +19,6 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
-	"time"
-
-	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
-	"github.com/gorilla/mux"
-	"github.com/oklog/run"
-	"github.com/rs/cors"
 
 	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/services/socket"
@@ -64,7 +63,7 @@ func main() {
 
 	initCancelInterrupt(g, make(chan cancelInterrupt))
 
-	go openbrowser("http://localhost:" + httpPort)
+	// go openbrowser("http://localhost:" + httpPort)
 	if err := g.Run(); err != nil {
 		level.Error(logger).Log("error", err)
 	}
@@ -99,12 +98,14 @@ func initServer(g *run.Group) {
 	hs := history.New(logger, sqlDB, metricsRegistry)
 	ts := ticker.NewTicker(logger, cs, hs, metricsRegistry)
 	hb := socket.NewHub(logger, ts)
+	es := sse.New(logger, ts)
 
 	services := transport.Services{
 		TickerService:      ts,
 		SQLDatabaseService: sqlDB,
 		HistoryService:     hs,
 		HubService:         hb,
+		EventService:       es,
 	}
 
 	initHTTP(g, services)
@@ -138,9 +139,6 @@ func initHTTP(g *run.Group, services transport.Services) {
 	srv := &http.Server{
 		Handler: handler,
 		Addr:    ":" + httpPort,
-		// Good practice: enforce timeouts for servers you create!
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
 	}
 
 	g.Add(func() error {

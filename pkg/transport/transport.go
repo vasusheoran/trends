@@ -4,6 +4,7 @@ import (
 	"github.com/vsheoran/trends/services/database"
 	"github.com/vsheoran/trends/services/history"
 	"github.com/vsheoran/trends/services/socket"
+	"github.com/vsheoran/trends/services/sse"
 	"github.com/vsheoran/trends/services/ticker"
 )
 
@@ -12,6 +13,7 @@ type Services struct {
 	SQLDatabaseService *database.SQLDatastore
 	HistoryService     history.History
 	HubService         *socket.Hub
+	EventService       *sse.Clients
 }
 
 // swagger:model ErrorResponse

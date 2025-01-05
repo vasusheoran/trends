@@ -20,7 +20,6 @@ type IndexResponse struct {
 
 // IndexHandlerFunc returns the index.html template, with film data
 func IndexHandlerFunc(w http.ResponseWriter, r *http.Request) {
-	logger.Log("msg", "IndexHandlerFunc")
 
 	data, err := svc.TickerService.Get("")
 	if err != nil {
@@ -66,10 +65,7 @@ func UpdateTickerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := mux.Vars(r)
-	sasSymbol := params[constants.SasSymbolKey]
-
-	logger.Log("msg", "UpdateTickerHandler", "path", r.URL.Path, "method", r.Method, "sasSymbol", sasSymbol)
+	//logger.Log("msg", "UpdateTickerHandler", "path", r.URL.Path, "method", r.Method)
 	var err error
 
 	var st contracts.Stock
@@ -80,7 +76,8 @@ func UpdateTickerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = svc.HubService.UpdateStock(st)
+	err = svc.EventService.Update(st)
+	//err = svc.HubService.UpdateStock(st)
 	if err != nil {
 		go func() { logger.Log("err", err.Error()) }()
 		http.Error(w, fmt.Sprintf("Err: %s", err.Error()), http.StatusInternalServerError)

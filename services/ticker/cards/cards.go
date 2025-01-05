@@ -68,6 +68,10 @@ func (c *card) Add(ticker models.Ticker) error {
 }
 
 func (c *card) GetSymbol(symbol string) []models.Ticker {
+	if c.ticker[symbol] == nil {
+		return nil
+	}
+
 	if c.ticker[symbol].NextIndex == 0 {
 		return []models.Ticker{
 			c.ticker[symbol].Data[c.ticker[symbol].Index],

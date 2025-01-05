@@ -2,13 +2,10 @@ package contracts
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 // swagger:model Stock
 type Stock struct {
-	gorm.Model
 	Ticker string    `json:"ticker" gorm:"index:composite_key_index,unique"`
 	Date   string    `json:"date" gorm:"index:composite_key_index,unique"`
 	Close  float64   `json:"close"`

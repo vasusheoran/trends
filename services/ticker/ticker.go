@@ -64,7 +64,6 @@ func (t *ticker) Init(symbol string, tickers []models.Ticker) error {
 		return fmt.Errorf("data not found for symbol `%s`", symbol)
 	}
 
-	t.logger.Log("msg", "removing symbol if exist", "symbol", symbol)
 	t.card.Remove(symbol)
 
 	for _, tk := range tickers {
@@ -108,7 +107,6 @@ func (t *ticker) Update(symbol string, close, open, high, low float64, broadcast
 			return
 		}
 
-		t.logger.Log("msg", fmt.Sprintf("updating UI for `%s`", symbol))
 		broadcast <- symbol
 	}()
 	go t.recordLatencyMetric(metrics.TickerUpdateLatency, startTime)

@@ -8,8 +8,9 @@ const (
 	RTDataPath         = BaseDir + string(os.PathSeparator) + "rt"
 	SymbolsFilePath    = BaseDir + string(os.PathSeparator) + "symbols.csv"
 
-	HeaderContentTypeKey  = "Content-Type"
-	HeaderContentTypeJSON = "application/json"
+	HeaderContentTypeKey         = "Content-Type"
+	HeaderContentTypeJSON        = "application/json"
+	HeaderContentTypeEventStream = "text/event-stream"
 )
 
 const (
