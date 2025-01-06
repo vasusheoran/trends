@@ -52,7 +52,8 @@ func WatchHandlerFunc(w http.ResponseWriter, r *http.Request) {
 			}
 			timer.Reset(time.Second * 10)
 		case <-r.Context().Done():
-			break
+			svc.EventService.Unsubscribe(UUID, symbol)
+			return
 		case view, ok := <-ch:
 			if !ok {
 				logger.Log("msg", "channel closed for `%s` <-> `%s`", symbol, UUID)
@@ -65,9 +66,11 @@ func WatchHandlerFunc(w http.ResponseWriter, r *http.Request) {
 
 			if _, err := fmt.Fprintf(w, "event: %s\ndata: %s\n\n", symbol, htmlBytes.String()); err != nil {
 				logger.Log("msg", "Streaming not supported", "err", err.Error())
+				svc.EventService.Unsubscribe(UUID, symbol)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+			timer.Reset(time.Second * 10)
 		}
 		flusher.Flush()
 	}

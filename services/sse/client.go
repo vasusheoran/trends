@@ -27,11 +27,11 @@ func New(logger log.Logger, tickerClient ticker.Ticker) *Clients {
 		tickerClient: tickerClient,
 	}
 
-	go c.run()
+	go c.run(logger)
 	return c
 }
 
-func (c *Clients) run() {
+func (c *Clients) run(logger log.Logger) {
 	for {
 		select {
 		case symbol := <-c.broadcast:
@@ -54,6 +54,8 @@ func (c *Clients) run() {
 			}
 		}
 	}
+
+	logger.Log("msg", "exiting run")
 }
 
 func (c *Clients) Subscribe(UUID, symbol string, ch chan contracts.TickerView) error {
@@ -92,6 +94,7 @@ func (c *Clients) Unsubscribe(UUID, symbol string) {
 	for i, val := range uuidList {
 		if val == UUID {
 			uuidList = append(uuidList[:i], uuidList[i+1:]...)
+			c.uuidMap[symbol] = uuidList
 			break
 		}
 	}
