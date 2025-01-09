@@ -12,6 +12,20 @@ Sub Test()
     
 End Sub
 
+Function DelayActivate(timeInSeconds As String)
+    Dim time1, time2
+
+    time1 = Now
+    
+    time2 = Now + TimeValue("0:00:" & timeInSeconds)
+    Do Until time1 >= time2
+        DoEvents
+        time1 = Now()
+    Loop
+    AppActivate Application.Caption
+    DelayActivate = "Done - " & timeInSeconds
+End Function
+
 
 ' If a function's arguments are defined as follows:
 Function PostTrend(ticker As String, _
@@ -21,7 +35,9 @@ Function PostTrend(ticker As String, _
                 h As String, _
                 l As String, _
                 Optional URL = "http://localhost:5001/api/update/index")
-                
+    
+activeCell.Activate
+    
 Dim data As String
 data = "{""date"":""" & d & _
         """,""ticker"":""" & ticker & _
@@ -30,8 +46,7 @@ data = "{""date"":""" & d & _
         ",""high"":" & h & _
         ",""low"":" & l & " }"
         
-Debug.Print data
-        
+' Debug.Print data
 Dim hReq As Object
 Set hReq = CreateObject("MSXML2.XMLHTTP")
     With hReq
@@ -40,7 +55,9 @@ Set hReq = CreateObject("MSXML2.XMLHTTP")
         '.SetTimeouts 2000, 2000, 2000, 2000
         .Send data
     End With
-    
+
+
+Debug.Print activeCell.Address
 PostTrend = hReq.ResponseText
 End Function
 
