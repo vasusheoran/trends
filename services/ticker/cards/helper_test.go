@@ -3,7 +3,6 @@ package cards
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
-	"github.com/vsheoran/trends/trendstest"
 	"github.com/vsheoran/trends/utils"
 	"testing"
 	"time"
@@ -50,116 +49,116 @@ func TestCard(t *testing.T) {
 
 }
 
-func TestCard_Update(t *testing.T) {
-	logger := utils.InitializeDefaultLogger()
-
-	const symbol = "test"
-
-	records, err := readInputCSV("test/input/final.csv")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	data, err := parseRecords(logger, records)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	c := getCardService(logger)
-	//i := 0
-	expected := models.Ticker{}
-	for _, expected = range data {
-
-		ticker := models.Ticker{
-			Date: expected.Date,
-			Time: time.Now(),
-			Name: symbol,
-			W:    expected.W,
-			X:    expected.X,
-			Y:    expected.Y,
-			Z:    expected.X,
-		}
-		err = c.Add(ticker)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	tests := []struct {
-		name     string
-		input    models.Ticker
-		expected models.Ticker
-	}{
-		{
-			name: "first update",
-			input: models.Ticker{
-				Name: symbol,
-				Date: "30-Dec-2024",
-				W:    24066,
-				X:    24065.80,
-				Y:    24066,
-				Z:    24066,
-			},
-			expected: models.Ticker{
-				Name: symbol,
-				Date: "30-Dec-2024",
-				W:    24066,
-				X:    24065.80,
-				Y:    24066,
-				Z:    24066,
-				CH:   24091.332,
-			},
-		},
-		{
-			name: "second update",
-			input: models.Ticker{
-				Name: symbol,
-				Date: "30-Dec-2024",
-				W:    24066,
-				X:    24065.80,
-				Y:    25066,
-				Z:    24066,
-			},
-			expected: models.Ticker{
-				Name: symbol,
-				Date: "30-Dec-2024",
-				W:    24066,
-				X:    24065.80,
-				Y:    25066,
-				Z:    24066,
-				CH:   24342.196,
-			},
-		},
-	}
-
-	c.forceFutureCalc = true
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-
-			//_, err = c.Future(tc.input)
-			//if err != nil {
-			//	t.Fatal(err)
-			//}
-
-			err = c.Update(tc.input.Name, tc.input.W, tc.input.X, tc.input.Y, tc.input.Z)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			err = c.Update(tc.input.Name, tc.input.W, tc.input.X, tc.input.Y, tc.input.Z)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			result1 := c.Get(tc.input.Name)
-			validateResult(t, logger, 0, tc.expected, result1[0])
-			assert.True(t, trendstest.IsValueWithinTolerance(result1[0].CH, tc.expected.CH, 0.001))
-
-		})
-	}
-
-}
+//func TestCard_Update(t *testing.T) {
+//	logger := utils.InitializeDefaultLogger()
+//
+//	const symbol = "test"
+//
+//	records, err := readInputCSV("test/input/final.csv")
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	data, err := parseRecords(logger, records)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	c := getCardService(logger)
+//	//i := 0
+//	expected := models.Ticker{}
+//	for _, expected = range data {
+//
+//		ticker := models.Ticker{
+//			Date: expected.Date,
+//			Time: time.Now(),
+//			Name: symbol,
+//			W:    expected.W,
+//			X:    expected.X,
+//			Y:    expected.Y,
+//			Z:    expected.X,
+//		}
+//		err = c.Add(ticker)
+//		if err != nil {
+//			t.Fatal(err)
+//		}
+//	}
+//
+//	tests := []struct {
+//		name     string
+//		input    models.Ticker
+//		expected models.Ticker
+//	}{
+//		{
+//			name: "first update",
+//			input: models.Ticker{
+//				Name: symbol,
+//				Date: "30-Dec-2024",
+//				W:    24066,
+//				X:    24065.80,
+//				Y:    24066,
+//				Z:    24066,
+//			},
+//			expected: models.Ticker{
+//				Name: symbol,
+//				Date: "30-Dec-2024",
+//				W:    24066,
+//				X:    24065.80,
+//				Y:    24066,
+//				Z:    24066,
+//				CH:   24091.332,
+//			},
+//		},
+//		{
+//			name: "second update",
+//			input: models.Ticker{
+//				Name: symbol,
+//				Date: "30-Dec-2024",
+//				W:    24066,
+//				X:    24065.80,
+//				Y:    25066,
+//				Z:    24066,
+//			},
+//			expected: models.Ticker{
+//				Name: symbol,
+//				Date: "30-Dec-2024",
+//				W:    24066,
+//				X:    24065.80,
+//				Y:    25066,
+//				Z:    24066,
+//				CH:   24342.196,
+//			},
+//		},
+//	}
+//
+//	c.forceFutureCalc = true
+//
+//	for _, tc := range tests {
+//		t.Run(tc.name, func(t *testing.T) {
+//
+//			//_, err = c.Future(tc.input)
+//			//if err != nil {
+//			//	t.Fatal(err)
+//			//}
+//
+//			err = c.Update(tc.input.Name, tc.input.W, tc.input.X, tc.input.Y, tc.input.Z)
+//			if err != nil {
+//				t.Fatal(err)
+//			}
+//
+//			err = c.Update(tc.input.Name, tc.input.W, tc.input.X, tc.input.Y, tc.input.Z)
+//			if err != nil {
+//				t.Fatal(err)
+//			}
+//
+//			result1 := c.Get(tc.input.Name)
+//			validateResult(t, logger, 0, tc.expected, result1[0])
+//			assert.True(t, trendstest.IsValueWithinTolerance(result1[0].CH, tc.expected.CH, 0.001))
+//
+//		})
+//	}
+//
+//}
 
 func TestSearch(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()

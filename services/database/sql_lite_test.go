@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/utils"
@@ -12,6 +13,8 @@ import (
 func TestSQLDatastore_DeleteStocks(t *testing.T) {
 	dbPath := "test/test.db"
 	defer os.Remove(dbPath)
+
+	metricsRegistry := prometheus.NewRegistry()
 
 	const ticker = "test_ticker"
 
@@ -36,7 +39,7 @@ func TestSQLDatastore_DeleteStocks(t *testing.T) {
 	}
 
 	logger := utils.InitializeDefaultLogger()
-	dbSvc, err := NewSqlDatastore(logger, dbPath, nil)
+	dbSvc, err := NewSqlDatastore(logger, dbPath, metricsRegistry)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,6 +88,8 @@ func TestSQLDatastore_GetDistinctTicker(t *testing.T) {
 
 	const ticker = "test_ticker"
 
+	metricsRegistry := prometheus.NewRegistry()
+
 	stocks := []models.Ticker{}
 
 	for i := 10; i < 20; i++ {
@@ -106,7 +111,7 @@ func TestSQLDatastore_GetDistinctTicker(t *testing.T) {
 	}
 
 	logger := utils.InitializeDefaultLogger()
-	dbSvc, err := NewSqlDatastore(logger, dbPath, nil)
+	dbSvc, err := NewSqlDatastore(logger, dbPath, metricsRegistry)
 	if err != nil {
 		t.Fatal(err)
 	}

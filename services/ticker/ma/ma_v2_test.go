@@ -4,9 +4,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vsheoran/trends/trendstest"
 	"github.com/vsheoran/trends/utils"
+	"testing"
 )
 
-func TestMovingAverageV2_Value(t *trendstest.T) {
+func TestMovingAverageV2_Value(t *testing.T) {
 	logger := utils.InitializeDefaultLogger()
 	testCases := []struct {
 		name     string
@@ -29,7 +30,7 @@ func TestMovingAverageV2_Value(t *trendstest.T) {
 	const name = "test"
 
 	for _, tc := range testCases {
-		t.Run(tc.name, func(t *trendstest.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			//[]string{"5", "20"}, []int{5, 20}, 0
 			svc := MovingAverageV2{
 				logger,
