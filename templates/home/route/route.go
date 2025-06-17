@@ -15,20 +15,16 @@ func SymbolsRoute(l log.Logger, router *mux.Router, services transport.Services)
 	svc = services
 	logger = log.With(l, "method", "SymbolsRoute")
 
-	router.Path("/search/button").HandlerFunc(SelectTickerViewHandler).Methods(http.MethodGet)
-	router.Path("/ticker/init").HandlerFunc(SelectTickerHandler).Methods(http.MethodGet)
+	router.Path(constants.SelectTicker).HandlerFunc(SelectTickerViewHandler).Methods(http.MethodGet)
+	router.Path(constants.InitTicker).HandlerFunc(SelectTickerHandler).Methods(http.MethodGet)
 
-	router.Path("/ticker/button").HandlerFunc(UploadFileViewHandler).Methods(http.MethodGet)
-	router.Path("/ticker/init").HandlerFunc(UploadFileHandler).Methods(http.MethodPost)
+	router.Path(constants.UploadFile).HandlerFunc(UploadFileViewHandler).Methods(http.MethodGet)
+	router.Path(constants.UploadFile).HandlerFunc(UploadFileHandler).Methods(http.MethodPost)
 
-	router.Path("/ticker/remove").HandlerFunc(RemoveTickerViewHandler).Methods(http.MethodGet)
-	router.Path("/ticker/remove").HandlerFunc(RemoveTickerHandlerV2).Methods(http.MethodPost)
-	router.Path("/ticker/init").HandlerFunc(CloseTickerHandler).Methods(http.MethodDelete)
+	router.Path(constants.DeleteTicker).HandlerFunc(RemoveTickerViewHandler).Methods(http.MethodGet)
+	router.Path(constants.DeleteTicker).HandlerFunc(RemoveTickerHandler).Methods(http.MethodPost)
+	router.Path(constants.CloseTicker).HandlerFunc(CloseTickerHandler).Methods(http.MethodDelete)
 
-	router.Path("/ws/ticker/{"+constants.SasSymbolKey+"}").HandlerFunc(SocketHandleFunc).
-		Methods(http.MethodGet, http.MethodDelete, http.MethodOptions)
-	router.Path("/watch/{"+constants.SasSymbolKey+"}").HandlerFunc(WatchHandlerFunc).
-		Methods(http.MethodGet, http.MethodOptions)
-	router.Path("/sse").HandlerFunc(TestWatchHandlerFunc).
+	router.Path(constants.WatchURL).HandlerFunc(WatchHandlerFunc).
 		Methods(http.MethodGet, http.MethodOptions)
 }

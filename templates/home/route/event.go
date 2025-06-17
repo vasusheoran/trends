@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
-	"github.com/vsheoran/trends/templates"
 	"github.com/vsheoran/trends/templates/home"
 	"net/http"
 	"time"
@@ -76,43 +75,4 @@ func WatchHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//logger.Log("msg", fmt.Sprintf("Finished WatchHandlerFunc for symbol: `%s` with UUID: `%s`", symbol, UUID))
-}
-
-func TestWatchHandlerFunc(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.WriteHeader(200)
-	//w.Header().Set("Cache-Control", "no-cache")
-	//w.Header().Set("Connection", "keep-alive")
-
-	logger.Log("msg", "WatchHandlerFunc")
-
-	var count int = 0
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		http.Error(w, "Streaming not supported", http.StatusInternalServerError)
-		return
-	}
-
-	for {
-		htmlBytes := &bytes.Buffer{}
-		//message := templates.TestEventData(fmt.Sprintf("%d", i))
-		message := templates.EventData("test1", "Red", "Laptop", count)
-		message.Render(context.Background(), htmlBytes)
-
-		fmt.Fprintf(w, "id: %s\nevent: %s\ndata: %s\n\n", time.Now().Format("2-Jan-06 15:04:05"), "test1", htmlBytes.String())
-		//fmt.Fprintf(w, fmt.Sprintf("data: %d\n\n", count))
-		flusher.Flush()
-
-		time.Sleep(1 * time.Second)
-		count++
-
-		logger.Log("count", count)
-
-		if count > 5 {
-			break
-		}
-	}
-
-	fmt.Fprintf(w, "event: close\n\n") // End of stream
-	logger.Log("msg", "Finished WatchHandlerFunc")
 }

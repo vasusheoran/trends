@@ -21,7 +21,6 @@ import (
 	"syscall"
 
 	"github.com/vsheoran/trends/services/history"
-	"github.com/vsheoran/trends/services/socket"
 	"github.com/vsheoran/trends/services/ticker"
 	http2 "github.com/vsheoran/trends/transport/http"
 	"github.com/vsheoran/trends/utils"
@@ -97,14 +96,12 @@ func initServer(g *run.Group) {
 	cs := cards.NewCard(logger)
 	hs := history.New(logger, sqlDB, metricsRegistry)
 	ts := ticker.NewTicker(logger, cs, hs, metricsRegistry)
-	hb := socket.NewHub(logger, ts)
 	es := sse.New(logger, ts)
 
 	services := transport.Services{
 		TickerService:      ts,
 		SQLDatabaseService: sqlDB,
 		HistoryService:     hs,
-		HubService:         hb,
 		EventService:       es,
 	}
 

@@ -1,9 +1,11 @@
 module github.com/vsheoran/trends
 
-go 1.21.6
+go 1.23.0
+
+toolchain go1.23.10
 
 require (
-	github.com/a-h/templ v0.2.793
+	github.com/a-h/templ v0.3.898
 	github.com/go-kit/kit v0.10.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.7.3
@@ -31,7 +33,7 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.55.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	golang.org/x/sys v0.23.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

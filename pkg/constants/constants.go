@@ -18,5 +18,17 @@ const (
 	CardsAPI     = "/cards/{sasSymbol}"
 	HistoryAPI   = "/history/{sasSymbol}"
 	IndexAPI     = "/index/{sasSymbol}"
+	UpdateAPI    = "/update/index"
 	SasSymbolKey = "sasSymbol"
+)
+
+const (
+	SelectTicker = "/search/button"
+	InitTicker   = "/ticker/init"
+	DeleteTicker = "/ticker/delete"
+	CloseTicker  = "/ticker/close"
+	UploadFile   = "/upload"
+
+	WebSocketURL = "/ws/ticker/{" + SasSymbolKey + "}"
+	WatchURL     = "/watch/{" + SasSymbolKey + "}"
 )

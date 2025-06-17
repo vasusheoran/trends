@@ -1,11 +1,11 @@
 package home
 
-templ UploadFile() {
+templ UploadFile(uploadFileURL string) {
 	<form
 		class="max-w-sm mx-auto"
 		id="add-ticker-section"
 		hx-encoding="multipart/form-data"
-		hx-post="/ticker/init"
+		hx-post={uploadFileURL}
 		hx-target="#add-ticker-section"
 		hx-swap="outerHTML"
 		_="on htmx:xhr:progress(loaded, total) set #progress.value to (loaded/total)*100"

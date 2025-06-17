@@ -1,38 +1,31 @@
 package transport
 
 import (
-	"context"
-	"fmt"
+	"errors"
 	"io"
-	"net/http"
 	"time"
 
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
-	"github.com/vsheoran/trends/templates/home"
 	"github.com/vsheoran/trends/utils"
 )
 
-func InitTicker(key string, tickers []models.Ticker, svc Services, w http.ResponseWriter, r *http.Request) {
+func InitTicker(key string, tickers []models.Ticker, svc Services) (map[string]contracts.TickerView, error) {
 	err := svc.TickerService.Init(key, tickers)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	data, err := svc.TickerService.Get(key)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	if data == nil {
-		http.Error(w, fmt.Sprintf("failed to get ticker data for symbol `%s`", key), http.StatusInternalServerError)
-		return
+		return nil, errors.New("failed to get ticker data for symbol `" + key + "`")
 	}
 
-	component := home.Dashboard(contracts.HTMXData{SummaryMap: data})
-	component.Render(context.Background(), w)
+	return data, nil
 }
 
 type StockV0 struct {

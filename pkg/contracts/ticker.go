@@ -13,8 +13,18 @@ const (
 	pink   = "text-pink-400"
 )
 
+type URL struct {
+	FileUpload  string `json:"file_upload"`
+	CloseTicker string `json:"close_ticker"`
+}
+
+type Config struct {
+	URL URL `json:"url"`
+}
+
 type HTMXData struct {
 	SummaryMap map[string]TickerView
+	Config     Config
 }
 
 var ErrKeyNotFound = fmt.Errorf("Ticker name is required")

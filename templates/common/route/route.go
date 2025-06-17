@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
+	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/pkg/transport"
 	"github.com/vsheoran/trends/templates/home"
@@ -31,6 +32,11 @@ func HandleCommonSelectClose(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "no ticker data found", http.StatusBadRequest)
 		return
 	}
-	component := home.Dashboard(contracts.HTMXData{SummaryMap: data})
+	component := home.Dashboard(contracts.HTMXData{SummaryMap: data, Config: contracts.Config{
+		URL: contracts.URL{
+			FileUpload:  constants.UploadFile,
+			CloseTicker: constants.CloseTicker,
+		},
+	}})
 	component.Render(context.Background(), w)
 }

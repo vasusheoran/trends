@@ -49,6 +49,13 @@ func (t *ticker) Get(symbol string) (map[string]contracts.TickerView, error) {
 
 func (t *ticker) Init(symbol string, tickers []models.Ticker) error {
 	startTime := time.Now()
+	defer t.recordLatencyMetric(metrics.TickerInitLatency, startTime)
+
+	if _, ok := t.summary[symbol]; ok {
+		t.logger.Log("symbol", symbol, "msg", "ticker already initialized")
+		return nil
+	}
+
 	var err error
 	isNewTicker := true
 	if len(tickers) == 0 {
@@ -86,7 +93,6 @@ func (t *ticker) Init(symbol string, tickers []models.Ticker) error {
 		}()
 	}
 
-	t.recordLatencyMetric(metrics.TickerInitLatency, startTime)
 	return nil
 }
 

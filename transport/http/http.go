@@ -46,8 +46,7 @@ func ServeHTTP(l log.Logger, router *mux.Router, services transport.Services) {
 		utils.Encode(w, map[string]bool{"ok": true})
 	})
 
-	UpdateAPI := "/update/index"
-	router.Path(UpdateAPI).
+	router.Path(constants.UpdateAPI).
 		HandlerFunc(UpdateTickerHandler).
 		Methods(http.MethodPut)
 	router.Path(constants.IndexAPI).

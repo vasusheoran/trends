@@ -30,7 +30,12 @@ func IndexHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		data = map[string]contracts.TickerView{}
 	}
 
-	component := templates.Index(contracts.HTMXData{SummaryMap: data})
+	component := templates.Index(contracts.HTMXData{SummaryMap: data, Config: contracts.Config{
+		URL: contracts.URL{
+			FileUpload:  constants.UploadFile,
+			CloseTicker: constants.CloseTicker,
+		},
+	}})
 	component.Render(context.Background(), w)
 }
 

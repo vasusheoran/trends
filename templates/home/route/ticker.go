@@ -3,6 +3,7 @@ package route
 import (
 	"context"
 	"fmt"
+	"github.com/vsheoran/trends/pkg/constants"
 	"github.com/vsheoran/trends/pkg/contracts"
 	"github.com/vsheoran/trends/services/ticker/cards/models"
 	"github.com/vsheoran/trends/templates/home"
@@ -29,11 +30,22 @@ func SelectTickerHandler(w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("ticker-name")
 	key = strings.Trim(key, "\n")
 
-	transport.InitTicker(key, []models.Ticker{}, svc, w, r)
+	data, err := transport.InitTicker(key, []models.Ticker{}, svc)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	component := home.Dashboard(contracts.HTMXData{SummaryMap: data, Config: contracts.Config{
+		URL: contracts.URL{
+			FileUpload:  constants.UploadFile,
+			CloseTicker: constants.CloseTicker,
+		},
+	}})
+	component.Render(context.Background(), w)
 }
 
 func UploadFileViewHandler(w http.ResponseWriter, r *http.Request) {
-	component := home.UploadFile()
+	component := home.UploadFile(constants.UploadFile)
 	component.Render(context.Background(), w)
 }
 
@@ -60,7 +72,18 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transport.InitTicker(key, tickers, svc, w, r)
+	data, err := transport.InitTicker(key, tickers, svc)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	component := home.Dashboard(contracts.HTMXData{SummaryMap: data, Config: contracts.Config{
+		URL: contracts.URL{
+			FileUpload:  constants.UploadFile,
+			CloseTicker: constants.CloseTicker,
+		},
+	}})
+	component.Render(context.Background(), w)
 }
 
 func CloseTickerHandler(w http.ResponseWriter, r *http.Request) {
@@ -86,7 +109,12 @@ func CloseTickerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component := home.Dashboard(contracts.HTMXData{SummaryMap: data})
+	component := home.Dashboard(contracts.HTMXData{SummaryMap: data, Config: contracts.Config{
+		URL: contracts.URL{
+			FileUpload:  constants.UploadFile,
+			CloseTicker: constants.CloseTicker,
+		},
+	}})
 	component.Render(context.Background(), w)
 }
 
@@ -101,7 +129,7 @@ func RemoveTickerViewHandler(w http.ResponseWriter, r *http.Request) {
 	component.Render(context.Background(), w)
 }
 
-func RemoveTickerHandlerV2(w http.ResponseWriter, r *http.Request) {
+func RemoveTickerHandler(w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("ticker-name")
 	key = strings.Trim(key, "\n")
 
@@ -128,6 +156,11 @@ func RemoveTickerHandlerV2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component := home.Dashboard(contracts.HTMXData{SummaryMap: data})
+	component := home.Dashboard(contracts.HTMXData{SummaryMap: data, Config: contracts.Config{
+		URL: contracts.URL{
+			FileUpload:  constants.UploadFile,
+			CloseTicker: constants.CloseTicker,
+		},
+	}})
 	component.Render(context.Background(), w)
 }
