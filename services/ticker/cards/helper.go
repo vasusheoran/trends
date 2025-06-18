@@ -40,12 +40,12 @@ func (c *card) calculateCD(symbol string, index int) error {
 		return nil
 	}
 
-	err := c.ema.Add("CD5", c.ticker[symbol].CE)
+	err := c.ema.Add(symbol, "CD5", c.ticker[symbol].CE)
 	if err != nil {
 		return err
 	}
 
-	c.ticker[symbol].CD = c.ema.Value("CD5")
+	c.ticker[symbol].CD = c.ema.Value(symbol, "CD5")
 	return nil
 }
 
@@ -57,62 +57,62 @@ func (c *card) calculateAD(t *tickerData, index int) {
 	t.Data[index].AD = math.Min(math.Min(t.Data[index-1].Y, t.Data[index-2].Y), t.Data[index-3].Y)
 }
 
-func (c *card) calculateAS(t *tickerData, index int) error {
+func (c *card) calculateAS(symbol string, t *tickerData, index int) error {
 	if index < 6 {
 		return nil
 	}
-	err := c.ema.AddWithPreviousEMA("AS5", t.Data[index].W, t.Data[index-1].M)
+	err := c.ema.AddWithPreviousEMA(symbol, "AS5", t.Data[index].W, t.Data[index-1].M)
 	if err != nil {
 		return err
 	}
 
-	t.Data[index].AS = c.ema.Value("AS5")
+	t.Data[index].AS = c.ema.Value(symbol, "AS5")
 	return nil
 }
 
-func (c *card) calculateM(t *tickerData, index int) error {
-	err := c.ema.Add("M5", t.Data[index].W)
+func (c *card) calculateM(symbol string, t *tickerData, index int) error {
+	err := c.ema.Add(symbol, "M5", t.Data[index].W)
 	if err != nil {
 		return err
 	}
 
-	t.Data[index].M = c.ema.Value("M5")
+	t.Data[index].M = c.ema.Value(symbol, "M5")
 	return nil
 }
 
-func (c *card) calculateO(t *tickerData, index int) error {
-	err := c.ema.Add("O21", t.Data[index].W)
+func (c *card) calculateO(symbol string, t *tickerData, index int) error {
+	err := c.ema.Add(symbol, "O21", t.Data[index].W)
 	if err != nil {
 		return err
 	}
 
-	t.Data[index].O = c.ema.Value("O21")
+	t.Data[index].O = c.ema.Value(symbol, "O21")
 	return nil
 }
 
-func (c *card) calculateBN(t *tickerData, index int) error {
+func (c *card) calculateBN(symbol string, t *tickerData, index int) error {
 	if index < 21 {
 		return nil
 	}
-	err := c.ema.AddWithPreviousEMA("BN21", t.Data[index].W, t.Data[index-1].O)
+	err := c.ema.AddWithPreviousEMA(symbol, "BN21", t.Data[index].W, t.Data[index-1].O)
 	if err != nil {
 		return err
 	}
 
-	t.Data[index].BN = c.ema.Value("BN21")
+	t.Data[index].BN = c.ema.Value(symbol, "BN21")
 	return nil
 }
 
-func (c *card) calculateBP(t *tickerData, index int) {
+func (c *card) calculateBP(symbol string, t *tickerData, index int) {
 	t.Data[index].BP = t.Data[index].AS - t.Data[index].BN
 }
 
-func (c *card) calculateAR(t *tickerData, index int) error {
-	err := c.ma.Add("AR10", t.Data[index].W)
+func (c *card) calculateAR(symbol string, t *tickerData, index int) error {
+	err := c.ma.Add(symbol, "AR10", t.Data[index].W)
 	if err != nil {
 		return err
 	}
-	err = c.ma.Add("AR50", t.Data[index].W)
+	err = c.ma.Add(symbol, "AR50", t.Data[index].W)
 	if err != nil {
 		return err
 	}
@@ -121,8 +121,8 @@ func (c *card) calculateAR(t *tickerData, index int) error {
 		return nil
 	}
 
-	av50 := c.ma.Value("AR50")
-	av10 := c.ma.Value("AR10")
+	av50 := c.ma.Value(symbol, "AR50")
+	av10 := c.ma.Value(symbol, "AR10")
 	av := av10 + av50
 
 	t.Data[index].AR = (av)/2 - ((av) / 2 * (((av)/2 - (((((av)/2 - ((av) / 2 * 0.01)) + (((av)/2 - ((av) / 2 * 0.01)) * 0.025)) + (av)/2) / 2)) / (av) / 2 * 100 / 2) / 100)
@@ -130,7 +130,7 @@ func (c *card) calculateAR(t *tickerData, index int) error {
 	return nil
 }
 
-func (c *card) calculateC(t *tickerData, index int) {
+func (c *card) calculateC(symbol string, t *tickerData, index int) {
 	if index == 0 {
 		return
 	}
@@ -140,7 +140,7 @@ func (c *card) calculateC(t *tickerData, index int) {
 	t.Data[index].MaxC = math.Max(t.Data[index].C, 0.0)
 }
 
-func (c *card) calculateE(t *tickerData, index int) {
+func (c *card) calculateE(symbol string, t *tickerData, index int) {
 	if index < 14 {
 		return
 	}
@@ -162,7 +162,7 @@ func (c *card) calculateE(t *tickerData, index int) {
 	t.Data[index].E = math.Abs(sum) / float64(14)
 }
 
-func (c *card) calculateD(t *tickerData, index int) {
+func (c *card) calculateD(symbol string, t *tickerData, index int) {
 	if index < 14 {
 		return
 	}
@@ -181,7 +181,7 @@ func (c *card) calculateD(t *tickerData, index int) {
 
 }
 
-func (c *card) calculateCW(t *tickerData, index int) {
+func (c *card) calculateCW(symbol string, t *tickerData, index int) {
 	if index < 14 {
 		return
 	}
@@ -196,28 +196,28 @@ func (c *card) calculateCW(t *tickerData, index int) {
 	t.Data[index].CW = 100 - (100 / (1 + value/isValid))
 }
 
-func (c *card) cleanUpEMA(indexFromEnd int) error {
-	err := c.ema.Remove("AS5", indexFromEnd)
+func (c *card) cleanUpEMA(symbol string, indexFromEnd int) error {
+	err := c.ema.Remove(symbol, "AS5", indexFromEnd)
 	if err != nil {
 		return err
 	}
-	err = c.ema.Remove("M5", indexFromEnd)
+	err = c.ema.Remove(symbol, "M5", indexFromEnd)
 	if err != nil {
 		return err
 	}
-	err = c.ema.Remove("O21", indexFromEnd)
+	err = c.ema.Remove(symbol, "O21", indexFromEnd)
 	if err != nil {
 		return err
 	}
-	err = c.ema.Remove("BN21", indexFromEnd)
+	err = c.ema.Remove(symbol, "BN21", indexFromEnd)
 	if err != nil {
 		return err
 	}
-	err = c.ma.Remove("AR10", indexFromEnd)
+	err = c.ma.Remove(symbol, "AR10", indexFromEnd)
 	if err != nil {
 		return err
 	}
-	err = c.ma.Remove("AR50", indexFromEnd)
+	err = c.ma.Remove(symbol, "AR50", indexFromEnd)
 	if err != nil {
 		return err
 	}

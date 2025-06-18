@@ -37,6 +37,8 @@ func (c *card) GetAllTickerData(symbol string) []models.Ticker {
 
 func (c *card) Remove(ticker string) {
 	delete(c.ticker, ticker)
+	c.ema.Delete(ticker)
+	c.ma.Delete(ticker)
 }
 
 type tickerData struct {
@@ -139,7 +141,7 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 
 		current.Data = current.Data[:len(current.Data)-current.NextIndex]
 
-		err = c.cleanUpEMA(current.NextIndex)
+		err = c.cleanUpEMA(symbol, current.NextIndex)
 		if err != nil {
 			return err
 		}
@@ -157,7 +159,7 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 			return err
 		}
 
-		err = c.ema.Remove("CD5", 1)
+		err = c.ema.Remove(symbol, "CD5", 1)
 		if err != nil {
 			return err
 		}
@@ -191,55 +193,41 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 }
 
 func NewCard(logger log.Logger) Card {
-	emaData := map[string]*ma.EMAData{
+	emaData := map[string]*ma.EMAConfig{
 		"M5": {
 			Window: 5,
 			Delay:  0,
 			Decay:  2.0 / 6.0,
-			Values: []float64{},
-			EMA:    []float64{},
 		},
 		"AS5": {
 			Window: 5,
 			Delay:  0,
 			Decay:  2.0 / 6.0,
-			Values: []float64{},
-			EMA:    []float64{},
 		},
 		"O21": {
 			Window: 5,
 			Delay:  20,
 			Decay:  2.0 / 21.0,
-			Values: []float64{},
-			EMA:    []float64{},
 		},
 		"BN21": {
 			Window: 5,
 			Delay:  0,
 			Decay:  2.0 / 21.0,
-			Values: []float64{},
-			EMA:    []float64{},
 		},
 		"CD5": {
 			Window: 5,
 			Delay:  0,
 			Decay:  2.0 / 6.0,
-			Values: []float64{},
-			EMA:    []float64{},
 		},
 	}
 
-	maData := map[string]*ma.MAData{
+	maData := map[string]*ma.MAConfig{
 		"AR10": {
-			Values:    []float64{},
-			WindowSum: []float64{},
-			Window:    10,
+			Window: 10,
 		},
 		"AR50": {
-			Values:    []float64{},
-			WindowSum: []float64{},
-			Window:    50,
-			Offset:    0,
+			Window: 50,
+			Offset: 0,
 		},
 	}
 
@@ -304,13 +292,13 @@ func (c *card) updateFutureData(ticker models.Ticker) (models.Ticker, error) {
 	}
 	currentTickerData := c.ticker[ticker.Name].Data[current.Index]
 
-	// Data is repeated here
-	//err := c.addNextData(symbol, current.Data[current.Index].W, current.Data[current.Index].X, current.Data[current.Index].Y, current.Data[current.Index].Z)
+	// EMAData is repeated here
+	//err := c.addNextData(symbol, current.EMAData[current.Index].W, current.EMAData[current.Index].X, current.EMAData[current.Index].Y, current.EMAData[current.Index].Z)
 	//if err != nil {
 	//	return models.Ticker{}, err
 	//}
 
-	// Data is repeated here
+	// EMAData is repeated here
 	err := c.addNextData(ticker.Name, ticker.W, ticker.X, ticker.Y, ticker.Z)
 	if err != nil {
 		return models.Ticker{}, err
@@ -360,7 +348,7 @@ func (c *card) cleanUpFutureData(symbol string, data models.Ticker) error {
 		return nil
 	}
 
-	err := c.cleanUpEMA(4)
+	err := c.cleanUpEMA(symbol, 4)
 	if err != nil {
 		return err
 	}
@@ -369,8 +357,8 @@ func (c *card) cleanUpFutureData(symbol string, data models.Ticker) error {
 
 	current.NextIndex = 0
 	c.ticker[symbol].Data[current.Index] = data
-	//current.Data[current.Index].CE = current.CE
-	//current.Data[current.Index].BR = current.BR
+	//current.EMAData[current.Index].CE = current.CE
+	//current.EMAData[current.Index].BR = current.BR
 
 	return nil
 }
@@ -379,40 +367,40 @@ func (c *card) calculate(symbol string, index int) error {
 	currentTicker := c.ticker[symbol]
 	c.calculateAD(currentTicker, index)
 
-	err := c.calculateM(currentTicker, index)
+	err := c.calculateM(symbol, currentTicker, index)
 	if err != nil {
 		return err
 	}
 
-	err = c.calculateAS(currentTicker, index)
+	err = c.calculateAS(symbol, currentTicker, index)
 	if err != nil {
 		return err
 	}
 
-	err = c.calculateO(currentTicker, index)
+	err = c.calculateO(symbol, currentTicker, index)
 	if err != nil {
 		return err
 	}
 
-	err = c.calculateBN(currentTicker, index)
+	err = c.calculateBN(symbol, currentTicker, index)
 	if err != nil {
 		return err
 	}
 
-	c.calculateBP(currentTicker, index)
+	c.calculateBP(symbol, currentTicker, index)
 
-	err = c.calculateAR(currentTicker, index)
+	err = c.calculateAR(symbol, currentTicker, index)
 	if err != nil {
 		return err
 	}
 
-	c.calculateC(currentTicker, index)
+	c.calculateC(symbol, currentTicker, index)
 
-	c.calculateE(currentTicker, index)
+	c.calculateE(symbol, currentTicker, index)
 
-	c.calculateD(currentTicker, index)
+	c.calculateD(symbol, currentTicker, index)
 
-	c.calculateCW(currentTicker, index)
+	c.calculateCW(symbol, currentTicker, index)
 
 	return nil
 }

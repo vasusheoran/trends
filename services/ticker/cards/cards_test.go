@@ -66,55 +66,41 @@ func TestNewCard(t *testing.T) {
 
 func getCardService(logger log.Logger) *card {
 
-	emaData := map[string]*ma.EMAData{
+	emaData := map[string]*ma.EMAConfig{
 		"M5": {
 			Window: 5,
 			Delay:  0,
 			Decay:  2.0 / 6.0,
-			Values: []float64{},
-			EMA:    []float64{},
 		},
 		"AS5": {
 			Window: 5,
 			Delay:  0,
 			Decay:  2.0 / 6.0,
-			Values: []float64{},
-			EMA:    []float64{},
 		},
 		"O21": {
 			Window: 5,
 			Delay:  20,
 			Decay:  2.0 / 21.0,
-			Values: []float64{},
-			EMA:    []float64{},
 		},
 		"BN21": {
 			Window: 5,
 			Delay:  0,
 			Decay:  2.0 / 21.0,
-			Values: []float64{},
-			EMA:    []float64{},
 		},
 		"CD5": {
 			Window: 5,
 			Delay:  0,
 			Decay:  2.0 / 6.0,
-			Values: []float64{},
-			EMA:    []float64{},
 		},
 	}
 
-	maData := map[string]*ma.MAData{
+	maData := map[string]*ma.MAConfig{
 		"AR10": {
-			Values:    []float64{},
-			WindowSum: []float64{},
-			Window:    10,
+			Window: 10,
 		},
 		"AR50": {
-			Values:    []float64{},
-			WindowSum: []float64{},
-			Window:    50,
-			Offset:    0,
+			Window: 50,
+			Offset: 0,
 		},
 	}
 

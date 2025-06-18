@@ -1,6 +1,7 @@
 package ma
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"unicode"
@@ -11,102 +12,148 @@ import (
 )
 
 type EMAData struct {
-	Window    int
-	Delay     int
-	Decay     float64
 	Values    []float64
 	EMA       []float64
 	windowSum float64
 	count     int
 }
 
+type EMAConfig struct {
+	Window int
+	Delay  int
+	Decay  float64
+}
+
 type ExponentialMovingAverageV2 struct {
 	Logger log.Logger
+	Config map[string]*EMAConfig
 	Data   map[string]*EMAData
 }
 
-func (ema *ExponentialMovingAverageV2) Remove(key string, index int) error {
-	if _, ok := ema.Data[key]; !ok {
+func (ema *ExponentialMovingAverageV2) Delete(ticker string) error {
+	var found bool
+	for key, _ := range ema.Config {
+		tickerKey := ema.hashCode(ticker, key)
+		if _, ok := ema.Data[tickerKey]; ok {
+			found = true
+			ema.Logger.Log("tickerKey", tickerKey, "msg", "deleting ticker key for ema")
+			delete(ema.Data, tickerKey)
+		}
+	}
+
+	if !found {
+		ema.Logger.Log("ticker", ticker, "msg", "no key found for ticker for ema")
+	}
+
+	return nil
+}
+
+func (ema *ExponentialMovingAverageV2) Remove(ticker, key string, index int) error {
+	if _, ok := ema.Config[key]; !ok {
 		return fmt.Errorf("key `%s` does not exist", key)
 	}
 
-	st := ema.Data[key]
+	st := ema.Config[key]
 
 	delay := st.Window
 	if delay < st.Delay {
 		delay = st.Delay
 	}
 
-	if st.count-index <= delay {
+	tickerKey := ema.hashCode(ticker, key)
+
+	data, ok := ema.Data[tickerKey]
+	if !ok {
+		return errors.New("tickerKey `" + tickerKey + "` not found")
+	}
+
+	if data.count-index <= delay {
 		return fmt.Errorf("not supporteed if length after removal is less than delay")
 	}
 
-	st.EMA = st.EMA[:len(st.EMA)-index]
-	//st.Values = st.Values[:len(st.Values)-index]
-	st.count -= index
+	data.EMA = data.EMA[:len(data.EMA)-index]
+	data.count -= index
 
+	ema.Data[tickerKey] = data
 	return nil
 }
 
-func (ema *ExponentialMovingAverageV2) Add(key string, value float64) error {
-	if _, ok := ema.Data[key]; !ok {
+func (ema *ExponentialMovingAverageV2) Add(ticker, key string, value float64) error {
+	if _, ok := ema.Config[key]; !ok {
 		return fmt.Errorf("key `%s` does not exist", key)
 	}
 
-	st := ema.Data[key]
+	cfg := ema.Config[key]
 
-	delay := st.Window
-	if delay < st.Delay {
-		delay = st.Delay
+	delay := cfg.Window
+	if delay < cfg.Delay {
+		delay = cfg.Delay
 	}
 
-	st.Values = append(st.Values, value)
+	tickerKey := ema.hashCode(ticker, key)
+
+	data, ok := ema.Data[tickerKey]
+	if !ok {
+		data = &EMAData{}
+	}
+
+	data.Values = append(data.Values, value)
 	switch {
-	case st.count < delay-1:
-		st.windowSum += value
-		st.EMA = append(st.EMA, 0.00)
-	case st.count == delay-1:
-		st.windowSum += value
+	case data.count < delay-1:
+		data.windowSum += value
+		data.EMA = append(data.EMA, 0.00)
+	case data.count == delay-1:
+		data.windowSum += value
 		//average := st.windowSum / float64(st.Window)
-		average := st.windowSum / float64(delay)
-		st.EMA = append(st.EMA, average)
-	case st.count >= delay:
-		newEma := st.Decay*(value-st.EMA[st.count-1]) + st.EMA[st.count-1]
-		st.EMA = append(st.EMA, newEma)
+		average := data.windowSum / float64(delay)
+		data.EMA = append(data.EMA, average)
+	case data.count >= delay:
+		newEma := cfg.Decay*(value-data.EMA[data.count-1]) + data.EMA[data.count-1]
+		data.EMA = append(data.EMA, newEma)
 	}
 
-	st.count++
+	data.count++
+
+	ema.Data[tickerKey] = data
 	return nil
 }
 
-func (ema *ExponentialMovingAverageV2) AddWithPreviousEMA(key string, value, previousEMA float64) error {
-	if _, ok := ema.Data[key]; !ok {
+func (ema *ExponentialMovingAverageV2) AddWithPreviousEMA(ticker, key string, value, previousEMA float64) error {
+	if _, ok := ema.Config[key]; !ok {
 		return fmt.Errorf("key `%s` does not exist", key)
 	}
 
-	st := ema.Data[key]
+	cfg := ema.Config[key]
 
 	newEma := 0.00
 	if !trendstest.IsValueWithinTolerance(previousEMA, 0.00, 0) {
-		newEma = st.Decay*(value-previousEMA) + previousEMA
+		newEma = cfg.Decay*(value-previousEMA) + previousEMA
 	}
+	tickerKey := ema.hashCode(ticker, key)
 
-	st.EMA = append(st.EMA, newEma)
-	st.count++
+	data, ok := ema.Data[tickerKey]
+	if !ok {
+		data = &EMAData{}
+	}
+	
+	data.EMA = append(data.EMA, newEma)
+	data.count++
 
+	ema.Data[tickerKey] = data
 	return nil
 }
 
-func (ema *ExponentialMovingAverageV2) Value(key string) float64 {
-	if _, ok := ema.Data[key]; !ok {
+func (ema *ExponentialMovingAverageV2) Value(ticker, key string) float64 {
+	tickerKey := ema.hashCode(ticker, key)
+	if _, ok := ema.Data[tickerKey]; !ok {
 		return 0.00
 	}
 
-	if ema.Data[key].count == 0 {
+	if ema.Data[tickerKey].count == 0 {
 		return 0.00
 	}
 
-	return ema.Data[key].EMA[ema.Data[key].count-1]
+	return ema.Data[tickerKey].EMA[ema.Data[tickerKey].count-1]
 }
 
 func (ema *ExponentialMovingAverageV2) hashCode(key, col string) string {
@@ -118,9 +165,10 @@ func (ema *ExponentialMovingAverageV2) hashCode(key, col string) string {
 	}, key+"-"+col)
 }
 
-func NewExponentialMovingAverageV2(logger log.Logger, data map[string]*EMAData) ExponentialMovingAverageV2 {
+func NewExponentialMovingAverageV2(logger log.Logger, cfg map[string]*EMAConfig) ExponentialMovingAverageV2 {
 	return ExponentialMovingAverageV2{
 		Logger: logger,
-		Data:   data,
+		Config: cfg,
+		Data:   map[string]*EMAData{},
 	}
 }
