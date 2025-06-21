@@ -305,6 +305,7 @@ func (c *card) updateFutureData(ticker models.Ticker) (models.Ticker, error) {
 		return models.Ticker{}, err
 	}
 
+	//c.ticker[ticker.Name].Data[current.Index+1].W = ticker.Y
 	c.ticker[ticker.Name].Data[current.Index+1] = next
 	c.ticker[ticker.Name].NextCE, err = c.calculateNextCE(ticker.Name, TOLERANCE, float64(current.Index+1), 1.0, ticker.W, ticker.X, ticker.Y, ticker.Z)
 	if err != nil {
