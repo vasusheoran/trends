@@ -19,9 +19,10 @@ type EMAData struct {
 }
 
 type EMAConfig struct {
-	Window int
-	Delay  int
-	Decay  float64
+	Window   int
+	Delay    int
+	Decay    float64
+	Capacity int
 }
 
 type ExponentialMovingAverageV2 struct {
@@ -68,7 +69,7 @@ func (ema *ExponentialMovingAverageV2) Remove(ticker, key string, index int) err
 	}
 
 	if data.count-index <= delay {
-		return fmt.Errorf("not supporteed if length after removal is less than delay")
+		return fmt.Errorf("EMA Removal not supported if length after removal is less than delay")
 	}
 
 	data.EMA = data.EMA[:len(data.EMA)-index]
@@ -114,6 +115,21 @@ func (ema *ExponentialMovingAverageV2) Add(ticker, key string, value float64) er
 
 	data.count++
 
+	if cfg.Capacity > 0 && data.count >= delay && len(data.Values) > cfg.Capacity {
+		valuesRemovedCount := len(data.Values) - cfg.Capacity
+		emaRemovedCount := len(data.EMA) - cfg.Capacity
+
+		if valuesRemovedCount > 0 {
+			data.Values = data.Values[valuesRemovedCount:]
+		}
+
+		if emaRemovedCount > 0 {
+			data.EMA = data.EMA[emaRemovedCount:]
+			data.count -= emaRemovedCount
+		}
+
+	}
+
 	ema.Data[tickerKey] = data
 	return nil
 }
@@ -135,7 +151,7 @@ func (ema *ExponentialMovingAverageV2) AddWithPreviousEMA(ticker, key string, va
 	if !ok {
 		data = &EMAData{}
 	}
-	
+
 	data.EMA = append(data.EMA, newEma)
 	data.count++
 

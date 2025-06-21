@@ -15,8 +15,9 @@ type MAData struct {
 }
 
 type MAConfig struct {
-	Window int
-	Offset int
+	Window   int
+	Offset   int
+	Capacity int
 }
 
 type MovingAverageV2 struct {
@@ -102,6 +103,14 @@ func (ma *MovingAverageV2) Add(ticker, key string, value float64) error {
 	}
 
 	data.count++
+
+	if cfg.Capacity > 0 && data.count >= cfg.Window && data.count > cfg.Capacity {
+		elemToBeRemoved := data.count - cfg.Capacity
+		data.Values = data.Values[elemToBeRemoved:]
+		data.WindowSum = data.WindowSum[elemToBeRemoved:]
+		data.count -= elemToBeRemoved
+	}
+
 	ma.Data[tickerKey] = data
 	return nil
 }

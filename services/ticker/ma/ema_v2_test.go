@@ -20,6 +20,7 @@ func TestExponentialMovingAverageV2_Delete(t *testing.T) {
 		window   = 5
 		decay    = 2.0 / 6.0
 		delay    = 0
+		capacity = 10
 		expected = []float64{0, 0, 0, 0, 12.373999999999999, 13.472666666666665, 14.641777777777778, 15.497851851851852, 16.475234567901236, 17.570156378600824, 18.42010425240055, 19.3934028349337, 20.448935223289133, 21.589290148859423, 22.45619343257295, 23.444128955048633, 24.546085970032422, 25.390723980021615, 26.363815986681075, 27.45587732445405}
 	)
 
@@ -29,9 +30,10 @@ func TestExponentialMovingAverageV2_Delete(t *testing.T) {
 	)
 	svc := NewExponentialMovingAverageV2(logger, map[string]*EMAConfig{
 		name: {
-			Window: window,
-			Delay:  delay,
-			Decay:  decay,
+			Window:   window,
+			Delay:    delay,
+			Decay:    decay,
+			Capacity: capacity,
 		},
 	})
 

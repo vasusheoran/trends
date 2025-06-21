@@ -29,6 +29,7 @@ func TestNewCard(t *testing.T) {
 	const symbol = "test"
 
 	files := []string{
+		//"test/input/9-12-24.csv",
 		//"test/input/21-12-24.csv",
 		"test/input/Nifty-CI.csv",
 	}
@@ -58,6 +59,11 @@ func TestNewCard(t *testing.T) {
 				Y:    expected.Y,
 				Z:    expected.Z,
 			}
+			if i == 5500 {
+				logger.Log(
+					"index", i,
+				)
+			}
 
 			err = cardSvc.Add(ticker)
 			if err != nil {
@@ -66,6 +72,15 @@ func TestNewCard(t *testing.T) {
 
 			result := cardSvc.Get(symbol)
 			validateResult(t, logger, i, expected, result[0])
+
+			if i == 5500 {
+				logger.Log(
+					"CI", fmt.Sprintf("%.2f", result[0].CI),
+					"CD", fmt.Sprintf("%.2f", result[0].CD),
+					"CH", fmt.Sprintf("%.2f", result[0].CH),
+				)
+			}
+
 		}
 	}
 }
@@ -74,39 +89,46 @@ func getCardService(logger log.Logger) *card {
 
 	emaData := map[string]*ma.EMAConfig{
 		"M5": {
-			Window: 5,
-			Delay:  0,
-			Decay:  2.0 / 6.0,
+			Window:   5,
+			Delay:    0,
+			Decay:    2.0 / 6.0,
+			Capacity: 20,
 		},
 		"AS5": {
-			Window: 5,
-			Delay:  0,
-			Decay:  2.0 / 6.0,
+			Window:   5,
+			Delay:    0,
+			Decay:    2.0 / 6.0,
+			Capacity: 20,
 		},
 		"O21": {
-			Window: 5,
-			Delay:  20,
-			Decay:  2.0 / 21.0,
+			Window:   5,
+			Delay:    20,
+			Decay:    2.0 / 21.0,
+			Capacity: 50,
 		},
 		"BN21": {
-			Window: 5,
-			Delay:  0,
-			Decay:  2.0 / 21.0,
+			Window:   5,
+			Delay:    0,
+			Decay:    2.0 / 21.0,
+			Capacity: 50,
 		},
 		"CD5": {
-			Window: 5,
-			Delay:  0,
-			Decay:  2.0 / 6.0,
+			Window:   5,
+			Delay:    0,
+			Decay:    2.0 / 6.0,
+			Capacity: 20,
 		},
 	}
 
 	maData := map[string]*ma.MAConfig{
 		"AR10": {
-			Window: 10,
+			Window:   10,
+			Capacity: 20,
 		},
 		"AR50": {
-			Window: 50,
-			Offset: 0,
+			Window:   50,
+			Offset:   0,
+			Capacity: 100,
 		},
 	}
 

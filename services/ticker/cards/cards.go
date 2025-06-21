@@ -11,6 +11,7 @@ import (
 const (
 	TOLERANCE    = 0.001
 	CleanUpIndex = 5
+	Capacity     = 101
 )
 
 type Card interface {
@@ -196,39 +197,46 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 func NewCard(logger log.Logger) Card {
 	emaData := map[string]*ma.EMAConfig{
 		"M5": {
-			Window: 5,
-			Delay:  0,
-			Decay:  2.0 / 6.0,
+			Window:   5,
+			Delay:    0,
+			Decay:    2.0 / 6.0,
+			Capacity: 20,
 		},
 		"AS5": {
-			Window: 5,
-			Delay:  0,
-			Decay:  2.0 / 6.0,
+			Window:   5,
+			Delay:    0,
+			Decay:    2.0 / 6.0,
+			Capacity: 20,
 		},
 		"O21": {
-			Window: 5,
-			Delay:  20,
-			Decay:  2.0 / 21.0,
+			Window:   5,
+			Delay:    20,
+			Decay:    2.0 / 21.0,
+			Capacity: 50,
 		},
 		"BN21": {
-			Window: 5,
-			Delay:  0,
-			Decay:  2.0 / 21.0,
+			Window:   5,
+			Delay:    0,
+			Decay:    2.0 / 21.0,
+			Capacity: 50,
 		},
 		"CD5": {
-			Window: 5,
-			Delay:  0,
-			Decay:  2.0 / 6.0,
+			Window:   5,
+			Delay:    0,
+			Decay:    2.0 / 6.0,
+			Capacity: 20,
 		},
 	}
 
 	maData := map[string]*ma.MAConfig{
 		"AR10": {
-			Window: 10,
+			Window:   10,
+			Capacity: 20,
 		},
 		"AR50": {
-			Window: 50,
-			Offset: 0,
+			Window:   50,
+			Offset:   0,
+			Capacity: 100,
 		},
 	}
 
@@ -280,6 +288,13 @@ func (c *card) add(ticker models.Ticker) error {
 	current.Data[current.Index].CC = current.CC
 	current.Data[current.Index].CH = current.CH
 	current.Data[current.Index].CI = current.CI
+
+	if len(current.Data) > Capacity {
+		elemToBeRemoved := len(current.Data) - Capacity
+		current.Data = current.Data[elemToBeRemoved:]
+		current.Index -= elemToBeRemoved
+
+	}
 
 	return nil
 }
