@@ -20,6 +20,11 @@ func (c *card) addNextData(symbol string, close float64, open float64, high floa
 	c.ticker[symbol].NextIndex++
 	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
 
+	err := c.calculate(symbol, lastDayIndex+1)
+	if err != nil {
+		return err
+	}
+
 	// Add dummy day
 	ticker.X = ticker.W
 	ticker.Time = time.Now().AddDate(0, 0, 1)
@@ -27,11 +32,21 @@ func (c *card) addNextData(symbol string, close float64, open float64, high floa
 	c.ticker[symbol].NextIndex++
 	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
 
+	err = c.calculate(symbol, lastDayIndex+2)
+	if err != nil {
+		return err
+	}
+
 	// Add dummy day + 1
 	ticker.Time = time.Now().AddDate(0, 0, 2)
 	ticker.Date = ticker.Time.Format("02-Jan-06")
 	c.ticker[symbol].NextIndex++
 	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
+
+	err = c.calculate(symbol, lastDayIndex+3)
+	if err != nil {
+		return err
+	}
 
 	// Add dummy day + 2
 	c.ticker[symbol].NextIndex++
@@ -39,10 +54,18 @@ func (c *card) addNextData(symbol string, close float64, open float64, high floa
 	ticker.Date = ticker.Time.Format("02-Jan-06")
 	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
 
-	err := c.calculate(symbol, lastDayIndex+1)
-	err = c.calculate(symbol, lastDayIndex+2)
-	err = c.calculate(symbol, lastDayIndex+3)
 	err = c.calculate(symbol, lastDayIndex+4)
+	if err != nil {
+		return err
+	}
+
+	//Add dummy day + 3
+	c.ticker[symbol].NextIndex++
+	ticker.Time = time.Now().AddDate(0, 0, 4)
+	ticker.Date = ticker.Time.Format("02-Jan-06")
+	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
+
+	err = c.calculate(symbol, lastDayIndex+5)
 	if err != nil {
 		return err
 	}
@@ -50,8 +73,8 @@ func (c *card) addNextData(symbol string, close float64, open float64, high floa
 	return nil
 }
 
-func (c *card) calculateCE(symbol string, tolerance float64, fixed ...float64) (float64, error) {
-	ce, err := search(searchCE, c, symbol, tolerance, fixed...)
+func (c *card) calculateCE(symbol string, tolerance float64, idx, val, w, x, y, z float64) (float64, error) {
+	ce, err := search(searchCE, c, symbol, tolerance, idx, val, w, x, y, z)
 	if err != nil {
 		return 0.0, err
 	}
@@ -60,10 +83,7 @@ func (c *card) calculateCE(symbol string, tolerance float64, fixed ...float64) (
 }
 
 func (c *card) calculateNextCE(symbol string, tolerance float64, fixed ...float64) (float64, error) {
-	c.ticker[symbol].Data[c.ticker[symbol].Index+1].W = fixed[4]
-	c.ticker[symbol].Data[c.ticker[symbol].Index+1].X = fixed[3]
-	c.ticker[symbol].Data[c.ticker[symbol].Index+1].Y = fixed[4]
-	c.ticker[symbol].Data[c.ticker[symbol].Index+1].Z = fixed[5]
+	//c.ticker[symbol].Data[c.ticker[symbol].Index+1].W = fixed[4]
 	ce, err := search(searchCE, c, symbol, tolerance, fixed...)
 	if err != nil {
 		return 0.0, err
@@ -76,7 +96,7 @@ func searchCE(c *card, symbol string, value float64, fixed ...float64) (float64,
 	idx := int(fixed[0])
 	low := int(fixed[1])
 
-	if c.ticker[symbol].NextIndex != 4 {
+	if c.ticker[symbol].NextIndex != CleanUpIndex {
 		return 0.0, 0.0, fmt.Errorf("invalid dataFunc for `%s`, remove symbol and upload the dataFunc again", symbol)
 	}
 
@@ -118,7 +138,7 @@ func (c *card) calculateCH(symbol string, tolerance float64, fixed ...float64) e
 func searchCH(c *card, symbol string, value float64, fixed ...float64) (float64, float64, error) {
 
 	currentTicker := c.ticker[symbol]
-	if currentTicker.NextIndex != 4 {
+	if currentTicker.NextIndex != CleanUpIndex {
 		return 0.0, 0.0, fmt.Errorf("invalid dataFunc for `%s`, remove symbol and upload the dataFunc again", symbol)
 	}
 
@@ -177,7 +197,7 @@ func (c *card) calculateCC(symbol string, tolerance float64) error {
 func searchCC(c *card, symbol string, value float64, fixed ...float64) (float64, float64, error) {
 
 	currentTicker := c.ticker[symbol]
-	if currentTicker.NextIndex != 4 {
+	if currentTicker.NextIndex != CleanUpIndex {
 		return 0.0, 0.0, fmt.Errorf("invalid dataFunc for `%s`, remove symbol and upload the dataFunc again", symbol)
 	}
 
@@ -242,62 +262,95 @@ func searchBR(c *card, symbol string, value float64, fixed ...float64) (float64,
 	return result[2].BP, result[1].BP, nil
 }
 
-func (c *card) calculateFutureData(symbol string) error {
-	err := c.cleanUpEMA(symbol, 4)
+func (c *card) calculateCI(symbol string, tolerance float64, ce, ceNext, w, x, y, z, cd, cdNext float64) error {
+	// CI here is the value of W at index + 3. Actual CI value would be W at index + 2.
+	// TODO: Update search fn to handle custom values
+	_, err := search(searchCI, c, symbol, tolerance, ce, ceNext, w, x, y, z, cd, cdNext)
+
 	if err != nil {
 		return err
 	}
 
-	err = c.calculate(symbol, c.ticker[symbol].Index+1)
-	if err != nil {
-		return err
-	}
-
-	err = c.calculate(symbol, c.ticker[symbol].Index+2)
-	if err != nil {
-		return err
-	}
-
-	err = c.calculate(symbol, c.ticker[symbol].Index+3)
-	if err != nil {
-		return err
-	}
-
-	return c.calculate(symbol, c.ticker[symbol].Index+4)
+	c.ticker[symbol].CI = c.ticker[symbol].Data[c.ticker[symbol].Index+2].W
+	return nil
 }
 
-func (c *card) updateFutureDataForCE(symbol string, close, open, high, low float64) error {
+// TODO
+func searchCI(c *card, symbol string, value float64, fixed ...float64) (float64, float64, error) {
+	//ceNext := fixed[1]
+	//cd := fixed[6]
+	cdNext := fixed[7]
+
 	currentTicker := c.ticker[symbol]
+	if currentTicker.NextIndex != CleanUpIndex {
+		return 0.0, 0.0, fmt.Errorf("invalid data for `%s`, remove symbol and upload the data again", symbol)
+	}
 
-	// updateCE day + 1
-	currentTicker.Data[currentTicker.Index+1].W = close
+	index := currentTicker.Index + 1
 
-	// updateCE day + 2
-	currentTicker.Data[currentTicker.Index+2].W = close
-	currentTicker.Data[currentTicker.Index+2].X = close
+	currentTicker.Data[index+4].W = value
+	currentTicker.Data[index+4].X = value
+	currentTicker.Data[index+4].Y = value
+	currentTicker.Data[index+4].Z = value
 
-	// updateCE day + 3
-	currentTicker.Data[currentTicker.Index+3].X = close
+	currentTicker.Data[index+3].W = value
+	currentTicker.Data[index+3].X = value
+	currentTicker.Data[index+3].Y = value
+	currentTicker.Data[index+3].Z = value
 
-	err := c.cleanUpEMA(symbol, 4)
+	// cd 3
+	currentTicker.Data[index+2].CD = cdNext
+
+	currentTicker.Data[index+3].CE = value
+	currentTicker.Data[index+3].CD = ((value - currentTicker.Data[index+2].CD) * 2 / 6) + currentTicker.Data[index+2].CD
+
+	currentTicker.Data[index+2].W = currentTicker.Data[index+3].CD
+	currentTicker.Data[index+2].X = currentTicker.Data[index+3].CD
+	currentTicker.Data[index+2].Y = currentTicker.Data[index+3].CD
+	currentTicker.Data[index+2].Z = currentTicker.Data[index+3].CD
+
+	currentTicker.Data[index+1].W = currentTicker.Data[index+3].CD
+	currentTicker.Data[index+1].X = currentTicker.Data[index+3].CD
+	currentTicker.Data[index+1].Y = currentTicker.Data[index+3].CD
+	currentTicker.Data[index+1].Z = currentTicker.Data[index+3].CD
+
+	err := c.calculateFutureData(symbol)
+	if err != nil {
+		return 0.0, 0.0, err
+	}
+
+	result := c.Get(symbol)
+
+	//if index == 5500 {
+	//	for i := 0; i < len(result); i++ {
+	//		c.logger.Log(
+	//			"index", index+i+1,
+	//			"W", fmt.Sprintf("%.2f", result[i].W),
+	//			"X", fmt.Sprintf("%.2f", result[i].X),
+	//			"Y", fmt.Sprintf("%.2f", result[i].Y),
+	//			"Z", fmt.Sprintf("%.2f", result[i].Z),
+	//			"CD", fmt.Sprintf("%.2f", result[i].CD),
+	//			"CE", fmt.Sprintf("%.2f", result[i].CE),
+	//		)
+	//	}
+	//	c.logger.Log("-----------------------------")
+	//}
+
+	return result[3].BP, result[4].BP, nil
+}
+
+func (c *card) calculateFutureData(symbol string) error {
+	err := c.cleanUpEMA(symbol, CleanUpIndex)
 	if err != nil {
 		return err
 	}
 
-	err = c.calculate(symbol, c.ticker[symbol].Index+1)
-	if err != nil {
-		return err
+	for i := 1; i <= CleanUpIndex; i++ {
+		err = c.calculate(symbol, c.ticker[symbol].Index+i)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = c.calculate(symbol, c.ticker[symbol].Index+2)
-	if err != nil {
-		return err
-	}
-
-	err = c.calculate(symbol, c.ticker[symbol].Index+3)
-	if err != nil {
-		return err
-	}
-
-	return c.calculate(symbol, c.ticker[symbol].Index+4)
+	return nil
 }

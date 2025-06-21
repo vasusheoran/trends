@@ -703,20 +703,55 @@ func EventData(ticker contracts.TickerView) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "</td><td class=\"text-base px-4 py-4\"><button class=\"font-medium text-blue-600 dark:text-blue-500 hover:underline\" hx-delete=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "</td>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var52 string
-		templ_7745c5c3_Var52, templ_7745c5c3_Err = templ.JoinStringErrs("/ticker/close?ticker-name=" + ticker.Name)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/home/dashboard.templ`, Line: 66, Col: 58}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var52))
+		var templ_7745c5c3_Var52 = []any{fmt.Sprintf("text-xl px-4 py-4 %s", ticker.W.Color)}
+		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var52...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 56, "\" hx-trigger=\"click\" hx-target=\"#dashboard\" hx-swap=\"innerHTML\">Close</button></td></tr>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 56, "<td class=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var53 string
+		templ_7745c5c3_Var53, templ_7745c5c3_Err = templ.JoinStringErrs(templ.CSSClasses(templ_7745c5c3_Var52).String())
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/home/dashboard.templ`, Line: 1, Col: 0}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var53))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 57, "\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var54 string
+		templ_7745c5c3_Var54, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", ticker.CI.Value))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/home/dashboard.templ`, Line: 63, Col: 106}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var54))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "</td><td class=\"text-base px-4 py-4\"><button class=\"font-medium text-blue-600 dark:text-blue-500 hover:underline\" hx-delete=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var55 string
+		templ_7745c5c3_Var55, templ_7745c5c3_Err = templ.JoinStringErrs("/ticker/close?ticker-name=" + ticker.Name)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/home/dashboard.templ`, Line: 67, Col: 58}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var55))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "\" hx-trigger=\"click\" hx-target=\"#dashboard\" hx-swap=\"innerHTML\">Close</button></td></tr>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -740,12 +775,12 @@ func TableHeader() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var53 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var53 == nil {
-			templ_7745c5c3_Var53 = templ.NopComponent
+		templ_7745c5c3_Var56 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var56 == nil {
+			templ_7745c5c3_Var56 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 57, "<thead class=\"text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400\"><tr><th scope=\"col\" class=\"text-lg px-4 py-3\">Name </th><th scope=\"col\" class=\"text-lg px-4 py-3\">Date </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- X: -->Open</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- Y: -->High</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- Z: -->Low</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- AD: -->H/L</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- AR: -->AVG</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- AS: -->EMA-5</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- BN: -->EMA-20</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- BP: -->EMA</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- BR: -->Buy</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- CC: -->Support</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- CE: -->SMA</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- CW: -->RSI</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- CH: -->Resistance</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- W: -->Close</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Action </th></tr></thead>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 60, "<thead class=\"text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400\"><tr><th scope=\"col\" class=\"text-lg px-4 py-3\">Name </th><th scope=\"col\" class=\"text-lg px-4 py-3\">Date </th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- X: -->Open</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- Y: -->High</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- Z: -->Low</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- AD: -->H/L</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- AR: -->AVG</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- AS: -->EMA-5</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- BN: -->EMA-20</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- BP: -->EMA</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- BR: -->Buy</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- CC: -->Support</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- CE: -->SMA</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- CW: -->RSI</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- CH: -->Resistance</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- W: -->Close</th><th scope=\"col\" class=\"text-lg px-4 py-3\"><!-- W: -->CI</th><th scope=\"col\" class=\"text-lg px-4 py-3\">Action </th></tr></thead>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -60,6 +60,7 @@ templ EventData(ticker contracts.TickerView) {
 		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.CW.Color) }>{ fmt.Sprintf("%.0f", ticker.CW.Value) } </td>
 		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.CH.Color) }>{ fmt.Sprintf("%.0f", ticker.CH.Value) } </td>
 		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.W.Color) }>{ fmt.Sprintf("%.0f", ticker.W.Value) } </td>
+		<td class={ fmt.Sprintf("text-xl px-4 py-4 %s", ticker.W.Color) }>{ fmt.Sprintf("%.0f", ticker.CI.Value) } </td>
 		<td class="text-base px-4 py-4">
 			<button
 				class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
@@ -132,6 +133,10 @@ templ TableHeader() {
           <th scope="col" class="text-lg px-4 py-3">
               <!-- W: -->
               Close
+          </th>
+          <th scope="col" class="text-lg px-4 py-3">
+              <!-- W: -->
+              CI
           </th>
           <th scope="col" class="text-lg px-4 py-3">Action </th>
       </tr>

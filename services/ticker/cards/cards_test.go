@@ -28,40 +28,46 @@ func TestNewCard(t *testing.T) {
 
 	const symbol = "test"
 
-	records, err := readInputCSV("test/input/21-12-24.csv")
-	if err != nil {
-		t.Fatal(err)
+	files := []string{
+		//"test/input/21-12-24.csv",
+		"test/input/Nifty-CI.csv",
 	}
 
-	data, err := parseRecords(logger, records)
-	if err != nil {
-		t.Fatal(err)
-	}
+	for _, file := range files {
 
-	cardSvc := getCardService(logger)
-
-	for i, expected := range data {
-
-		ticker := models.Ticker{
-			Date: expected.Date,
-			Time: time.Now(),
-			Name: symbol,
-			W:    expected.W,
-			X:    expected.X,
-			Y:    expected.Y,
-			Z:    expected.Z,
-		}
-
-		err = cardSvc.Add(ticker)
+		records, err := readInputCSV(file)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		result := cardSvc.Get(symbol)
-		validateResult(t, logger, i, expected, result[0])
-	}
+		data, err := parseRecords(logger, records)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	logger.Log("CE validations", ceCount, "BR Validations", brCount)
+		cardSvc := getCardService(logger)
+
+		for i, expected := range data {
+
+			ticker := models.Ticker{
+				Date: expected.Date,
+				Time: time.Now(),
+				Name: symbol,
+				W:    expected.W,
+				X:    expected.X,
+				Y:    expected.Y,
+				Z:    expected.Z,
+			}
+
+			err = cardSvc.Add(ticker)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			result := cardSvc.Get(symbol)
+			validateResult(t, logger, i, expected, result[0])
+		}
+	}
 }
 
 func getCardService(logger log.Logger) *card {
@@ -370,7 +376,13 @@ func parseHeaders(records [][]string) *tickerDataIndex {
 			index.DK = i
 		case "EC":
 			index.EC = i
-		case "EB":
+		case "CI":
+			index.EB = i
+		case "CJ":
+			index.EB = i
+		case "CK":
+			index.EB = i
+		case "CL":
 			index.EB = i
 		}
 	}

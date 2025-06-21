@@ -39,4 +39,6 @@ type Ticker struct {
 	DK float64 `json:"DK"`
 	EC float64 `json:"EC"`
 	EB float64 `json:"EB"`
+
+	CI float64 `json:"CI"`
 }

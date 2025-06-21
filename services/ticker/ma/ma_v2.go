@@ -57,7 +57,7 @@ func (ma *MovingAverageV2) Remove(ticker, key string, index int) error {
 		data = &MAData{}
 	}
 
-	if data.count-index <= cfg.Window {
+	if data.count-index < cfg.Window {
 		return fmt.Errorf("not supporteed if length after removal is less than delay")
 	}
 
@@ -112,7 +112,7 @@ func (ma *MovingAverageV2) Value(ticker, key string) float64 {
 	}
 
 	tickerKey := ma.hashCode(ticker, key)
-	
+
 	if _, ok := ma.Data[tickerKey]; !ok {
 		return 0.00
 	}

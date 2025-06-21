@@ -65,6 +65,7 @@ type TickerView struct {
 	DK         View
 	EC         View
 	EB         View
+	CI         View
 }
 
 func GetTickerView(cur, prev models.Ticker) TickerView {
@@ -100,6 +101,7 @@ func GetTickerView(cur, prev models.Ticker) TickerView {
 		DK:   View{Color: "", Name: "DK", Value: cur.DK},
 		EC:   View{Color: "", Name: "EC", Value: cur.EC},
 		EB:   View{Color: "", Name: "EB", Value: cur.EB},
+		CI:   View{Color: "", Name: "EB", Value: cur.CI},
 	}
 
 	return result
