@@ -277,8 +277,6 @@ func (c *card) calculateCI(symbol string, tolerance float64, ce, ceNext, w, x, y
 
 // TODO
 func searchCI(c *card, symbol string, value float64, fixed ...float64) (float64, float64, error) {
-	//ceNext := fixed[1]
-	//cd := fixed[6]
 	cdNext := fixed[7]
 
 	currentTicker := c.ticker[symbol]
@@ -321,7 +319,64 @@ func searchCI(c *card, symbol string, value float64, fixed ...float64) (float64,
 
 	result := c.Get(symbol)
 
-	//if index == 5500 {
+	return result[3].BP, result[4].BP, nil
+}
+
+func (c *card) calculateCJ(symbol string, tolerance float64, cdNext float64) error {
+	_, err := search(searchCJ, c, symbol, tolerance, cdNext)
+
+	if err != nil {
+		return err
+	}
+
+	c.ticker[symbol].CJ = c.ticker[symbol].Data[c.ticker[symbol].Index+2].W
+	return nil
+}
+
+func searchCJ(c *card, symbol string, value float64, fixed ...float64) (float64, float64, error) {
+	cdNext := fixed[0]
+
+	currentTicker := c.ticker[symbol]
+	if currentTicker.NextIndex != CleanUpIndex {
+		return 0.0, 0.0, fmt.Errorf("invalid data for `%s`, remove symbol and upload the data again", symbol)
+	}
+
+	index := currentTicker.Index + 1
+
+	currentTicker.Data[index+4].W = value
+	currentTicker.Data[index+4].X = value
+	currentTicker.Data[index+4].Y = value
+	currentTicker.Data[index+4].Z = value
+
+	currentTicker.Data[index+3].W = value
+	currentTicker.Data[index+3].X = value
+	currentTicker.Data[index+3].Y = value
+	currentTicker.Data[index+3].Z = value
+
+	// cd 3
+	currentTicker.Data[index+2].CD = cdNext
+
+	currentTicker.Data[index+3].CE = value
+	currentTicker.Data[index+3].CD = ((value - currentTicker.Data[index+2].CD) * 2 / 6) + currentTicker.Data[index+2].CD
+
+	currentTicker.Data[index+2].W = currentTicker.Data[index+3].CD
+	currentTicker.Data[index+2].X = currentTicker.Data[index+3].CD
+	currentTicker.Data[index+2].Y = currentTicker.Data[index+3].CD
+	currentTicker.Data[index+2].Z = currentTicker.Data[index+3].CD
+
+	//currentTicker.Data[index+1].W = currentTicker.Data[index+3].CD
+	//currentTicker.Data[index+1].X = currentTicker.Data[index+3].CD
+	//currentTicker.Data[index+1].Y = currentTicker.Data[index+3].CD
+	//currentTicker.Data[index+1].Z = currentTicker.Data[index+3].CD
+
+	err := c.calculateFutureData(symbol)
+	if err != nil {
+		return 0.0, 0.0, err
+	}
+
+	result := c.Get(symbol)
+
+	//if currentTicker.Data[101].W == 24719 {
 	//	for i := 0; i < len(result); i++ {
 	//		c.logger.Log(
 	//			"index", index+i+1,
@@ -335,7 +390,6 @@ func searchCI(c *card, symbol string, value float64, fixed ...float64) (float64,
 	//	}
 	//	c.logger.Log("-----------------------------")
 	//}
-
 	return result[3].BP, result[4].BP, nil
 }
 

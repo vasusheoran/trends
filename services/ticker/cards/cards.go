@@ -166,14 +166,6 @@ func (c *card) Update(symbol string, close, open, high, low float64) error {
 		}
 	}
 
-	//err = c.ema.Remove("BN21", indexFromEnd)
-	//if err != nil {
-	//	return err
-	//}
-
-	//	 CD5
-	//}
-
 	c.ticker[symbol].NextIndex++
 	c.ticker[symbol].Data = append(c.ticker[symbol].Data, ticker)
 
@@ -320,13 +312,6 @@ func (c *card) updateFutureData(ticker models.Ticker) (models.Ticker, error) {
 		return models.Ticker{}, err
 	}
 
-	//c.ticker[ticker.Name].Data[current.Index+1].W = ticker.Y
-	c.ticker[ticker.Name].Data[current.Index+1] = next
-	c.ticker[ticker.Name].NextCE, err = c.calculateNextCE(ticker.Name, TOLERANCE, float64(current.Index+1), 1.0, ticker.W, ticker.X, ticker.Y, ticker.Z)
-	if err != nil {
-		return models.Ticker{}, err
-	}
-
 	err = c.calculateBR(ticker.Name, TOLERANCE, ticker.W, ticker.X, ticker.Y, ticker.Z, c.ticker[ticker.Name].CE)
 	if err != nil {
 		return models.Ticker{}, err
@@ -343,10 +328,23 @@ func (c *card) updateFutureData(ticker models.Ticker) (models.Ticker, error) {
 		return models.Ticker{}, err
 	}
 
+	c.ticker[ticker.Name].Data[current.Index+1].W = ticker.Y
+	//c.ticker[ticker.Name].Data[current.Index+1] = next
+	c.ticker[ticker.Name].NextCE, err = c.calculateNextCE(ticker.Name, TOLERANCE, float64(current.Index+1), 1.0, ticker.W, ticker.X, ticker.Y, ticker.Z)
+	if err != nil {
+		return models.Ticker{}, err
+	}
+
 	err = c.calculateCH(ticker.Name, TOLERANCE,
 		c.ticker[ticker.Name].BR, c.ticker[ticker.Name].CE, c.ticker[ticker.Name].CD, c.ticker[ticker.Name].NextCE,
 		ticker.W, ticker.X, ticker.Y, ticker.Z,
 	)
+	if err != nil {
+		return models.Ticker{}, err
+	}
+
+	c.ticker[ticker.Name].Data[current.Index+1] = next
+	c.ticker[ticker.Name].NextCE, err = c.calculateNextCE(ticker.Name, TOLERANCE, float64(current.Index+1), 1.0, ticker.W, ticker.X, ticker.Y, ticker.Z)
 	if err != nil {
 		return models.Ticker{}, err
 	}
@@ -356,6 +354,12 @@ func (c *card) updateFutureData(ticker models.Ticker) (models.Ticker, error) {
 	err = c.calculateCI(ticker.Name, TOLERANCE,
 		c.ticker[ticker.Name].CE, c.ticker[ticker.Name].NextCE, ticker.W, ticker.X, ticker.Y, ticker.Z, c.ticker[ticker.Name].CD, cdNext,
 	)
+	if err != nil {
+		return models.Ticker{}, err
+	}
+
+	c.ticker[ticker.Name].Data[current.Index+1].W = next.W
+	err = c.calculateCJ(ticker.Name, TOLERANCE, cdNext)
 	if err != nil {
 		return models.Ticker{}, err
 	}

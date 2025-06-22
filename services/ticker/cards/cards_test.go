@@ -82,6 +82,13 @@ func TestNewCard(t *testing.T) {
 			}
 
 		}
+
+		cardSvc.forceFutureCalc = true
+
+		err = cardSvc.Update(symbol, 24719, 24473.00, 24754, 24473)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 

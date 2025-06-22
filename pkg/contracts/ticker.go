@@ -66,6 +66,9 @@ type TickerView struct {
 	EC         View
 	EB         View
 	CI         View
+	CL         View
+	CJ         View
+	CK         View
 }
 
 func GetTickerView(cur, prev models.Ticker) TickerView {
