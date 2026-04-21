@@ -1,0 +1,173 @@
+{
+  "info": {
+    "name": "Trends API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Trends FastAPI — indicator engine + futures (Support/Bullish) for live ticker data."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5001",
+      "description": "Change to your deployed host, e.g. http://your-server:5001"
+    },
+    {
+      "key": "ticker",
+      "value": "nifty",
+      "description": "Ticker symbol (case-sensitive, matches the URL path)"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "health"]
+            },
+            "description": "Returns {\"status\": \"ok\"} when the app is running."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{base_url}}/api/health" }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\"status\": \"ok\"}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ticker",
+      "item": [
+        {
+          "name": "Update ticker (current day)",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/update/{{ticker}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "update", "{{ticker}}"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\":  \"23-Dec-2024\",\n  \"close\": 23963.0,\n  \"open\":  24099.0,\n  \"high\":  24099.0,\n  \"low\":   23963.0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Post a live OHLCV bar for the ticker. Recomputes all indicators and futures (Support=CC, Bullish=BR). Returns a TickerSnapshot.\n\nDate format: DD-Mon-YYYY (e.g. 23-Dec-2024). Futures are only recomputed when High changes."
+          },
+          "response": [
+            {
+              "name": "200 — Full snapshot (after 100+ bars seeded)",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "PUT",
+                "url": { "raw": "{{base_url}}/api/update/{{ticker}}" },
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"date\":  \"23-Dec-2024\",\n  \"close\": 23963.0,\n  \"open\":  24099.0,\n  \"high\":  24099.0,\n  \"low\":   23963.0\n}"
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"ticker\": \"nifty\",\n  \"date\": \"23-Dec-2024\",\n  \"close\": 23963.0,\n  \"open\": 24099.0,\n  \"high\": 24099.0,\n  \"low\": 23963.0,\n  \"hl\": 24199.0,\n  \"avg\": 23850.42,\n  \"ema5\": 23981.27,\n  \"ema20\": 23744.58,\n  \"rsi\": 48.32,\n  \"support\": 24215.80,\n  \"bullish\": 24260.04\n}"
+            },
+            {
+              "name": "200 — Early snapshot (before indicators seeded)",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "PUT",
+                "url": { "raw": "{{base_url}}/api/update/{{ticker}}" },
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"date\":  \"01-Jan-2024\",\n  \"close\": 21500.0,\n  \"open\":  21480.0,\n  \"high\":  21550.0,\n  \"low\":   21450.0\n}"
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"ticker\": \"nifty\",\n  \"date\": \"01-Jan-2024\",\n  \"close\": 21500.0,\n  \"open\": 21480.0,\n  \"high\": 21550.0,\n  \"low\": 21450.0,\n  \"hl\": null,\n  \"avg\": null,\n  \"ema5\": null,\n  \"ema20\": null,\n  \"rsi\": null,\n  \"support\": null,\n  \"bullish\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update ticker — flat tick (same High)",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/update/{{ticker}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "update", "{{ticker}}"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\":  \"23-Dec-2024\",\n  \"close\": 23980.0,\n  \"open\":  24099.0,\n  \"high\":  24099.0,\n  \"low\":   23963.0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Same High as the previous tick — futures are NOT recomputed (gate logic). Indicators still update. Useful for simulating per-second ticks within the same bar."
+          },
+          "response": []
+        },
+        {
+          "name": "Update second ticker",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/update/banknifty",
+              "host": ["{{base_url}}"],
+              "path": ["api", "update", "banknifty"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\":  \"23-Dec-2024\",\n  \"close\": 51200.0,\n  \"open\":  51500.0,\n  \"high\":  51500.0,\n  \"low\":   51100.0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Each ticker has independent state — state is keyed by ticker name in the URL path."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Streaming",
+      "item": [
+        {
+          "name": "SSE stream — subscribe to ticker",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/stream/{{ticker}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stream", "{{ticker}}"]
+            },
+            "header": [
+              { "key": "Accept", "value": "text/event-stream" }
+            ],
+            "description": "Opens a Server-Sent Events stream. Each PUT to /api/update/{ticker} pushes a TickerSnapshot event here.\n\nResponse is a long-lived connection — Postman will show events as they arrive.\n\nEvent format:\n  data: {\"ticker\":\"nifty\", \"close\":23963.0, ...}\n\nOpen this in a browser tab or use curl:\n  curl -N http://localhost:5001/api/stream/nifty"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

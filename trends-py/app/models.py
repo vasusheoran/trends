@@ -24,11 +24,10 @@ class TickerSnapshot(BaseModel):
     # Indicators
     hl: Optional[float] = None        # H/L  — min of prev 3 highs
     avg: Optional[float] = None       # AVG  — (SMA10 + SMA50) / 2 with correction
-    ema5: Optional[float] = None      # EMA-5
-    ema20: Optional[float] = None     # EMA-20
-    ema50: Optional[float] = None     # EMA-50
+    ema5: Optional[float] = None      # EMA-5  (decay 2/6)
+    ema20: Optional[float] = None     # EMA-20 (decay 2/21)
     rsi: Optional[float] = None       # RSI(14) Wilder
 
     # Futures (binary-search projections)
-    support: Optional[float] = None   # CE  — lower support target
-    bullish: Optional[float] = None   # CC/CH — upper bullish target
+    support: Optional[float] = None   # CC — lower support target
+    bullish: Optional[float] = None   # BR — upper bullish target
