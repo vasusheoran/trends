@@ -15,7 +15,7 @@ import openpyxl
 from io import BytesIO
 from typing import Optional
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from app.registry import reset_state
 
@@ -40,11 +40,18 @@ def _detect_header(ws) -> Optional[dict]:
 
 
 @router.post("/api/seed/{ticker}")
-async def seed_ticker(ticker: str, file: UploadFile = File(...)):
+async def seed_ticker(
+    ticker: str,
+    file: UploadFile = File(...),
+    sheet: Optional[str] = Form(default=None),
+):
     """
     Upload an Excel (.xlsx) file to seed historical OHLCV data for a ticker.
 
-    The active (first) sheet is used. Column detection works in two ways:
+    Optional form field `sheet`: name of the sheet to read. If omitted, the first sheet is used.
+    Returns a 400 if the sheet name is provided but not found in the file.
+
+    Column detection:
     1. Header scan: looks for a row in the first 20 rows containing headers named
        Date, Close, Open, High, Low (case-insensitive). Data starts after that row.
     2. Fallback: if no header found, assumes fixed layout B=Date, W=Close, X=Open, Y=High, Z=Low.
@@ -58,7 +65,17 @@ async def seed_ticker(ticker: str, file: UploadFile = File(...)):
     except Exception:
         raise HTTPException(status_code=400, detail="Could not parse file — make sure it is a valid .xlsx file")
 
-    ws = wb.active
+    if sheet is not None:
+        if sheet not in wb.sheetnames:
+            wb.close()
+            raise HTTPException(
+                status_code=400,
+                detail=f"Sheet '{sheet}' not found. Available sheets: {wb.sheetnames}",
+            )
+        ws = wb[sheet]
+    else:
+        ws = wb.worksheets[0]
+    used_sheet = ws.title
     col_map = _detect_header(ws)
     using_fallback = col_map is None
 
@@ -101,6 +118,7 @@ async def seed_ticker(ticker: str, file: UploadFile = File(...)):
 
     return {
         "ticker": ticker,
+        "sheet": used_sheet,
         "bars_loaded": count,
         "status": "seeded" if count > 0 else "no_data",
         "column_detection": "fallback (B/W/X/Y/Z)" if using_fallback else "header row detected",
