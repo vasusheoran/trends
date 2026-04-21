@@ -22,8 +22,8 @@ from app.registry import reset_state
 router = APIRouter()
 
 _REQUIRED = {"date", "close", "open", "high", "low"}
-# Fallback fixed column indices (0-based within iter_rows min_col=2)
-_FALLBACK = {"date": 0, "close": 21, "open": 22, "high": 23, "low": 24}
+# Fallback fixed column indices (0-based, full row: A=0, B=1, ..., W=22, X=23, Y=24, Z=25)
+_FALLBACK = {"date": 1, "close": 22, "open": 23, "high": 24, "low": 25}
 
 
 def _detect_header(ws) -> Optional[dict]:
