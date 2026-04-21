@@ -36,12 +36,15 @@ async def seed_ticker(ticker: str, file: UploadFile = File(...)):
     state = reset_state(ticker)
     count = 0
 
-    for row_idx in range(1, (ws.max_row or 0) + 1):
-        date  = ws[f"B{row_idx}"].value
-        close = ws[f"W{row_idx}"].value
-        open_ = ws[f"X{row_idx}"].value
-        high  = ws[f"Y{row_idx}"].value
-        low   = ws[f"Z{row_idx}"].value
+    # Columns B=2, W=23, X=24, Y=25, Z=26 (1-based)
+    # iter_rows streams the file in one pass — much faster than per-cell access
+    for row in ws.iter_rows(min_col=2, max_col=26, values_only=True):
+        # row[0]=B, row[21]=W, row[22]=X, row[23]=Y, row[24]=Z
+        date  = row[0]
+        close = row[21]
+        open_ = row[22]
+        high  = row[23]
+        low   = row[24]
 
         if not all([date, close, open_, high, low]):
             continue
