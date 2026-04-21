@@ -3,7 +3,7 @@ Seed EMA state from Excel or TimescaleDB on startup.
 
 Decision order:
   1. If TimescaleDB has >= 50 rows for the ticker → load from DB.
-  2. Otherwise → read from Excel (rows 5–5713, data_only=True).
+  2. Otherwise → read from Excel (Final-bullish-ce.xlsx, Nifty-20.12.2024 sheet, rows 5-5387).
 """
 
 import openpyxl
@@ -14,9 +14,9 @@ if TYPE_CHECKING:
     from app.engine.state import TickerState
 
 
-# Excel data starts at row 5, legend at rows 5715-5716
+_SHEET_NAME = "Nifty-20.12.2024"
 _DATA_START = 5
-_DATA_END = 5713
+_DATA_END = 5387
 
 
 def seed_from_excel(state: "TickerState", excel_path: str) -> int:
@@ -29,7 +29,7 @@ def seed_from_excel(state: "TickerState", excel_path: str) -> int:
         raise FileNotFoundError(f"Excel seed file not found: {excel_path}")
 
     wb = openpyxl.load_workbook(path, data_only=True)
-    ws = wb.active
+    ws = wb[_SHEET_NAME]
 
     count = 0
     for row in range(_DATA_START, _DATA_END + 1):
@@ -42,7 +42,6 @@ def seed_from_excel(state: "TickerState", excel_path: str) -> int:
         if not all([date, close, open_, high, low]):
             continue
 
-        # Normalise date to string
         if hasattr(date, "strftime"):
             date = date.strftime("%d-%b-%Y")
 

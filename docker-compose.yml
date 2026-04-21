@@ -1,0 +1,33 @@
+services:
+  app:
+    image: trends-py:latest
+    ports:
+      - "5001:5001"
+    environment:
+      DATABASE_URL: postgresql://trends:${DB_PASSWORD:-trends}@db:5432/trends
+      EXCEL_SEED_PATH: /data/Final-bullish-ce.xlsx
+      # Optional — set in Portainer env vars to enable Zerodha feed
+      # ZERODHA_API_KEY: ""
+      # ZERODHA_ACCESS_TOKEN: ""
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: timescale/timescaledb:latest-pg16
+    environment:
+      POSTGRES_USER: trends
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-trends}
+      POSTGRES_DB: trends
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trends -d trends"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  timescale-data:

@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     zerodha_api_key: str = ""
     # Instrument token for Nifty 50 on Zerodha
     zerodha_nifty_token: int = 256265
-    excel_seed_path: str = "../data/Nifty-17-04-2026.xlsx"
+    excel_seed_path: str = "/data/Final-bullish-ce.xlsx"
     # Minimum bars needed before futures are calculated
     futures_min_bars: int = 100
 

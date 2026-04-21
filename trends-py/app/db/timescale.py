@@ -33,7 +33,6 @@ async def _create_schema() -> None:
                 low     DOUBLE PRECISION,
                 ema5    DOUBLE PRECISION,
                 ema20   DOUBLE PRECISION,
-                ema50   DOUBLE PRECISION,
                 hl      DOUBLE PRECISION,
                 avg     DOUBLE PRECISION,
                 support DOUBLE PRECISION,
@@ -69,12 +68,12 @@ async def upsert_tick(snapshot) -> None:
     async with _pool.acquire() as conn:
         await conn.execute("""
             INSERT INTO ticker_ticks
-                (ticker, ts, date, close, open, high, low, ema5, ema20, ema50, hl, avg, support, bullish, rsi)
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+                (ticker, ts, date, close, open, high, low, ema5, ema20, hl, avg, support, bullish, rsi)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
             ON CONFLICT (ticker, ts) DO UPDATE SET
                 close=EXCLUDED.close, open=EXCLUDED.open,
                 high=EXCLUDED.high,  low=EXCLUDED.low,
-                ema5=EXCLUDED.ema5,  ema20=EXCLUDED.ema20, ema50=EXCLUDED.ema50,
+                ema5=EXCLUDED.ema5,  ema20=EXCLUDED.ema20,
                 hl=EXCLUDED.hl,      avg=EXCLUDED.avg,
                 support=EXCLUDED.support, bullish=EXCLUDED.bullish, rsi=EXCLUDED.rsi
         """,
@@ -82,7 +81,7 @@ async def upsert_tick(snapshot) -> None:
             datetime.now(timezone.utc),
             snapshot.date,
             snapshot.close, snapshot.open, snapshot.high, snapshot.low,
-            snapshot.ema5, snapshot.ema20, snapshot.ema50,
+            snapshot.ema5, snapshot.ema20,
             snapshot.hl, snapshot.avg,
             snapshot.support, snapshot.bullish, snapshot.rsi,
         )

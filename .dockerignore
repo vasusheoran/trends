@@ -1,0 +1,24 @@
+# Git
+.git/
+.gitignore
+
+# Python artifacts
+**/__pycache__/
+**/*.py[cod]
+**/.venv/
+**/.uv/
+
+# Tests and dev files
+trends-py/tests/
+trends-py/.python-version
+
+# Docs and non-runtime files
+docs/
+AGENTS.md
+LICENSE
+vb/
+
+# Exclude old/unused data files; keep only the seed file
+data/Nifty-17-04-2026.xlsx
+data/Nifty-Bullish.xlsx
+data/README.md
