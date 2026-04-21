@@ -26,6 +26,19 @@ def reset_state(ticker: str) -> TickerState:
     return _states[ticker]
 
 
+def delete_state(ticker: str) -> bool:
+    """Remove a ticker from the registry. Returns True if it existed."""
+    existed = ticker in _states
+    _states.pop(ticker, None)
+    _subscribers.pop(ticker, None)
+    return existed
+
+
+def list_tickers() -> list[str]:
+    """Return all currently active ticker names."""
+    return sorted(_states.keys())
+
+
 async def publish(ticker: str, snapshot: TickerSnapshot) -> None:
     for queue in _subscribers.get(ticker, set()):
         await queue.put(snapshot)
