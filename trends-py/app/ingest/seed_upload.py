@@ -95,6 +95,10 @@ async def seed_ticker(ticker: str, file: UploadFile = File(...)):
 
     wb.close()
 
+    # Reset the futures gate so the first live PUT always triggers computation
+    # regardless of whether today's high is above or below the last historical high.
+    state._last_futures_high = 0.0
+
     return {
         "ticker": ticker,
         "bars_loaded": count,
