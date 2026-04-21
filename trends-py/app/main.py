@@ -23,10 +23,13 @@ async def lifespan(app: FastAPI):
     # Startup
     await init_pool(settings.database_url)
 
-    # Seed nifty state
-    state = get_state("nifty")
-    source = await seed_state(state, "nifty", settings.excel_seed_path)
-    log.info("Seeded nifty state from %s (%d bars in memory)", source, len(state.bars))
+    # Seed nifty state on startup from Excel (fallback — user should POST /api/seed/nifty with their file)
+    try:
+        state = get_state("nifty")
+        source = await seed_state(state, "nifty", settings.excel_seed_path)
+        log.info("Startup seed: nifty loaded from %s (%d bars in memory)", source, len(state.bars))
+    except Exception as e:
+        log.warning("Startup seed skipped: %s", e)
 
     # Zerodha feed (Track 2) — only if token is configured
     zerodha_task = None
