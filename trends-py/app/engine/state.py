@@ -105,7 +105,9 @@ class TickerState:
             self._last_futures_high = high
             if m is not None and o is not None:
                 support, bullish, self.cd = compute_futures(
-                    ema5=ema5_pre, ema20=ema20_pre, old_cd=self.cd,
+                    ema5_pre=ema5_pre, ema20_pre=ema20_pre,
+                    ema5_post=self.ema5, ema20_post=self.ema20,
+                    old_cd=self.cd,
                 )
 
         return TickerSnapshot(
@@ -164,7 +166,9 @@ class TickerState:
             self._last_futures_high = high
             if m is not None and o is not None:
                 self._live_support, self._live_bullish, self._live_cd = compute_futures(
-                    ema5=ema5_pre, ema20=ema20_pre, old_cd=cp.cd,
+                    ema5_pre=ema5_pre, ema20_pre=ema20_pre,
+                    ema5_post=self.ema5, ema20_post=self.ema20,
+                    old_cd=cp.cd,
                 )
 
         return TickerSnapshot(

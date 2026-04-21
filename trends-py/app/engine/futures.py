@@ -1,18 +1,23 @@
 """
-Future projection fields — Support (CC) and Bullish (BR).
+Future projection fields — Support (CC) and Bullish.
 Stateless: recomputed fresh every tick. No persistent state.
 
-Computation chain (matches Go updateFutureData):
-  1. CE   — binary search: find trial where BP[d+1] = BP[d+2], W[d+1]=W[d+2]=trial
-  2. CD   — rolling EMA5 of CE values: CD = 2/6*(CE - CD_prev) + CD_prev  (passed in as state)
-  3. CC   — binary search: find cc_trial where BP[d+1] = BP[d+2],
-              W[d+1] = EMA_step(CD, cc_trial), W[d+2]=W[d+3]=cc_trial
-             → Support = CC = EMA_step(CD, cc_trial)  (= W[d+1], not the trial itself)
-  4. BR   — binary search: find trial where BP[d+3] = BP[d+2],
-              W[d+1]=trial, W[d+2]=W[d+3]=CE
+Computation chain:
+  1. CE2  — binary search from pre-bar EMA state:
+             find trial where BP[d+1] = BP[d+2], W[d+1]=W[d+2]=trial
+  2. CD2  — EMA step: 2/6*(CE2 - old_cd) + old_cd   [persisted in TickerState.cd]
+  3. CC   — binary search from pre-bar EMA state using CD2:
+             find cc_trial where BP[d+2] = BP[d+3],
+             W[d+1] = EMA_step(CD2, cc_trial), W[d+2]=W[d+3]=cc_trial
+             → Support = CC = EMA_step(CD2, cc_trial)
+  4. CE3  — binary search from POST-bar EMA state (after today's close applied):
+             find trial where BP[d+1] = BP[d+2], W[d+1]=W[d+2]=trial
+  5. CD3  — EMA step: 2/6*(CE3 - CD2) + CD2
+  6. Bullish = CD3  (mathematical fixed point of the W4=W3=CD4 equilibrium)
 
 BP = EMA5 - EMA20  (source: Final-bullish-ce.xlsx col BP = AS - BN, decay 2/21)
-EMA state must be from BEFORE the current bar's close was applied.
+Pre-bar EMA state = state BEFORE the current bar's close was applied.
+Post-bar EMA state = state AFTER the current bar's close was applied.
 """
 
 from typing import Optional, Tuple
@@ -57,81 +62,83 @@ def _search_cc(trial: float, ema5: EMAState, ema20: EMAState, cd: float) -> floa
     return bp[2] - bp[1]
 
 
-def _search_br(trial: float, ema5: EMAState, ema20: EMAState, ce: float) -> float:
-    """Return BP[d+3] - BP[d+2]; find trial where this is 0. W[d+1]=trial, W[d+2,3]=CE."""
-    bp = _bp_series(ema5, ema20, [trial, ce, ce])
-    if any(b is None for b in bp):
-        return 0.0
-    return bp[2] - bp[1]
-
-
 def compute_futures(
-    ema5: EMAState,
-    ema20: EMAState,
+    ema5_pre: EMAState,
+    ema20_pre: EMAState,
+    ema5_post: EMAState,
+    ema20_post: EMAState,
     old_cd: float,
     search_low: float = 0.0,
     search_high: float = 99999.0,
 ) -> Tuple[Optional[float], Optional[float], float]:
     """
-    Returns (support=CC, bullish=BR, new_cd) via binary search.
-    ema5/ema20 must be state BEFORE the current bar's close was applied.
-    old_cd is the CD value from the previous tick; this function updates it with today's CE.
+    Returns (support=CC, bullish=CD3, new_cd=CD2).
+
+    ema5_pre/ema20_pre: EMA state BEFORE today's close was applied (for CE2 and CC).
+    ema5_post/ema20_post: EMA state AFTER today's close was applied (for CE3).
+    old_cd: CD from previous tick; updated to CD2 (returned as new_cd).
+
     Uses copies internally — originals are never modified.
     """
-    ce = None
     support = None
     bullish = None
 
-    # Step 1: CE — find trial where BP[d+1] = BP[d+2]
+    # Step 1: CE2 — find trial where BP[d+1] = BP[d+2], using pre-bar EMA state
+    ce2 = None
     try:
-        f_low = _search_ce(search_low, ema5, ema20)
-        f_high = _search_ce(search_high, ema5, ema20)
+        f_low = _search_ce(search_low, ema5_pre, ema20_pre)
+        f_high = _search_ce(search_high, ema5_pre, ema20_pre)
         if f_low * f_high < 0:
-            ce = brentq(
+            ce2 = brentq(
                 _search_ce,
                 search_low, search_high,
-                args=(ema5, ema20),
+                args=(ema5_pre, ema20_pre),
                 xtol=TOLERANCE,
                 full_output=False,
             )
     except ValueError:
         pass
 
-    if ce is None:
+    if ce2 is None:
         return None, None, old_cd
 
-    # Update CD = rolling EMA5 of CE values (matches Go calculateCD)
-    new_cd = 2 / 6 * (ce - old_cd) + old_cd
+    # Step 2: CD2 — rolling EMA of CE values, persisted as new_cd
+    cd2 = 2 / 6 * (ce2 - old_cd) + old_cd
 
-    # Step 2: CC (Support) — find cc_trial where BP[d+1]=BP[d+2] with W[d+1]=EMA(new_cd,trial)
+    # Step 3: CC (Support) — binary search using pre-bar EMA state and CD2
     try:
-        f_low = _search_cc(search_low, ema5, ema20, new_cd)
-        f_high = _search_cc(search_high, ema5, ema20, new_cd)
+        f_low = _search_cc(search_low, ema5_pre, ema20_pre, cd2)
+        f_high = _search_cc(search_high, ema5_pre, ema20_pre, cd2)
         if f_low * f_high < 0:
             cc_trial = brentq(
                 _search_cc,
                 search_low, search_high,
-                args=(ema5, ema20, new_cd),
+                args=(ema5_pre, ema20_pre, cd2),
                 xtol=TOLERANCE,
                 full_output=False,
             )
-            support = 2 / 6 * (cc_trial - new_cd) + new_cd  # CC = W[d+1] = EMA_step(CD, trial)
+            support = 2 / 6 * (cc_trial - cd2) + cd2
     except ValueError:
         pass
 
-    # Step 3: BR (Bullish) — find trial where BP[d+3]=BP[d+2] with day+1=trial, day+2,3=CE
+    # Step 4: CE3 — same binary search but from POST-bar EMA state
+    ce3 = None
     try:
-        f_low = _search_br(search_low, ema5, ema20, ce)
-        f_high = _search_br(search_high, ema5, ema20, ce)
+        f_low = _search_ce(search_low, ema5_post, ema20_post)
+        f_high = _search_ce(search_high, ema5_post, ema20_post)
         if f_low * f_high < 0:
-            bullish = brentq(
-                _search_br,
+            ce3 = brentq(
+                _search_ce,
                 search_low, search_high,
-                args=(ema5, ema20, ce),
+                args=(ema5_post, ema20_post),
                 xtol=TOLERANCE,
                 full_output=False,
             )
     except ValueError:
         pass
 
-    return support, bullish, new_cd
+    # Step 5: CD3 = EMA_step(CD2, CE3); Bullish = CD3
+    if ce3 is not None:
+        bullish = 2 / 6 * (ce3 - cd2) + cd2
+
+    return support, bullish, cd2
