@@ -95,9 +95,9 @@ async def seed_ticker(ticker: str, file: UploadFile = File(...)):
 
     wb.close()
 
-    # Reset the futures gate so the first live PUT always triggers computation
-    # regardless of whether today's high is above or below the last historical high.
-    state._last_futures_high = 0.0
+    # Switch to live mode — subsequent PUTs restore from this checkpoint,
+    # making them idempotent for the same date/OHLCV.
+    state.commit()
 
     return {
         "ticker": ticker,

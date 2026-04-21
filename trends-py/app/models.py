@@ -31,3 +31,6 @@ class TickerSnapshot(BaseModel):
     # Futures (binary-search projections)
     support: Optional[float] = None   # CC — lower support target
     bullish: Optional[float] = None   # BR — upper bullish target
+
+    # Set when the PUT date differs from the current live date
+    warning: Optional[str] = None
