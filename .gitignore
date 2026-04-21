@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual envs / uv
+.venv/
+venv/
+.uv/
+
+# Distribution / build
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data files (large Excel binaries — keep out of git)
+data/*.xlsx
+
+# Test / coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/
