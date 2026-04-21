@@ -3,12 +3,14 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 
 from app.config import settings
 from app.db.timescale import init_pool, close_pool
 from app.db.seed import seed_state
 from app.registry import get_state
 from app.ingest.webhook import router as webhook_router
+from app.ingest.seed_upload import router as seed_router
 from app.api.stream import router as stream_router
 from app.api.health import router as health_router
 
@@ -51,5 +53,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Trends", lifespan=lifespan)
 app.include_router(webhook_router)
+app.include_router(seed_router)
 app.include_router(stream_router)
 app.include_router(health_router)
+
+
+@app.get("/", include_in_schema=False)
+async def root():
+    return RedirectResponse(url="/docs")

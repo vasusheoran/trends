@@ -8,7 +8,7 @@
     {
       "key": "base_url",
       "value": "http://localhost:5001",
-      "description": "Change to your deployed host, e.g. http://your-server:5001"
+      "description": "Change to your deployed host, e.g. http://192.168.29.204:5001"
     },
     {
       "key": "ticker",
@@ -42,6 +42,62 @@
               },
               "header": [{ "key": "Content-Type", "value": "application/json" }],
               "body": "{\"status\": \"ok\"}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Seed",
+      "item": [
+        {
+          "name": "Seed ticker from Excel",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/seed/{{ticker}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "seed", "{{ticker}}"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "Excel (.xlsx) file. Only B=Date, W=Close, X=Open, Y=High, Z=Low are read. All other columns are ignored. Any row missing those values is skipped."
+                }
+              ]
+            },
+            "description": "Upload an Excel file to seed historical OHLCV data for a ticker.\n\nRequired column layout (other columns are ignored):\n  B = Date\n  W = Close\n  X = Open\n  Y = High\n  Z = Low\n\nRows with any missing value in those five columns are silently skipped — no need to trim header rows or legend rows.\n\nThis resets the ticker's existing state before loading, so calling it again with a newer file replaces all history.\n\nReturns:\n  { \"ticker\": \"nifty\", \"bars_loaded\": 5383, \"status\": \"seeded\" }"
+          },
+          "response": [
+            {
+              "name": "200 — Seeded",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{base_url}}/api/seed/{{ticker}}" },
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [{ "key": "file", "type": "file", "src": "" }]
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"ticker\": \"nifty\",\n  \"bars_loaded\": 5383,\n  \"status\": \"seeded\"\n}"
+            },
+            {
+              "name": "400 — Invalid file",
+              "status": "Bad Request",
+              "code": 400,
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{base_url}}/api/seed/{{ticker}}" }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"detail\": \"Could not parse file — make sure it is a valid .xlsx file\"\n}"
             }
           ]
         }
@@ -163,7 +219,7 @@
             "header": [
               { "key": "Accept", "value": "text/event-stream" }
             ],
-            "description": "Opens a Server-Sent Events stream. Each PUT to /api/update/{ticker} pushes a TickerSnapshot event here.\n\nResponse is a long-lived connection — Postman will show events as they arrive.\n\nEvent format:\n  data: {\"ticker\":\"nifty\", \"close\":23963.0, ...}\n\nOpen this in a browser tab or use curl:\n  curl -N http://localhost:5001/api/stream/nifty"
+            "description": "Opens a Server-Sent Events stream. Each PUT to /api/update/{ticker} pushes a TickerSnapshot event here.\n\nResponse is a long-lived connection — Postman will show events as they arrive.\n\nEvent format:\n  data: {\"ticker\":\"nifty\", \"close\":23963.0, ...}\n\nOpen this in a browser tab or use curl:\n  curl -N http://192.168.29.204:5001/api/stream/nifty"
           },
           "response": []
         }

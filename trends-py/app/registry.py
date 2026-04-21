@@ -20,6 +20,12 @@ def get_state(ticker: str) -> TickerState:
     return _states[ticker]
 
 
+def reset_state(ticker: str) -> TickerState:
+    """Replace ticker state with a fresh instance (used by seed upload)."""
+    _states[ticker] = TickerState(ticker=ticker)
+    return _states[ticker]
+
+
 async def publish(ticker: str, snapshot: TickerSnapshot) -> None:
     for queue in _subscribers.get(ticker, set()):
         await queue.put(snapshot)
