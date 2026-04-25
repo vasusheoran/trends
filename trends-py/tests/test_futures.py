@@ -1,21 +1,18 @@
 """
-Phase 3 validation — Support (CC) and Bullish (CD3) computation.
+Support (CC) and Bullish (BR) computation validation.
 
-BP = EMA5 - EMA20 (source: Final-bullish-ce.xlsx col BP = AS - BN, BN decay 2/21).
+Bullish: W=[BR, CE2, CE2]; find BR where BP[d+3]=BP[d+2].
+Support: cd3=2/6*(cc_trial-cd2)+cd2; W=[cd3, cc_trial, cc_trial]; find cc_trial where BP[d+3]=BP[d+2]; Support=cd3.
 
-Computation chain:
-  CE2:     |BP[d+2] - BP[d+1]| ≤ TOLERANCE  (pre-bar EMA, both days use trial)
-  CC:      |BP[d+3] - BP[d+2]| ≤ TOLERANCE  (pre-bar EMA, W[d+1]=CC, W[d+2,3]=cc_trial)
-  CE3:     |BP[d+2] - BP[d+1]| ≤ TOLERANCE  (post-bar EMA, both days use trial)
-  Bullish: bullish == CD3 == 2/6*(CE3 - CD2) + CD2
+Tests here verify the convergence property on values produced by TickerState.
 """
 
 import pytest
 from scipy.optimize import brentq
 
 from app.engine.state import TickerState
-from app.engine.futures import compute_futures, _bp_series, _search_ce, _search_cc
-from app.engine.indicators import TOLERANCE
+from app.engine.futures import compute_futures, _bp_series, _search_br, _search_cc, _ce2
+from app.engine.indicators import EMAState, TOLERANCE
 
 CONVERGENCE_TOLERANCE = TOLERANCE * 5
 
@@ -23,25 +20,21 @@ CONVERGENCE_TOLERANCE = TOLERANCE * 5
 def _collect_futures(excel_rows):
     """
     Feed all rows through TickerState in commit mode.
-    Returns list of (row, ema5_pre, ema20_pre, ema5_post, ema20_post, cd_pre, support, bullish).
+    Returns list of (row, ema5_pre, ema20_pre, cd2, support, bullish).
+    cd2 = cd_ema value after update — what was passed to compute_futures.
     """
     state = TickerState(ticker="TEST")
     results = []
 
     for r in excel_rows:
-        ema5_pre = state.ema5.copy()
+        ema5_pre  = state.ema5.copy()
         ema20_pre = state.ema20.copy()
-        cd_pre = state.cd
 
-        state._last_futures_high = 0.0
         snap = state.update(r["date"], r["close"], r["open"], r["high"], r["low"])
 
-        # post-bar state is now in state.ema5/ema20 (commit mode permanently applies)
-        ema5_post = state.ema5.copy()
-        ema20_post = state.ema20.copy()
-
         if snap.support is not None and snap.bullish is not None:
-            results.append((r, ema5_pre, ema20_pre, ema5_post, ema20_post, cd_pre, snap.support, snap.bullish))
+            # cd_ema has already been updated for this bar's CE2 inside _update_commit
+            results.append((r, ema5_pre, ema20_pre, state.cd_ema.value, snap.support, snap.bullish))
 
     return results
 
@@ -51,115 +44,64 @@ def futures_results(excel_rows):
     return _collect_futures(excel_rows)
 
 
-def _find_ce(ema5, ema20, low=0.0, high=99999.0):
-    f_low = _search_ce(low, ema5, ema20)
-    f_high = _search_ce(high, ema5, ema20)
-    if f_low * f_high >= 0:
-        return None
-    return brentq(_search_ce, low, high, args=(ema5, ema20), xtol=TOLERANCE)
-
-
-def test_ce2_convergence_last_20_rows(futures_results):
-    """CE2: verify BP[d+2] ≈ BP[d+1] from pre-bar EMA state."""
+def test_bullish_convergence_last_20_rows(futures_results):
+    """Bullish: verify |BP[d+3]-BP[d+2]| ≤ tolerance with W=[bullish, CE2, CE2]."""
     sample = futures_results[-20:]
     assert len(sample) == 20
 
     failures = []
-    for r, ema5_pre, ema20_pre, ema5_post, ema20_post, cd_pre, _support, _bullish in sample:
-        ce2 = _find_ce(ema5_pre, ema20_pre)
-        if ce2 is None:
-            failures.append(f"row {r['row']}: CE2 not found")
+    for r, ema5_pre, ema20_pre, cd2, support, bullish in sample:
+        ce2 = _ce2(ema5_pre, ema20_pre)
+        bp = _bp_series(ema5_pre, ema20_pre, [bullish, ce2, ce2])
+        if any(b is None for b in bp):
+            failures.append(f"row {r['row']}: BP None at bullish={bullish:.2f}")
             continue
-        bp = _bp_series(ema5_pre, ema20_pre, [ce2, ce2])
-        if bp[0] is None or bp[1] is None:
-            failures.append(f"row {r['row']}: BP None at CE2={ce2:.2f}")
-            continue
-        diff = abs(bp[1] - bp[0])
+        diff = abs(bp[2] - bp[1])
         if diff > CONVERGENCE_TOLERANCE:
-            failures.append(f"row {r['row']}: |BP[d+2]-BP[d+1]|={diff:.6f} > {CONVERGENCE_TOLERANCE} at CE2={ce2:.2f}")
+            failures.append(
+                f"row {r['row']}: |BP[d+3]-BP[d+2]|={diff:.6f} > {CONVERGENCE_TOLERANCE} "
+                f"at bullish={bullish:.2f}"
+            )
 
-    assert not failures, "CE2 convergence failures:\n" + "\n".join(failures)
+    assert not failures, "Bullish convergence failures:\n" + "\n".join(failures)
 
 
-def test_cc_convergence_last_20_rows(futures_results):
-    """CC (Support): verify BP[d+3] ≈ BP[d+2] with W[d+1]=support, W[d+2,3]=cc_trial."""
+def test_support_convergence_last_20_rows(futures_results):
+    """Support: verify W=[support, cc_trial, cc_trial] → BP[d+3]=BP[d+2].
+    We recover cc_trial from support=cd3: cc_trial=(cd3-(1-2/6)*cd2)/(2/6).
+    """
     sample = futures_results[-20:]
     assert len(sample) == 20
 
     failures = []
-    for r, ema5_pre, ema20_pre, ema5_post, ema20_post, cd_pre, support, _bullish in sample:
-        ce2 = _find_ce(ema5_pre, ema20_pre)
-        if ce2 is None:
-            failures.append(f"row {r['row']}: CE2 not found")
-            continue
-        cd2 = 2 / 6 * (ce2 - cd_pre) + cd_pre
-        # recover cc_trial from support: support = 2/6*(cc_trial - cd2) + cd2
-        cc_trial = (support - cd2) * 3 + cd2
-
-        bp = _bp_series(ema5_pre, ema20_pre, [support, cc_trial, cc_trial])
+    for r, ema5_pre, ema20_pre, cd2, support, bullish in sample:
+        # Recover cc_trial from cd3 (support) and cd2
+        # cd3 = 2/6*(cc_trial - cd2) + cd2  →  cc_trial = (cd3 - cd2)/(2/6) + cd2
+        cd3 = support
+        cc_trial = (cd3 - cd2) / (2 / 6) + cd2
+        bp = _bp_series(ema5_pre, ema20_pre, [cd3, cc_trial, cc_trial])
         if any(b is None for b in bp):
             failures.append(f"row {r['row']}: BP None at support={support:.2f}")
             continue
         diff = abs(bp[2] - bp[1])
         if diff > CONVERGENCE_TOLERANCE:
-            failures.append(f"row {r['row']}: |BP[d+3]-BP[d+2]|={diff:.6f} > {CONVERGENCE_TOLERANCE} at support={support:.2f}")
+            failures.append(
+                f"row {r['row']}: |BP[d+3]-BP[d+2]|={diff:.6f} > {CONVERGENCE_TOLERANCE} "
+                f"at support={support:.2f} cc_trial={cc_trial:.2f}"
+            )
 
-    assert not failures, "CC convergence failures:\n" + "\n".join(failures)
-
-
-def test_ce3_convergence_last_20_rows(futures_results):
-    """CE3: verify BP[d+2] ≈ BP[d+1] from post-bar EMA state."""
-    sample = futures_results[-20:]
-    assert len(sample) == 20
-
-    failures = []
-    for r, ema5_pre, ema20_pre, ema5_post, ema20_post, cd_pre, _support, _bullish in sample:
-        ce3 = _find_ce(ema5_post, ema20_post)
-        if ce3 is None:
-            failures.append(f"row {r['row']}: CE3 not found")
-            continue
-        bp = _bp_series(ema5_post, ema20_post, [ce3, ce3])
-        if bp[0] is None or bp[1] is None:
-            failures.append(f"row {r['row']}: BP None at CE3={ce3:.2f}")
-            continue
-        diff = abs(bp[1] - bp[0])
-        if diff > CONVERGENCE_TOLERANCE:
-            failures.append(f"row {r['row']}: |BP[d+2]-BP[d+1]|={diff:.6f} > {CONVERGENCE_TOLERANCE} at CE3={ce3:.2f}")
-
-    assert not failures, "CE3 convergence failures:\n" + "\n".join(failures)
-
-
-def test_bullish_equals_cd3_last_20_rows(futures_results):
-    """Bullish: verify bullish == CD3 = EMA_step(CD2, CE3)."""
-    sample = futures_results[-20:]
-    assert len(sample) == 20
-
-    failures = []
-    for r, ema5_pre, ema20_pre, ema5_post, ema20_post, cd_pre, _support, bullish in sample:
-        ce2 = _find_ce(ema5_pre, ema20_pre)
-        ce3 = _find_ce(ema5_post, ema20_post)
-        if ce2 is None or ce3 is None:
-            failures.append(f"row {r['row']}: CE2 or CE3 not found")
-            continue
-        cd2 = 2 / 6 * (ce2 - cd_pre) + cd_pre
-        cd3 = 2 / 6 * (ce3 - cd2) + cd2
-        diff = abs(bullish - cd3)
-        if diff > CONVERGENCE_TOLERANCE:
-            failures.append(f"row {r['row']}: bullish={bullish:.4f} != CD3={cd3:.4f} (diff={diff:.6f})")
-
-    assert not failures, "Bullish=CD3 failures:\n" + "\n".join(failures)
+    assert not failures, "Support convergence failures:\n" + "\n".join(failures)
 
 
 def test_futures_populated_after_100_bars(excel_rows):
-    """Futures must be None before 100 bars and non-None by bar 120."""
+    """Futures must be None before 105 bars (CD needs 5 CE2 values) and non-None by bar 120."""
     state = TickerState(ticker="TEST")
-    none_after_100 = []
+    none_after_105 = []
 
     for i, r in enumerate(excel_rows[:200]):
-        state._last_futures_high = 0.0
         snap = state.update(r["date"], r["close"], r["open"], r["high"], r["low"])
-        if i >= 100 and snap.support is None:
-            none_after_100.append(i)
+        if i >= 105 and snap.support is None:
+            none_after_105.append(i)
 
-    late_nones = [i for i in none_after_100 if i >= 120]
+    late_nones = [i for i in none_after_105 if i >= 120]
     assert not late_nones, f"Futures still None at bars: {late_nones[:5]}"

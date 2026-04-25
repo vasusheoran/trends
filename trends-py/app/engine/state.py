@@ -8,6 +8,9 @@ Two modes:
                  before applying the bar, making repeated PUTs idempotent.
                  When the date changes, previous live bar is promoted to a new
                  checkpoint automatically.
+
+Futures (support / bullish) are computed once per day from the settled EMA state
+and previous day's high. Pass force=True to recompute on every tick.
 """
 
 from collections import deque
@@ -15,7 +18,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from app.engine.indicators import EMAState, SMAState, RSIState, calc_hl, calc_avg
-from app.engine.futures import compute_futures
+from app.engine.futures import compute_futures, _ce2
 from app.models import TickerSnapshot
 
 _CAPACITY = 101
@@ -40,7 +43,7 @@ class _Checkpoint:
     sma50: SMAState
     rsi: RSIState
     bars: deque
-    cd: float
+    cd_ema: EMAState
 
 
 @dataclass
@@ -53,15 +56,14 @@ class TickerState:
     sma10: SMAState = field(default_factory=lambda: SMAState(period=10))
     sma50: SMAState = field(default_factory=lambda: SMAState(period=50))
     rsi: RSIState = field(default_factory=RSIState)
-    cd: float = 0.0
-    _last_futures_high: float = 0.0
+    # CD: EMA-5 (decay 2/6) of daily CE2 values, accumulated from bar 100 onward.
+    cd_ema: EMAState = field(default_factory=lambda: EMAState(period=5, decay=2/6))
 
     # Live-mode state (populated after commit())
     _checkpoint: Optional[_Checkpoint] = field(default=None, repr=False)
     _live_date: Optional[str] = field(default=None, repr=False)
     _live_support: Optional[float] = field(default=None, repr=False)
     _live_bullish: Optional[float] = field(default=None, repr=False)
-    _live_cd: float = field(default=0.0, repr=False)
 
     def commit(self):
         """
@@ -73,12 +75,11 @@ class TickerState:
         self._live_date = None
         self._live_support = None
         self._live_bullish = None
-        self._live_cd = self.cd
-        self._last_futures_high = 0.0
 
-    def update(self, date: str, close: float, open_: float, high: float, low: float) -> TickerSnapshot:
+    def update(self, date: str, close: float, open_: float, high: float, low: float,
+               force: bool = False) -> TickerSnapshot:
         if self._checkpoint is not None:
-            return self._update_live(date, close, open_, high, low)
+            return self._update_live(date, close, open_, high, low, force)
         return self._update_commit(date, close, open_, high, low)
 
     def _update_commit(self, date, close, open_, high, low) -> TickerSnapshot:
@@ -101,13 +102,13 @@ class TickerState:
 
         support = None
         bullish = None
-        if len(self.bars) >= _FUTURES_MIN and (high > self._last_futures_high or self._last_futures_high == 0.0):
-            self._last_futures_high = high
-            if m is not None and o is not None:
-                support, bullish, self.cd = compute_futures(
+        if len(self.bars) >= _FUTURES_MIN and m is not None and o is not None:
+            ce2 = _ce2(ema5_pre, ema20_pre)
+            self.cd_ema.update(ce2)
+            if self.cd_ema.seeded:
+                support, bullish = compute_futures(
                     ema5_pre=ema5_pre, ema20_pre=ema20_pre,
-                    ema5_post=self.ema5, ema20_post=self.ema20,
-                    old_cd=self.cd,
+                    cd2=self.cd_ema.value,
                 )
 
         return TickerSnapshot(
@@ -116,7 +117,7 @@ class TickerState:
             support=support, bullish=bullish,
         )
 
-    def _update_live(self, date, close, open_, high, low) -> TickerSnapshot:
+    def _update_live(self, date, close, open_, high, low, force: bool) -> TickerSnapshot:
         """
         Apply bar on top of checkpoint (live mode).
         Idempotent: same inputs always produce the same snapshot.
@@ -129,11 +130,9 @@ class TickerState:
         if self._live_date is not None and date != self._live_date:
             warning = f"Date changed from {self._live_date} to {date} — previous bar committed as history"
             cp = _make_checkpoint(self)
-            cp.cd = self._live_cd
             self._checkpoint = cp
             self._live_support = None
             self._live_bullish = None
-            self._last_futures_high = 0.0
 
         # Restore from checkpoint — guarantees idempotency
         self.ema5 = cp.ema5.copy()
@@ -141,15 +140,13 @@ class TickerState:
         self.sma10 = cp.sma10.copy()
         self.sma50 = cp.sma50.copy()
         self.rsi = cp.rsi.copy()
+        self.cd_ema = cp.cd_ema.copy()
         self.bars = deque(cp.bars, maxlen=_CAPACITY)
         self._live_date = date
 
         # Apply the bar
         bar = Bar(date=date, close=close, open=open_, high=high, low=low)
         self.bars.append(bar)
-
-        ema5_pre = self.ema5.copy()
-        ema20_pre = self.ema20.copy()
 
         m = self.ema5.update(close)
         o = self.ema20.update(close)
@@ -161,15 +158,17 @@ class TickerState:
         hl = calc_hl(highs)
         avg = calc_avg(sma10_val, sma50_val)
 
-        # Futures — recompute only when high changes
-        if len(self.bars) >= _FUTURES_MIN and high != self._last_futures_high:
-            self._last_futures_high = high
-            if m is not None and o is not None:
-                self._live_support, self._live_bullish, self._live_cd = compute_futures(
-                    ema5_pre=ema5_pre, ema20_pre=ema20_pre,
-                    ema5_post=self.ema5, ema20_post=self.ema20,
-                    old_cd=cp.cd,
-                )
+        # Futures — compute once per day (on first tick) or when force=True
+        if len(cp.bars) >= _FUTURES_MIN and cp.ema5.value is not None and cp.ema20.value is not None:
+            if self._live_support is None or force:
+                ce2 = _ce2(cp.ema5, cp.ema20)
+                cd_temp = cp.cd_ema.copy()
+                cd_temp.update(ce2)
+                if cd_temp.seeded:
+                    self._live_support, self._live_bullish = compute_futures(
+                        ema5_pre=cp.ema5.copy(), ema20_pre=cp.ema20.copy(),
+                        cd2=cd_temp.value,
+                    )
 
         return TickerSnapshot(
             ticker=self.ticker, date=date, close=close, open=open_, high=high, low=low,
@@ -187,5 +186,5 @@ def _make_checkpoint(state: TickerState) -> _Checkpoint:
         sma50=state.sma50.copy(),
         rsi=state.rsi.copy(),
         bars=deque(state.bars, maxlen=_CAPACITY),
-        cd=state.cd,
+        cd_ema=state.cd_ema.copy(),
     )

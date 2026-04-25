@@ -14,6 +14,7 @@ from app.ingest.seed_upload import router as seed_router
 from app.api.stream import router as stream_router
 from app.api.health import router as health_router
 from app.api.tickers import router as tickers_router
+from app.api.debug import router as debug_router
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -61,6 +62,7 @@ app.include_router(seed_router)
 app.include_router(stream_router)
 app.include_router(health_router)
 app.include_router(tickers_router)
+app.include_router(debug_router)
 
 
 @app.get("/", include_in_schema=False)

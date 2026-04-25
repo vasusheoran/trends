@@ -13,7 +13,7 @@ RUN uv sync --frozen --no-dev
 COPY trends-py/app ./app
 
 # Copy Excel seed data
-COPY data/Final-bullish-ce.xlsx /data/Final-bullish-ce.xlsx
+# COPY data/Final-bullish-ce.xlsx /data/Final-bullish-ce.xlsx
 
 EXPOSE 5001
 

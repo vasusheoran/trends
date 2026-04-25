@@ -13,7 +13,7 @@
     {
       "key": "ticker",
       "value": "nifty",
-      "description": "Ticker symbol (case-sensitive, matches the URL path)"
+      "description": "Ticker symbol (case-insensitive, matched as uppercase internally)"
     }
   ],
   "item": [
@@ -66,15 +66,22 @@
                   "key": "file",
                   "type": "file",
                   "src": "",
-                  "description": "Excel (.xlsx) file. Only B=Date, W=Close, X=Open, Y=High, Z=Low are read. All other columns are ignored. Any row missing those values is skipped."
+                  "description": "Excel (.xlsx) file containing OHLCV history."
+                },
+                {
+                  "key": "sheet",
+                  "type": "text",
+                  "value": "",
+                  "description": "Optional: sheet name to read. If omitted, the first sheet is used.",
+                  "disabled": true
                 }
               ]
             },
-            "description": "Upload an Excel file to seed historical OHLCV data for a ticker.\n\nRequired column layout (other columns are ignored):\n  B = Date\n  W = Close\n  X = Open\n  Y = High\n  Z = Low\n\nRows with any missing value in those five columns are silently skipped — no need to trim header rows or legend rows.\n\nThis resets the ticker's existing state before loading, so calling it again with a newer file replaces all history.\n\nReturns:\n  { \"ticker\": \"nifty\", \"bars_loaded\": 5383, \"status\": \"seeded\" }"
+            "description": "Upload an Excel (.xlsx) file to seed historical OHLCV data for a ticker.\n\nColumn detection (automatic):\n1. Header scan — looks for a row in the first 20 rows with Date, Close, Open, High, Low headers (case-insensitive). Data starts after that row.\n2. Fallback — if no header found, assumes fixed layout: B=Date, W=Close, X=Open, Y=High, Z=Low.\n\nRows with missing or non-numeric OHLCV values are silently skipped.\nResets all existing state for the ticker before loading.\nSwitches the ticker to live mode after loading so that subsequent PUTs are idempotent.\n\nOptional form field `sheet`: name of the sheet to read. If omitted, uses the first sheet.\n\nReturns:\n  ticker, sheet, bars_loaded, status, column_detection"
           },
           "response": [
             {
-              "name": "200 — Seeded",
+              "name": "200 — Seeded (header detected)",
               "status": "OK",
               "code": 200,
               "originalRequest": {
@@ -86,7 +93,29 @@
                 }
               },
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"ticker\": \"nifty\",\n  \"bars_loaded\": 5383,\n  \"status\": \"seeded\"\n}"
+              "body": "{\n  \"ticker\": \"NIFTY\",\n  \"sheet\": \"Sheet1\",\n  \"bars_loaded\": 5383,\n  \"status\": \"seeded\",\n  \"column_detection\": \"header row detected\"\n}"
+            },
+            {
+              "name": "200 — Seeded (fallback columns)",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{base_url}}/api/seed/{{ticker}}" }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"ticker\": \"NIFTY\",\n  \"sheet\": \"Nifty-20.12.2024\",\n  \"bars_loaded\": 5383,\n  \"status\": \"seeded\",\n  \"column_detection\": \"fallback (B/W/X/Y/Z)\"\n}"
+            },
+            {
+              "name": "400 — Sheet not found",
+              "status": "Bad Request",
+              "code": 400,
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{base_url}}/api/seed/{{ticker}}" }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"detail\": \"Sheet 'WrongName' not found. Available sheets: ['Sheet1', 'Sheet2']\"\n}"
             },
             {
               "name": "400 — Invalid file",
@@ -107,13 +136,82 @@
       "name": "Ticker",
       "item": [
         {
+          "name": "List all tickers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/tickers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tickers"]
+            },
+            "description": "Returns a list of all ticker symbols currently loaded in memory."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{base_url}}/api/tickers" }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"tickers\": [\"NIFTY\", \"BANKNIFTY\"]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete ticker",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/tickers/{{ticker}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tickers", "{{ticker}}"]
+            },
+            "description": "Remove a ticker from memory. All state and history is discarded. Any open SSE streams for this ticker receive no further events. Returns 404 if the ticker is not loaded."
+          },
+          "response": [
+            {
+              "name": "200 — Deleted",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "DELETE",
+                "url": { "raw": "{{base_url}}/api/tickers/{{ticker}}" }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"ticker\": \"NIFTY\",\n  \"status\": \"deleted\"\n}"
+            },
+            {
+              "name": "404 — Not found",
+              "status": "Not Found",
+              "code": 404,
+              "originalRequest": {
+                "method": "DELETE",
+                "url": { "raw": "{{base_url}}/api/tickers/{{ticker}}" }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"detail\": \"Ticker 'NIFTY' not found\"\n}"
+            }
+          ]
+        },
+        {
           "name": "Update ticker (current day)",
           "request": {
             "method": "PUT",
             "url": {
               "raw": "{{base_url}}/api/update/{{ticker}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "update", "{{ticker}}"]
+              "path": ["api", "update", "{{ticker}}"],
+              "query": [
+                {
+                  "key": "force",
+                  "value": "false",
+                  "description": "Set to true to force futures recompute on every tick (default: false = compute once per day)",
+                  "disabled": true
+                }
+              ]
             },
             "header": [
               { "key": "Content-Type", "value": "application/json" }
@@ -123,7 +221,7 @@
               "raw": "{\n  \"date\":  \"23-Dec-2024\",\n  \"close\": 23963.0,\n  \"open\":  24099.0,\n  \"high\":  24099.0,\n  \"low\":   23963.0\n}",
               "options": { "raw": { "language": "json" } }
             },
-            "description": "Post a live OHLCV bar for the ticker. Recomputes all indicators and futures (Support=CC, Bullish=BR). Returns a TickerSnapshot.\n\nDate format: DD-Mon-YYYY (e.g. 23-Dec-2024). Futures are only recomputed when High changes."
+            "description": "Post a live OHLCV bar for the ticker. Recomputes all indicators and returns a TickerSnapshot.\n\nFutures (support / bullish) are computed ONCE per day on the first tick, using:\n  - support  : prev day's high as d+1 anchor; find trial where BP[d+3]=BP[d+2]\n  - bullish  : find trial where BP[d+4]=BP[d+3] with all four future bars = trial\n\nAdd ?force=true to recompute futures on every tick (useful for testing).\n\nWhen the date changes, the previous live bar is promoted to a checkpoint and a `warning` field appears in the response."
           },
           "response": [
             {
@@ -140,7 +238,23 @@
                 }
               },
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"ticker\": \"nifty\",\n  \"date\": \"23-Dec-2024\",\n  \"close\": 23963.0,\n  \"open\": 24099.0,\n  \"high\": 24099.0,\n  \"low\": 23963.0,\n  \"hl\": 24199.0,\n  \"avg\": 23850.42,\n  \"ema5\": 23981.27,\n  \"ema20\": 23744.58,\n  \"rsi\": 48.32,\n  \"support\": 24215.80,\n  \"bullish\": 24260.04\n}"
+              "body": "{\n  \"ticker\": \"NIFTY\",\n  \"date\": \"23-Dec-2024\",\n  \"close\": 23963.0,\n  \"open\": 24099.0,\n  \"high\": 24099.0,\n  \"low\": 23963.0,\n  \"hl\": 24199.0,\n  \"avg\": 23850.42,\n  \"ema5\": 23981.27,\n  \"ema20\": 23744.58,\n  \"rsi\": 48.32,\n  \"support\": 24215.80,\n  \"bullish\": 23958.47,\n  \"warning\": null\n}"
+            },
+            {
+              "name": "200 — Date changed (day rollover)",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "PUT",
+                "url": { "raw": "{{base_url}}/api/update/{{ticker}}" },
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"date\":  \"24-Dec-2024\",\n  \"close\": 24100.0,\n  \"open\":  23963.0,\n  \"high\":  24120.0,\n  \"low\":   23900.0\n}"
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"ticker\": \"NIFTY\",\n  \"date\": \"24-Dec-2024\",\n  \"close\": 24100.0,\n  \"open\": 23963.0,\n  \"high\": 24120.0,\n  \"low\": 23900.0,\n  \"hl\": 24199.0,\n  \"avg\": 23862.10,\n  \"ema5\": 24021.51,\n  \"ema20\": 23761.42,\n  \"rsi\": 50.14,\n  \"support\": 24187.30,\n  \"bullish\": 23990.60,\n  \"warning\": \"Date changed from 23-Dec-2024 to 24-Dec-2024 — previous bar committed as history\"\n}"
             },
             {
               "name": "200 — Early snapshot (before indicators seeded)",
@@ -156,18 +270,25 @@
                 }
               },
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"ticker\": \"nifty\",\n  \"date\": \"01-Jan-2024\",\n  \"close\": 21500.0,\n  \"open\": 21480.0,\n  \"high\": 21550.0,\n  \"low\": 21450.0,\n  \"hl\": null,\n  \"avg\": null,\n  \"ema5\": null,\n  \"ema20\": null,\n  \"rsi\": null,\n  \"support\": null,\n  \"bullish\": null\n}"
+              "body": "{\n  \"ticker\": \"NIFTY\",\n  \"date\": \"01-Jan-2024\",\n  \"close\": 21500.0,\n  \"open\": 21480.0,\n  \"high\": 21550.0,\n  \"low\": 21450.0,\n  \"hl\": null,\n  \"avg\": null,\n  \"ema5\": null,\n  \"ema20\": null,\n  \"rsi\": null,\n  \"support\": null,\n  \"bullish\": null,\n  \"warning\": null\n}"
             }
           ]
         },
         {
-          "name": "Update ticker — flat tick (same High)",
+          "name": "Update ticker — force recompute",
           "request": {
             "method": "PUT",
             "url": {
-              "raw": "{{base_url}}/api/update/{{ticker}}",
+              "raw": "{{base_url}}/api/update/{{ticker}}?force=true",
               "host": ["{{base_url}}"],
-              "path": ["api", "update", "{{ticker}}"]
+              "path": ["api", "update", "{{ticker}}"],
+              "query": [
+                {
+                  "key": "force",
+                  "value": "true",
+                  "description": "Recompute support and bullish on every tick regardless of caching"
+                }
+              ]
             },
             "header": [
               { "key": "Content-Type", "value": "application/json" }
@@ -177,7 +298,7 @@
               "raw": "{\n  \"date\":  \"23-Dec-2024\",\n  \"close\": 23980.0,\n  \"open\":  24099.0,\n  \"high\":  24099.0,\n  \"low\":   23963.0\n}",
               "options": { "raw": { "language": "json" } }
             },
-            "description": "Same High as the previous tick — futures are NOT recomputed (gate logic). Indicators still update. Useful for simulating per-second ticks within the same bar."
+            "description": "Same as normal update but with ?force=true — support and bullish are recomputed on every call regardless of whether they were already computed for today. Useful for testing or comparing values across ticks."
           },
           "response": []
         },
@@ -222,6 +343,96 @@
             "description": "Opens a Server-Sent Events stream. Each PUT to /api/update/{ticker} pushes a TickerSnapshot event here.\n\nResponse is a long-lived connection — Postman will show events as they arrive.\n\nEvent format:\n  data: {\"ticker\":\"nifty\", \"close\":23963.0, ...}\n\nOpen this in a browser tab or use curl:\n  curl -N http://192.168.29.204:5001/api/stream/nifty"
           },
           "response": []
+        }
+      ]
+    },
+    {
+      "name": "Debug",
+      "item": [
+        {
+          "name": "Debug — compute from manual inputs",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/debug/compute",
+              "host": ["{{base_url}}"],
+              "path": ["api", "debug", "compute"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ema5_pre\":  24043.086,\n  \"ema20_pre\": 24284.484,\n  \"prev_high\":  24065.8\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Compute support and bullish from manually supplied settled EMA state.\n\nFields:\n  ema5_pre   — EMA5 after all committed bars (Excel col AS of last settled row)\n  ema20_pre  — EMA20 after all committed bars (Excel col BN of last settled row)\n  prev_high  — Previous day's high — used as d+1 anchor for the support search\n\nAlgorithm:\n  Support : d+1=prev_high (fixed), d+2=d+3=trial, find trial where BP[d+3]=BP[d+2]\n  Bullish : d+1..d+4=trial, find trial where BP[d+4]=BP[d+3]\n            (self-referential: the price that generates itself as its own support)\n\nReturns CSV with support, bullish, and BP series at each result."
+          },
+          "response": [
+            {
+              "name": "200 — CSV trace",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{base_url}}/api/debug/compute" },
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"ema5_pre\":  24043.086,\n  \"ema20_pre\": 24284.484,\n  \"prev_high\":  24065.8\n}"
+                }
+              },
+              "header": [{ "key": "Content-Type", "value": "text/plain" }],
+              "body": "field,value,description\nema5_pre,24043.086,Settled EMA5 (after all committed bars)\nema20_pre,24284.484,Settled EMA20 (after all committed bars)\nprev_high,24065.8,Previous day's high — d+1 anchor for support\n\nsupport,24215.80,brentq: d+1=prev_high d+2=d+3=trial BP[d+3]=BP[d+2]\n  BP_d1,-241.40,\n  BP_d2,-186.14,\n  BP_d3,-186.14,\n\nbullish,23958.47,brentq: d+1..d+4=trial BP[d+4]=BP[d+3]  (self-referential fixed point)\n  BP_d1,-202.66,\n  BP_d2,-202.66,\n  BP_d3,-202.66,\n  BP_d4,-202.66,"
+            }
+          ]
+        },
+        {
+          "name": "Debug — trace seeded ticker",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/debug/{{ticker}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "debug", "{{ticker}}"]
+            },
+            "description": "Show the futures computation trace for the current live state of a seeded ticker.\n\nUses the checkpoint (settled) EMA state and the last committed bar's high as prev_high.\nReturns the same CSV format as POST /api/debug/compute.\n\nRequires the ticker to be seeded (POST /api/seed/{ticker}) first.\nReturns 404 if ticker is not loaded, 400 if still in commit mode."
+          },
+          "response": [
+            {
+              "name": "200 — CSV trace",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{base_url}}/api/debug/{{ticker}}" }
+              },
+              "header": [{ "key": "Content-Type", "value": "text/plain" }],
+              "body": "field,value,description\nema5_pre,24043.086,Settled EMA5 (after all committed bars)\nema20_pre,24284.484,Settled EMA20 (after all committed bars)\nprev_high,24065.8,Previous day's high — d+1 anchor for support\n\nsupport,24215.80,brentq: d+1=prev_high d+2=d+3=trial BP[d+3]=BP[d+2]\n  ...\n\nbullish,23958.47,brentq: d+1..d+4=trial BP[d+4]=BP[d+3]  (self-referential fixed point)\n  ..."
+            },
+            {
+              "name": "404 — Ticker not found",
+              "status": "Not Found",
+              "code": 404,
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{base_url}}/api/debug/{{ticker}}" }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"detail\": \"Ticker 'NIFTY' not found\"\n}"
+            },
+            {
+              "name": "400 — Commit mode (not seeded)",
+              "status": "Bad Request",
+              "code": 400,
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{base_url}}/api/debug/{{ticker}}" }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"detail\": \"Ticker is in commit mode — seed it first\"\n}"
+            }
+          ]
         }
       ]
     }

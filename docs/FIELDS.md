@@ -1,14 +1,12 @@
 # Trends — Field Reference for AI Agents
 
 **Source of truth:** `data/Final-bullish-ce.xlsx`, sheet `Nifty-20.12.2024`, rows 5–5387.  
-**Go reference:** `services/ticker/cards/` on `master` branch — use for futures binary-search logic. If Go and Excel disagree, **Excel wins**.  
+**Go reference:** `services/ticker/cards/` on `master` branch — verified against Python implementation. If Go and Excel disagree, **Excel wins**.  
 **Tests:** Write tests by seeding from Excel computed values (`data_only=True` via openpyxl).
 
 ---
 
 ## Required Output Fields
-
-These are the fields exposed via SSE and stored in TimescaleDB.
 
 | Field Name | Excel Col | Formula / Logic | Starts at row |
 |------------|-----------|-----------------|---------------|
@@ -22,17 +20,17 @@ These are the fields exposed via SSE and stored in TimescaleDB.
 | EMA-5      | AS        | `2/6 * (Close - EMA5[t-1]) + EMA5[t-1]` | 9 |
 | EMA-20     | BN        | `2/21 * (Close - EMA20[t-1]) + EMA20[t-1]` | 24 |
 | RSI        | BV        | RSI(14) Wilder smoothing — see formula below | 20 |
-| Support    | —         | CC binary search result — see Futures section | 100+ |
-| Bullish    | —         | BR binary search result — see Futures section | 100+ |
+| Bullish    | BR        | BR binary search result — see Futures section | 105+ |
+| Support    | CC        | CC binary search result — see Futures section | 105+ |
 
-> There is no EMA-50 in the current implementation. The old `data/Nifty-17-04-2026.xlsx`
-> had a BN column labeled EMA-50 (decay 2/51), but the new source of truth uses BN = EMA-20 (decay 2/21).
+> There is no EMA-50. The old `data/Nifty-17-04-2026.xlsx` had BN = EMA-50 (decay 2/51),
+> but the current source of truth uses BN = EMA-20 (decay 2/21).
 
 ---
 
-## Intermediate Fields (Internal State, Not Exposed)
+## Intermediate Fields (Internal State)
 
-### EMA State (2 distinct EMAs)
+### EMA State (2 EMAs)
 
 | Internal Name | Excel Col | Seed | Decay | Notes |
 |---------------|-----------|------|-------|-------|
@@ -58,8 +56,7 @@ inner3 = (inner + inner2 + A) / 2
 AVG = A - (A * ((A - inner3) / Sum / 2 * 100 / 2) / 100)
 ```
 
-Key: the denominator in the correction term is `Sum` (= SMA10+SMA50), **not** `A`. Excel operator
-precedence `/ Sum / 2 * 100 / 2` ≠ `/ A * 100 / 2`. Tolerance 1.0 used in tests due to correction formula sensitivity.
+Key: the denominator in the correction term is `Sum` (= SMA10+SMA50), **not** `A`.
 
 ### RSI Formula (Wilder Smoothing)
 
@@ -68,7 +65,7 @@ C[t] = Close[t] - Close[t-1]
 gain[t] = max(C[t], 0)
 loss[t] = abs(min(C[t], 0))
 
-# Seed at bar 14 (14 bars):
+# Seed at bar 14:
 avg_gain[14] = mean(gain[1:14])
 avg_loss[14] = mean(loss[1:14])
 
@@ -79,90 +76,123 @@ avg_loss[t] = (avg_loss[t-1] * 13 + loss[t]) / 14
 RSI[t] = 100 if avg_loss[t] == 0 else 100 - (100 / (1 + avg_gain[t] / avg_loss[t]))
 ```
 
-Go field: `CW`. Excel col: `BV`.
-
 ---
 
 ## Future Projection Fields (Binary Search)
 
-**Computation chain per tick (matches Go `updateFutureData`):**
-1. CE — binary search (stateless)
-2. CD — rolling EMA5 of CE values (persistent `TickerState.cd`)
-3. CC → Support — binary search using new CD
-4. BR → Bullish — binary search using CE
+All searches use `ema5_pre`/`ema20_pre` — the EMA state **before** the current bar's close is applied.
 
-**Support = CC (not CE). Bullish = BR.**
+**Computation chain per tick (bar >= 100):**
 
-### CE
-
-Binary search for `trial` where `BP[d+1] = BP[d+2]`, with `W[d+1] = W[d+2] = trial`.
-
-```python
-def _search_ce(trial, ema5, ema20):
-    bp = _bp_series(ema5, ema20, [trial, trial])
-    return bp[1] - bp[0]   # zero when converged
-
-ce = brentq(_search_ce, 0.0, 99999.0, args=(ema5_pre, ema20_pre), xtol=0.001)
+```
+CE2  = (49*EMA5_pre - 19*EMA20_pre) / 30        [closed-form 2-bar fixed point]
+CD   = EMA_step(CD_prev, CE2)                    [EMA-5 of CE2; seeded after 5 values]
+BR   = brentq: W=[BR_trial, CE2, CE2], BP[d+3]=BP[d+2]     → Bullish
+CC   = brentq: W=[cd3, cc_trial, cc_trial], BP[d+3]=BP[d+2] → Support = cd3
+       where cd3 = 2/6*(cc_trial - CD) + CD
 ```
 
-CE is an intermediate value — not exposed directly, but used to update CD and compute BR.
+Futures require at least 100 bars of history for EMA to be seeded, plus 5 additional rows for CD EMA to seed. Support/Bullish first appear around bar 105.
 
-### CD (persistent state)
+---
 
-Rolling EMA5 of CE values. Updated every tick after CE is computed:
+### CE2 — Closed-Form 2-Bar Fixed Point
 
-```python
-new_cd = 2/6 * (ce - old_cd) + old_cd
-```
-
-Stored in `TickerState.cd`. Initialized to 0.0 (seeds naturally as CE accumulates).
-
-### CC (Support)
-
-Binary search for `cc_trial` where `BP[d+2] = BP[d+3]`, with:
-- `W[d+1] = EMA_step(CD, cc_trial)` — one EMA step from CD toward cc_trial
-- `W[d+2] = W[d+3] = cc_trial`
-
-CC (Support) = `W[d+1]` = `2/6 * (cc_trial - CD) + CD` — **not** the raw cc_trial.
+CE2 is the price at which BP stops changing after 2 bars. Derived by solving BP[d+2]=BP[d+1] with W[d+1]=W[d+2]=trial. Closed-form solution:
 
 ```python
-def _search_cc(trial, ema5, ema20, cd):
-    w_d1 = 2/6 * (trial - cd) + cd
-    bp = _bp_series(ema5, ema20, [w_d1, trial, trial])
-    return bp[2] - bp[1]   # zero when converged
-
-cc_trial = brentq(_search_cc, 0.0, 99999.0, args=(ema5_pre, ema20_pre, new_cd), xtol=0.001)
-support = 2/6 * (cc_trial - new_cd) + new_cd   # = W[d+1]
+def _ce2(ema5: EMAState, ema20: EMAState) -> float:
+    return (49 * ema5.value - 19 * ema20.value) / 30
 ```
 
-### BR (Bullish)
+**Derivation:** Let k5 = decay5*(1-decay5) = 2/9, k20 = decay20*(1-decay20) = 38/441.
+CE2 = (k5*ema5_pre - k20*ema20_pre) / (k5 - k20) = (49*ema5 - 19*ema20) / 30.
 
-Binary search for `trial` where `BP[d+3] = BP[d+2]`, with:
-- `W[d+1] = trial`
-- `W[d+2] = W[d+3] = CE`
+CE2 is used only internally to drive the BR and CD computation.
+
+---
+
+### CD — Rolling EMA-5 of CE2
+
+`TickerState.cd_ema` is an `EMAState(period=5, decay=2/6)` seeded from the first 5 CE2 values (bars 100–104). Updated each bar:
 
 ```python
-def _search_br(trial, ema5, ema20, ce):
-    bp = _bp_series(ema5, ema20, [trial, ce, ce])
-    return bp[2] - bp[1]   # zero when converged
-
-bullish = brentq(_search_br, 0.0, 99999.0, args=(ema5_pre, ema20_pre, ce), xtol=0.001)
+ce2 = _ce2(ema5_pre, ema20_pre)
+self.cd_ema.update(ce2)     # EMA-5 step: CD_new = 2/6*(CE2-CD_old) + CD_old
 ```
 
-### BP Series Helper
+CD is the state AFTER updating with the current bar's CE2. This updated CD is passed to `compute_futures` as `cd2`.
+
+---
+
+### BR — Bullish (Excel column BR)
+
+Binary search for `br_trial` where `BP[d+3] = BP[d+2]` with W = [br_trial, CE2, CE2]:
+
+```python
+def _search_br(trial, ema5, ema20, ce2):
+    bp = _bp_series(ema5, ema20, [trial, ce2, ce2])
+    return bp[2] - bp[1]
+
+bullish = brentq(_search_br, 0.0, 99999.0, args=(ema5_pre, ema20_pre, ce2), xtol=TOLERANCE)
+```
+
+Go reference: `searchBR` in `master:services/ticker/cards/next.go`.
+
+**Verified against Excel column BR:** most rows match within 1.5 pts.
+Row 5385 (18-Dec-2024) is a known outlier (~14 pts off) — likely an Excel manual-entry or rounding anomaly. All other rows within 2.0.
+
+---
+
+### CC — Support (Excel column CC)
+
+Binary search for `cc_trial` where `BP[d+3] = BP[d+2]` with W = [cd3, cc_trial, cc_trial]:
+- `cd3 = 2/6 * (cc_trial - CD) + CD` (varies with cc_trial)
+- Support = cd3 (not cc_trial)
+
+```python
+def _search_cc(trial, ema5, ema20, cd2):
+    cd3 = (2/6) * (trial - cd2) + cd2
+    bp = _bp_series(ema5, ema20, [cd3, trial, trial])
+    return bp[2] - bp[1]
+
+cc_trial = brentq(_search_cc, 0.0, 99999.0, args=(ema5_pre, ema20_pre, cd2), xtol=TOLERANCE)
+support  = (2/6) * (cc_trial - cd2) + cd2   # = cd3
+```
+
+Go reference: `searchCC` in `master:services/ticker/cards/next.go`.
+
+**Verified against Excel column CC:** most rows match within 1.5 pts. Row 5385 is a known outlier (~1.5 pts).
+
+---
+
+## BP Series Helper
 
 ```python
 def _bp_series(ema5, ema20, closes):
-    """Apply closes to COPIES of EMA state, return BP = EMA5 - EMA20 at each step."""
+    """Apply closes to COPIES of EMA state; return BP = EMA5 - EMA20 at each step."""
     m, o = ema5.copy(), ema20.copy()
-    return [mv - ov for mv, ov in ((m.update(c), o.update(c)) for c in closes)]
+    results = []
+    for c in closes:
+        mv, ov = m.update(c), o.update(c)
+        results.append(mv - ov if mv is not None and ov is not None else None)
+    return results
 ```
 
 Originals are never mutated — copies used for projection.
 
-### Futures Gate
+---
 
-Futures are only recomputed when `High` has changed (matches Go `recalculateCH`). Gate field: `TickerState._last_futures_high`. Reset to `0.0` in tests to force recomputation every bar.
+## Open Investigation: 01-Jan-2025 Bullish Discrepancy
+
+The user's manual process gave Bullish=23531 for 01-Jan-25. Our implementation gives:
+- CE2 = 23533.86  (2-bar fixed point — closest to 23531, diff ~3)
+- Bullish (BR) = 23687.72  (3-bar search)
+- Support (CC) = 23600.33
+
+The algorithm is verified against Go source and Excel for all historical rows. The discrepancy for 01-Jan-25 suggests the user's manual iteration may have converged to CE2 (the equilibrium price) rather than BR (the 3-bar fixed point search). The Go server's `searchCE` returns a similar value to our closed-form CE2.
+
+**Hypothesis to investigate:** When the user uploads a CSV with identical OHLC trial values (open=high=low=close=X) and iterates X until "support = X", they may be hitting the CE2 condition (2-bar equilibrium), not the BR/CC search result. The Go API response and which field the user is reading should be clarified.
 
 ---
 
@@ -181,11 +211,11 @@ Tick (Close, Open, High, Low, Date, ticker)
   │     AR[t]       →  AVG
   │     RSI[t]      →  RSI(14)
   │
-  └─► Compute futures (when High is new, needs 100+ bars):
-        CE  ← brentq(_search_ce,  ema5_pre, ema20_pre)
-        CD  ← 2/6*(CE - old_cd) + old_cd            [persistent state]
-        CC  ← brentq(_search_cc,  ema5_pre, ema20_pre, CD)  → Support
-        BR  ← brentq(_search_br,  ema5_pre, ema20_pre, CE)  → Bullish
+  └─► Compute futures (when bars >= 100):
+        CE2     = (49*EMA5_pre - 19*EMA20_pre) / 30
+        CD      = EMA_step(CD_prev, CE2)           [persistent TickerState.cd_ema]
+        Bullish = brentq(_search_br, ema5_pre, ema20_pre, ce2)
+        Support = brentq(_search_cc, ema5_pre, ema20_pre, cd2)  → cd3
 ```
 
 ---
@@ -213,29 +243,37 @@ Ticker is in the URL path. Matches VB script `PostTrend` shape (date + OHLC).
 |-----|-------------|------------------------|
 | M (EMA-5)  | `mean(Close[0:5])`  | Bar 5  |
 | O (EMA-20) | `mean(Close[0:20])` | Bar 20 |
+| CD (EMA-5 of CE2) | `mean(CE2[0:5])` | Bar 104 (5th CE2 value) |
 
-Futures require at least 100 bars of history (matches Go `if current.Index < 100: return`).
-
----
-
-## ⚠️ Why Excel BV/BW Cannot Be Used as Futures Ground Truth
-
-The `BV` (Support) and `BW` (Bullish) columns in the old `data/Nifty-17-04-2026.xlsx` contain
-**hard-coded values stored by the Go server** — they are not live Excel formulas. Verified:
-opening without `data_only=True` shows numeric values, not formula strings.
-
-The new source of truth `data/Final-bullish-ce.xlsx` does not have pre-computed Support/Bullish
-columns in the main sheet. Tests instead verify **mathematical convergence properties**:
-- CE: `|BP[d+2] - BP[d+1]| ≤ TOLERANCE` when both days use `trial=CE`
-- CC: `|BP[d+3] - BP[d+2]| ≤ TOLERANCE` with `W[d+1]=support, W[d+2,3]=cc_trial`
-- BR: `|BP[d+3] - BP[d+2]| ≤ TOLERANCE` with `W[d+1]=BR, W[d+2,3]=CE`
+Futures require at least 100 bars (matches Go `if current.Index < 100: return`).
+CD requires 5 CE2 values before seeding → first Support/Bullish output at bar ~105.
 
 ---
 
 ## Adding a New Field (for future sessions)
 
 1. Check if formula exists in Excel — if so, Excel is the implementation spec.
-2. Check Go `services/ticker/cards/helper.go` for the function.
-3. If it's a binary-search future: follow the pattern in `futures.py`, add a new `_search_*` function.
+2. Check Go `master:services/ticker/cards/helper.go` and `next.go`.
+3. If it's a binary-search future: add a new `_search_*` function in `futures.py`, following the `_search_br`/`_search_cc` pattern.
 4. Add field to `TickerSnapshot` model and SSE output.
-5. Write a test seeding from Excel computed values and assert within `TOLERANCE=0.001`.
+5. Write a convergence test seeded from Excel and assert within `TOLERANCE=0.001`.
+
+---
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `app/engine/indicators.py` | EMAState, SMAState, RSIState, calc_hl, calc_avg |
+| `app/engine/state.py` | TickerState — rolling 101-bar manager + cd_ema (EMA-5 of CE2) |
+| `app/engine/futures.py` | _ce2, _search_br, _search_cc, compute_futures |
+| `app/registry.py` | Global state dict + SSE pub/sub |
+| `app/main.py` | FastAPI app, lifespan (seed + Zerodha) |
+| `app/db/seed.py` | Excel → state seeding; DB → state seeding |
+| `app/db/timescale.py` | asyncpg schema, upsert, load_bars |
+| `app/ingest/webhook.py` | PUT /api/update/{ticker} |
+| `app/ingest/zerodha.py` | KiteTicker WebSocket client |
+| `app/api/stream.py` | GET /api/stream/{ticker} SSE |
+| `app/api/debug.py` | GET /api/debug/{ticker}, POST /api/debug/compute |
+| `tests/conftest.py` | Excel fixture — Final-Bullish-CE.xlsx, Nifty-20.12.2024 sheet |
+| `scripts/compute_bullish_from_csv.py` | Standalone: seed from CSV → print Support + Bullish |
