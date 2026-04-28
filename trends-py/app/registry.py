@@ -15,6 +15,7 @@ _subscribers: Dict[str, Set[asyncio.Queue]] = {}
 
 
 def get_state(ticker: str) -> TickerState:
+    ticker = ticker.lower()
     if ticker not in _states:
         _states[ticker] = TickerState(ticker=ticker)
     return _states[ticker]
@@ -22,12 +23,14 @@ def get_state(ticker: str) -> TickerState:
 
 def reset_state(ticker: str) -> TickerState:
     """Replace ticker state with a fresh instance (used by seed upload)."""
+    ticker = ticker.lower()
     _states[ticker] = TickerState(ticker=ticker)
     return _states[ticker]
 
 
 def delete_state(ticker: str) -> bool:
     """Remove a ticker from the registry. Returns True if it existed."""
+    ticker = ticker.lower()
     existed = ticker in _states
     _states.pop(ticker, None)
     _subscribers.pop(ticker, None)

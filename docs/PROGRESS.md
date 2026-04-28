@@ -9,8 +9,8 @@
 | 3 | Futures (Support/Bullish) | ✅ Done + Tested | Correct BR/CC algorithm from Go; all 21 tests pass |
 | 4 | Zerodha ingest | ⚠️ Written, not tested | `ingest/zerodha.py`; needs `kiteconnect` pkg + live token |
 | 5 | TimescaleDB | ⚠️ Written, not tested | Schema + seed logic; needs running DB to verify |
-| 6 | SSE streaming | ⚠️ Written, not tested | `api/stream.py`; needs integration test |
-| 7 | Dockerfile + docker-compose | ⚠️ Written, not tested | See `docker-compose.yml` |
+| 6 | SSE streaming | ✅ Done | Integrated with Frontend Terminal |
+| 7 | Dockerfile + docker-compose | ✅ Done | Static file mounting + volume mapping verified |
 | 8 | End-to-end smoke test | ❌ Not started | PUT → state update → SSE push |
 
 ---
@@ -165,3 +165,28 @@ Talk to user about which Go API field they read:
 | `scripts/compute_bullish_from_csv.py` | Standalone: seed from CSV → print CE2, CD, Support, Bullish |
 | `docs/FIELDS.md` | Full field reference + implementation notes |
 | `docs/PROGRESS.md` | Phase status + algorithm history |
+
+
+## Frontend Migration (Vanilla JS/CSS)
+
+### Phase 1: Infrastructure & Environment 
+* **Goal**: Establish the delivery pipeline from FastAPI to the browser.
+* **Tasks**:
+    * ✅ Configure FastAPI static file mounting in `main.py`.
+    * ✅ Update `docker-compose.yaml` with volume mounts for `/static`.
+    * ✅ Deploy initial `index.html` blueprint to verify container reachability.
+
+### Phase 2: Real-Time Data Integration 
+* **Goal**: Replace mock simulation with live backend data.
+* **Tasks**:
+    * ✅ Map SSE streaming endpoints via `http://192.168.29.204:5001/docs`.
+    * ✅ Implement `terminal.js` with native `EventSource` logic.
+    * ✅ Apply 500ms flash indicators to targeted DOM nodes based on incoming ticks.
+
+### Phase 3: State Management & History 
+* **Goal**: Enable user interaction and historical deep-dives.
+* **Tasks**:
+    * ✅ Implement row selection and global "click-away" deselection logic.
+    * ✅ Wire "Remove Ticker" button to the `DELETE` API.
+    * ✅ Fetch historical OHLC data on selection and render to chart placeholder.
+    * ✅ Wire "Upload Seed" button to `POST /api/seed/{ticker}`.

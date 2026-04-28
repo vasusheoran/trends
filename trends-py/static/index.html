@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>trends | Terminal</title>
+    <style>
+        :root {
+            --bg-primary: #080808;
+            --bg-secondary: #0f0f0f;
+            --bg-selected: rgba(0, 255, 127, 0.08);
+            --text-main: #d1d1d1;
+            --text-muted: #555;
+            --accent: #00ff7f;
+            --danger: #ff453a;
+            --border: #222;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header & Toolbar */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: var(--bg-primary);
+        }
+
+        .brand { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.5px; }
+        .status { font-size: 10px; color: var(--accent); font-weight: 700; }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: #111;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .divider { width: 1px; height: 16px; background: #333; margin: 0 8px; }
+
+        .action-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: var(--text-main);
+            padding: 5px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            border-radius: 3px;
+            text-transform: uppercase;
+            font-weight: 600;
+            transition: 0.15s;
+        }
+
+        .action-btn:hover:not(:disabled) { border-color: #555; background: #1a1a1a; }
+        .action-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+        .btn-accent { color: var(--accent); border-color: rgba(0, 255, 127, 0.3); }
+        .btn-danger { color: var(--danger); border-color: rgba(255, 69, 58, 0.3); }
+
+        /* Grid */
+        .grid-container {
+            flex: 1;
+            overflow: auto;
+            background: var(--bg-secondary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            text-align: right;
+            min-width: 1200px; /* Ensure columns don't crush */
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            background: #151515;
+            padding: 12px 10px;
+            color: var(--text-muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+            z-index: 2;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #161616;
+            font-family: var(--font-mono);
+            transition: background 0.1s;
+        }
+
+        tr.selected td {
+            background: var(--bg-selected) !important;
+            border-bottom: 1px solid var(--accent);
+            color: #fff;
+        }
+
+        .ticker-label { text-align: left; font-weight: 700; color: #fff; }
+
+        /* Real-time FX */
+        .flash-up { color: var(--accent) !important; background: rgba(0, 255, 127, 0.12) !important; transition: 0s; }
+        .flash-down { color: var(--danger) !important; background: rgba(255, 69, 58, 0.12) !important; transition: 0s; }
+        .fade-out { transition: background 0.5s ease, color 0.5s ease; }
+
+        /* Bottom Section */
+        .chart-container {
+            height: 220px;
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 11px;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body onclick="handleGlobalClick(event)">
+
+<header>
+    <div class="brand">trends</div>
+    <div class="status">● CONNECTED</div>
+</header>
+
+<nav class="toolbar">
+    <button class="action-btn btn-accent" onclick="addTicker()">⊕ Add Ticker</button>
+    <button class="action-btn" onclick="document.getElementById('fileInput').click()">↑ Upload Seed</button>
+    <input type="file" id="fileInput" style="display:none">
+    
+    <div class="divider"></div>
+    
+    <button id="btn-hist" class="action-btn" disabled onclick="triggerChart()">View History</button>
+    <button id="btn-del" class="action-btn btn-danger" disabled onclick="removeTicker()">Remove Ticker</button>
+</nav>
+
+<div class="grid-container" id="grid-container">
+    <table id="ticker-table">
+        <thead>
+            <tr>
+                <th style="text-align:left">Ticker</th>
+                <th>Date</th>
+                <th>Close</th>
+                <th>Open</th>
+                <th>High</th>
+                <th>Low</th>
+                <th>H/L</th>
+                <th>AVG</th>
+                <th>EMA-5</th>
+                <th>EMA-20</th>
+                <th>RSI</th>
+                <th>Support</th>
+                <th>Bullish</th>
+                <th>Alerts</th>
+            </tr>
+        </thead>
+        <tbody id="ticker-body"></tbody>
+    </table>
+</div>
+
+<div class="chart-container" id="chart-area">
+    [ CHART_ENGINE_IDLE ]
+</div>
+
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<script src="/static/terminal.js"></script>
+</body>
+</html>
+

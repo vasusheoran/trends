@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.db.timescale import init_pool, close_pool
@@ -57,6 +58,10 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Trends", lifespan=lifespan)
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 app.include_router(webhook_router)
 app.include_router(seed_router)
 app.include_router(stream_router)
@@ -67,4 +72,4 @@ app.include_router(debug_router)
 
 @app.get("/", include_in_schema=False)
 async def root():
-    return RedirectResponse(url="/docs")
+    return RedirectResponse(url="/static/index.html")

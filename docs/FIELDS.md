@@ -260,6 +260,27 @@ CD requires 5 CE2 values before seeding → first Support/Bullish output at bar 
 
 ---
 
+## Frontend Terminal UI Logic
+
+The terminal (`/static/index.html`) is a vanilla JS application providing a high-density view of real-time ticks.
+
+### Real-Time Pipeline
+- **Discovery**: On load, calls `GET /api/tickers` to identify active streams.
+- **Initial State**: Calls `GET /api/state/{ticker}` to populate the grid before SSE begins.
+- **Streaming**: Opens an `EventSource` to `GET /api/stream/{ticker}` for each active ticker.
+- **Updates**: Incoming `TickerSnapshot` JSON updates specific DOM nodes directly (id-based).
+
+### Visual Indicators
+- **500ms Flash**: Numerical cells flash Green (`flash-up`) or Red (`flash-down`) when values change.
+- **Selection**: Single-click to select a row (activates toolbar actions). Click-away to deselect.
+- **Alerts**: Displays `OB` (RSI > 70), `OS` (RSI < 30), or `⚠️` (Backend warning).
+
+### Future Integrations
+- **Chart Engine**: (Phase 3) Integration with lightweight charting for historical OHLC view.
+- **Seed Upload**: (Phase 3) Wire "Upload Seed" button to `POST /api/seed/{ticker}`.
+
+---
+
 ## Key Files
 
 | File | Purpose |

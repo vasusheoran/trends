@@ -11,6 +11,7 @@ RUN uv sync --frozen --no-dev
 
 # Copy application code
 COPY trends-py/app ./app
+COPY trends-py/static ./static
 
 # Copy Excel seed data
 # COPY data/Final-bullish-ce.xlsx /data/Final-bullish-ce.xlsx
