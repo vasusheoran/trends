@@ -24,6 +24,7 @@ async def start_zerodha_feed(api_key: str, access_token: str, instrument_token: 
         return
 
     from app.registry import get_state, publish
+    from app.db.timescale import upsert_tick
 
     loop = asyncio.get_event_loop()
 
@@ -46,6 +47,7 @@ async def start_zerodha_feed(api_key: str, access_token: str, instrument_token: 
         state = get_state(ticker)
         ts = int(datetime.now().timestamp())
         snapshot = state.update(date=date, close=close, open_=open_, high=high, low=low, timestamp=ts)
+        await upsert_tick(snapshot)
         await publish(ticker, snapshot)
 
     def on_connect(ws, response):

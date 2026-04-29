@@ -65,6 +65,7 @@ async def get_row_count(ticker: str) -> int:
 async def upsert_tick(snapshot) -> None:
     """Upsert a TickerSnapshot into ticker_ticks."""
     from datetime import datetime, timezone
+    ts = datetime.fromtimestamp(snapshot.timestamp, timezone.utc) if snapshot.timestamp else datetime.now(timezone.utc)
     async with _pool.acquire() as conn:
         await conn.execute("""
             INSERT INTO ticker_ticks
@@ -78,7 +79,7 @@ async def upsert_tick(snapshot) -> None:
                 support=EXCLUDED.support, bullish=EXCLUDED.bullish, rsi=EXCLUDED.rsi
         """,
             snapshot.ticker,
-            datetime.now(timezone.utc),
+            ts,
             snapshot.date,
             snapshot.close, snapshot.open, snapshot.high, snapshot.low,
             snapshot.ema5, snapshot.ema20,

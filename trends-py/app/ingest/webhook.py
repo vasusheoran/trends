@@ -7,6 +7,7 @@ import time
 from fastapi import APIRouter, HTTPException, Query
 from app.models import TickerPayload, TickerSnapshot
 from app.registry import get_state, publish
+from app.db.timescale import upsert_tick
 
 router = APIRouter()
 
@@ -28,5 +29,8 @@ async def update_ticker(
         force=force,
         timestamp=ts,
     )
+    # Background tasks would be better for high frequency, 
+    # but for now we call upsert_tick directly.
+    await upsert_tick(snapshot)
     await publish(ticker, snapshot)
     return snapshot
