@@ -215,7 +215,6 @@ function setupSplitter() {
 
     splitter.onmousedown = (e) => {
         isDragging = true;
-        history.style.transition = 'none';
         document.body.style.cursor = 'ns-resize';
         e.preventDefault();
     };
@@ -233,7 +232,6 @@ function setupSplitter() {
     document.onmouseup = () => {
         if (isDragging) {
             isDragging = false;
-            history.style.transition = 'height 0.25s ease';
             document.body.style.cursor = 'default';
         }
     };
@@ -359,6 +357,9 @@ function renderHistoryChart(bars) {
         timeScale: { borderColor: colors.grid, timeVisible: true, secondsVisible: false },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
     });
+
+    // Ensure chart takes up full container immediately
+    chart.resize(content.clientWidth, content.clientHeight);
 
     candleSeries = chart.addCandlestickSeries({
         upColor: '#00ff7f', downColor: '#ff453a', borderVisible: false,
