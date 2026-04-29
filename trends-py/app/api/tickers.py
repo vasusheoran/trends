@@ -1,9 +1,23 @@
 from collections import deque
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from app.registry import delete_state, list_tickers, _states
 from app.engine.futures import _ce2, get_support, _CD_DECAY, compute_futures
 from app.engine.indicators import calc_hl, calc_avg
+
+_MONTHS = {'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,
+           'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
+
+def _date_to_iso(d: str) -> Optional[str]:
+    """Convert 'DD-Mon-YYYY' → 'YYYY-MM-DD'. Returns None if unparseable."""
+    try:
+        parts = d.split('-')
+        if len(parts) == 3 and parts[1] in _MONTHS:
+            return f"{parts[2]}-{_MONTHS[parts[1]]:02d}-{int(parts[0]):02d}"
+    except Exception:
+        pass
+    return None
 
 router = APIRouter()
 
@@ -89,24 +103,53 @@ async def get_ticker_state(ticker: str):
 
 
 @router.get("/api/history/{ticker}")
-async def get_ticker_history(ticker: str):
-    """Return the last 101 bars of history for a ticker."""
+async def get_ticker_history(ticker: str, year: Optional[int] = Query(default=None)):
+    """
+    Return enriched bar history for a ticker.
+    Optional ?year=YYYY filters to Jan–Dec of that year ±3 months (Oct y-1 to Mar y+1).
+    Always returns the full list of available years for the picker.
+    """
     ticker = ticker.lower()
     if ticker not in _states:
         raise HTTPException(status_code=404, detail=f"Ticker '{ticker}' not found")
 
     state = _states[ticker]
-    bars = [
-        {
-            "time": b.date,
-            "open": round(b.open, 2),
-            "high": round(b.high, 2),
-            "low": round(b.low, 2),
-            "close": round(b.close, 2),
-        }
-        for b in state.history
-    ]
-    return {"ticker": ticker.upper(), "history": bars}
+
+    bars = []
+    years_set: set[int] = set()
+
+    for b in state.history:
+        iso = _date_to_iso(b.date)
+        if iso:
+            y, mo = int(iso[:4]), int(iso[5:7])
+            years_set.add(y)
+            if year is not None:
+                in_range = (
+                    (y == year - 1 and mo >= 10) or
+                    y == year or
+                    (y == year + 1 and mo <= 3)
+                )
+                if not in_range:
+                    continue
+
+        bars.append({
+            "date":    b.date,
+            "time":    iso,
+            "open":    round(b.open, 2),
+            "high":    round(b.high, 2),
+            "low":     round(b.low, 2),
+            "close":   round(b.close, 2),
+            "hl":      round(b.hl, 2)      if b.hl      is not None else None,
+            "avg":     round(b.avg, 2)     if b.avg     is not None else None,
+            "ema5":    round(b.ema5, 2)    if b.ema5    is not None else None,
+            "ema20":   round(b.ema20, 2)   if b.ema20   is not None else None,
+            "rsi":     round(b.rsi, 1)     if b.rsi     is not None else None,
+            "support": round(b.support, 2) if b.support is not None else None,
+            "bullish": round(b.bullish, 2) if b.bullish is not None else None,
+        })
+
+    years = sorted(years_set, reverse=True)
+    return {"ticker": ticker.upper(), "history": bars, "years": years}
 
 
 @router.delete("/api/tickers/{ticker}")

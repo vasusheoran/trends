@@ -33,6 +33,13 @@ class Bar:
     open: float
     high: float
     low: float
+    hl: Optional[float] = None
+    avg: Optional[float] = None
+    ema5: Optional[float] = None
+    ema20: Optional[float] = None
+    rsi: Optional[float] = None
+    support: Optional[float] = None
+    bullish: Optional[float] = None
 
 
 @dataclass
@@ -101,7 +108,6 @@ class TickerState:
         """Permanently append a bar (commit/seed mode)."""
         bar = Bar(date=date, close=close, open=open_, high=high, low=low)
         self.bars.append(bar)
-        self.history.append(bar)
 
         ema5_pre = self.ema5.copy()
         ema20_pre = self.ema20.copy()
@@ -133,6 +139,11 @@ class TickerState:
                     cd_pre=cd_pre,
                     ema5_post=self.ema5, ema20_post=self.ema20,
                 )
+
+        # Enrich bar with computed indicators, then add to full history
+        bar.hl = hl; bar.avg = avg; bar.ema5 = m; bar.ema20 = o
+        bar.rsi = rsi_val; bar.support = support; bar.bullish = bullish
+        self.history.append(bar)
 
         return TickerSnapshot(
             ticker=self.ticker, date=date, close=close, open=open_, high=high, low=low,
@@ -170,8 +181,6 @@ class TickerState:
         # Apply the bar
         bar = Bar(date=date, close=close, open=open_, high=high, low=low)
         self.bars.append(bar)
-        if not self.history or self.history[-1].date != date:
-            self.history.append(bar)
 
         m = self.ema5.update(close)
         o = self.ema20.update(close)
@@ -197,6 +206,14 @@ class TickerState:
                         cd_pre=cp.cd_ema.value,
                         ema5_post=self.ema5, ema20_post=self.ema20,
                     )
+
+        # Enrich bar and update-or-append to history (one entry per day)
+        bar.hl = hl; bar.avg = avg; bar.ema5 = m; bar.ema20 = o
+        bar.rsi = rsi_val; bar.support = self._live_support; bar.bullish = self._live_bullish
+        if self.history and self.history[-1].date == date:
+            self.history[-1] = bar
+        else:
+            self.history.append(bar)
 
         return TickerSnapshot(
             ticker=self.ticker, date=date, close=close, open=open_, high=high, low=low,

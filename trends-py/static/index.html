@@ -40,7 +40,7 @@
         }
 
         .brand { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.5px; }
-        .status { font-size: 10px; color: var(--accent); font-weight: 700; }
+        .status { font-size: 10px; font-weight: 700; }
 
         .toolbar {
             display: flex;
@@ -66,17 +66,17 @@
             font-weight: 600;
             transition: 0.15s;
         }
-
         .action-btn:hover:not(:disabled) { border-color: #555; background: #1a1a1a; }
         .action-btn:disabled { opacity: 0.2; cursor: not-allowed; }
         .btn-accent { color: var(--accent); border-color: rgba(0, 255, 127, 0.3); }
         .btn-danger { color: var(--danger); border-color: rgba(255, 69, 58, 0.3); }
 
-        /* Grid */
+        /* Main Grid */
         .grid-container {
             flex: 1;
             overflow: auto;
             background: var(--bg-secondary);
+            min-height: 0;
         }
 
         table {
@@ -84,7 +84,7 @@
             border-collapse: collapse;
             font-size: 12px;
             text-align: right;
-            min-width: 1200px; /* Ensure columns don't crush */
+            min-width: 1100px;
         }
 
         th {
@@ -115,15 +115,87 @@
         .ticker-label { text-align: left; font-weight: 700; color: #fff; }
 
         /* Real-time FX */
-        .flash-up { color: var(--accent) !important; background: rgba(0, 255, 127, 0.12) !important; transition: 0s; }
+        .flash-up   { color: var(--accent) !important; background: rgba(0, 255, 127, 0.12) !important; transition: 0s; }
         .flash-down { color: var(--danger) !important; background: rgba(255, 69, 58, 0.12) !important; transition: 0s; }
-        .fade-out { transition: background 0.5s ease, color 0.5s ease; }
+        .fade-out   { transition: background 0.5s ease, color 0.5s ease; }
 
-        /* Bottom Section */
-        .chart-container {
+        /* ── History Panel ─────────────────────────────── */
+        .history-panel {
             height: 220px;
+            min-height: 220px;
             background: var(--bg-primary);
             border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: height 0.25s ease, min-height 0.25s ease;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .history-panel.expanded {
+            height: 50vh;
+            min-height: 50vh;
+        }
+
+        /* header bar inside the panel */
+        #history-header {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 7px 16px;
+            background: #111;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .history-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+
+        /* Chart / Table toggle */
+        .view-toggle { display: flex; }
+        .toggle-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: var(--text-muted);
+            padding: 3px 10px;
+            font-size: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: 600;
+            line-height: 1.6;
+        }
+        .toggle-btn:first-child { border-radius: 3px 0 0 3px; }
+        .toggle-btn:last-child  { border-radius: 0 3px 3px 0; border-left: none; }
+        .toggle-btn.active {
+            background: rgba(0,255,127,0.08);
+            color: var(--accent);
+            border-color: rgba(0,255,127,0.3);
+        }
+
+        /* Year picker */
+        .year-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+        .year-select {
+            background: #111;
+            border: 1px solid #333;
+            color: var(--text-main);
+            padding: 3px 8px;
+            font-size: 11px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .close-btn { margin-left: auto; padding: 3px 10px; }
+
+        /* Panel content area */
+        #history-content {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+        }
+        #history-content.idle {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -131,24 +203,38 @@
             font-size: 11px;
             letter-spacing: 2px;
         }
+        .history-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            font-size: 11px;
+            letter-spacing: 2px;
+        }
+
+        /* History table — inherits global th/td but with tighter padding */
+        .history-table { min-width: 1100px; }
+        .history-table td { padding: 7px 10px; }
+        .history-table th { padding: 9px 10px; }
     </style>
 </head>
 <body onclick="handleGlobalClick(event)">
 
 <header>
     <div class="brand">trends</div>
-    <div class="status">● CONNECTED</div>
+    <div class="status" id="connection-status" style="color:var(--text-muted)">● CONNECTING</div>
 </header>
 
 <nav class="toolbar">
     <button class="action-btn btn-accent" onclick="addTicker()">⊕ Add Ticker</button>
     <button class="action-btn" onclick="triggerSeedUpload()">↑ Upload Seed</button>
     <input type="file" id="fileInput" accept=".xlsx,.csv,.txt" style="display:none">
-    
+
     <div class="divider"></div>
-    
-    <button id="btn-hist" class="action-btn" disabled onclick="triggerChart()">View History</button>
-    <button id="btn-del" class="action-btn btn-danger" disabled onclick="removeTicker()">Remove Ticker</button>
+
+    <button id="btn-hist" class="action-btn" disabled onclick="openHistory()">View History</button>
+    <button id="btn-del"  class="action-btn btn-danger" disabled onclick="removeTicker()">Remove Ticker</button>
 </nav>
 
 <div class="grid-container" id="grid-container">
@@ -175,12 +261,31 @@
     </table>
 </div>
 
-<div class="chart-container" id="chart-area">
-    [ CHART_ENGINE_IDLE ]
+<!-- History Panel -->
+<div class="history-panel" id="chart-area">
+
+    <!-- Header (hidden until history is opened) -->
+    <div id="history-header">
+        <span class="history-title" id="history-title"></span>
+
+        <div class="view-toggle">
+            <button id="btn-view-chart" class="toggle-btn active" onclick="setHistoryView('chart')">Chart</button>
+            <button id="btn-view-table" class="toggle-btn"        onclick="setHistoryView('table')">Table</button>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px">
+            <span class="year-label">Year</span>
+            <select id="year-picker" class="year-select" onchange="loadHistory()"></select>
+        </div>
+
+        <button class="action-btn close-btn" onclick="closeHistory()">✕ Close</button>
+    </div>
+
+    <!-- Content: idle placeholder, chart canvas, or history table -->
+    <div id="history-content" class="idle">[ CHART_ENGINE_IDLE ]</div>
 </div>
 
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
-<script src="/static/terminal.js?v=3"></script>
+<script src="/static/terminal.js?v=4"></script>
 </body>
 </html>
-
