@@ -11,6 +11,8 @@ let supportSeries = null;
 let historyView = 'chart';  // 'chart' | 'table'
 let currentHistoryData = null;
 
+let resizeObserver = null;
+
 // ── Init ─────────────────────────────────────────────────
 async function init() {
     await loadPreferences();
@@ -18,13 +20,6 @@ async function init() {
     render();
     setupSeedUpload();
     setupSplitter();
-
-    window.addEventListener('resize', () => {
-        if (chart) {
-            const content = document.getElementById('history-content');
-            chart.resize(content.clientWidth, content.clientHeight);
-        }
-    });
 }
 
 // ── Ticker fetching ───────────────────────────────────────
@@ -199,14 +194,8 @@ function toggleSelection(id) {
 }
 
 function handleGlobalClick(e) {
-    const table = document.getElementById('ticker-table');
-    const panel = document.getElementById('chart-area');
-    if (!table) return;
-    if (!table.contains(e.target) && !e.target.closest('.toolbar') && !panel.contains(e.target)) {
-        activeId = null;
-        closeHistory();
-        render();
-    }
+    // Selection logic moved entirely to toggleSelection (row click)
+    // Global click no longer deselects to prevent accidental closing.
 }
 
 function updateButtons() {
@@ -218,7 +207,6 @@ function updateButtons() {
 function setupSplitter() {
     const splitter = document.getElementById('splitter');
     const history = document.getElementById('chart-area');
-    const content = document.getElementById('history-content');
     let isDragging = false;
 
     splitter.onmousedown = (e) => {
@@ -233,12 +221,7 @@ function setupSplitter() {
         const newHistoryHeight = totalHeight - e.clientY;
         
         if (newHistoryHeight > 40 && newHistoryHeight < totalHeight - 150) {
-            requestAnimationFrame(() => {
-                history.style.height = `${newHistoryHeight}px`;
-                if (chart) {
-                    chart.resize(content.clientWidth, content.clientHeight);
-                }
-            });
+            history.style.height = `${newHistoryHeight}px`;
         }
     };
 
@@ -282,7 +265,7 @@ async function openHistory() {
 
     document.getElementById('splitter').style.display = 'block';
     const panel = document.getElementById('chart-area');
-    panel.style.height = '220px'; // Set explicit default height instead of class transition
+    panel.style.height = '220px'; 
     panel.classList.add('expanded');
     document.getElementById('history-header').style.display = 'flex';
     document.getElementById('history-title').textContent = `${activeId.toUpperCase()} · History`;
@@ -292,14 +275,6 @@ async function openHistory() {
     picker.innerHTML = `<option value="${defaultYear}">${defaultYear}</option>`;
 
     await loadHistory();
-    
-    // Final check for chart sizing after all data is loaded and DOM has settled
-    setTimeout(() => {
-        if (chart) {
-            const content = document.getElementById('history-content');
-            chart.resize(content.clientWidth, content.clientHeight);
-        }
-    }, 0);
 }
 
 async function loadHistory() {
@@ -377,10 +352,18 @@ function renderHistoryChart(bars) {
         grid: { vertLines: { color: colors.grid }, horzLines: { color: colors.grid } },
         timeScale: { borderColor: colors.grid, timeVisible: true, secondsVisible: false },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        width: content.clientWidth,
+        height: content.clientHeight || 220,
     });
 
-    // Ensure chart takes up full container immediately
-    chart.resize(content.clientWidth, content.clientHeight);
+    // Robust resizing using ResizeObserver
+    resizeObserver = new ResizeObserver(entries => {
+        if (chart && entries[0].contentRect) {
+            const { width, height } = entries[0].contentRect;
+            chart.resize(width, height);
+        }
+    });
+    resizeObserver.observe(content);
 
     candleSeries = chart.addCandlestickSeries({
         upColor: '#00ff7f', downColor: '#ff453a', borderVisible: false,
@@ -483,6 +466,7 @@ function closeHistory() {
 }
 
 function destroyChart() {
+    if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
     if (chart) { chart.remove(); chart = null; candleSeries = null; }
 }
 
