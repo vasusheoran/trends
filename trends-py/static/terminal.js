@@ -85,11 +85,17 @@ function updateTickerUI(snapshot) {
     }
 
     const fields = [
-        { id: `c-${tickerName}`, key: 'close' },
-        { id: `e5-${tickerName}`, key: 'ema5' },
-        { id: `r-${tickerName}`, key: 'rsi' },
-        { id: `s-${tickerName}`, key: 'support' },
-        { id: `b-${tickerName}`, key: 'bullish' }
+        { id: `c-${tickerName}`,   key: 'close',   fmt: v => v.toFixed(2) },
+        { id: `o-${tickerName}`,   key: 'open',    fmt: v => v.toFixed(2) },
+        { id: `h-${tickerName}`,   key: 'high',    fmt: v => v.toFixed(2) },
+        { id: `l-${tickerName}`,   key: 'low',     fmt: v => v.toFixed(2) },
+        { id: `hl-${tickerName}`,  key: 'hl',      fmt: v => v.toFixed(2) },
+        { id: `avg-${tickerName}`, key: 'avg',     fmt: v => v.toFixed(2) },
+        { id: `e5-${tickerName}`,  key: 'ema5',    fmt: v => v.toFixed(2) },
+        { id: `e20-${tickerName}`, key: 'ema20',   fmt: v => v.toFixed(2) },
+        { id: `r-${tickerName}`,   key: 'rsi',     fmt: v => v.toFixed(0) },
+        { id: `s-${tickerName}`,   key: 'support', fmt: v => v.toFixed(2) },
+        { id: `b-${tickerName}`,   key: 'bullish', fmt: v => v.toFixed(2) },
     ];
 
     fields.forEach(f => {
@@ -98,8 +104,8 @@ function updateTickerUI(snapshot) {
         const newVal = snapshot[f.key];
         const oldVal = old[f.key];
         if (newVal !== oldVal) {
-            cell.innerText = typeof newVal === 'number' ? newVal.toFixed(2) : (newVal || '-');
-            if (oldVal !== undefined) {
+            cell.innerText = typeof newVal === 'number' ? f.fmt(newVal) : (newVal || '-');
+            if (oldVal !== undefined && typeof newVal === 'number') {
                 const cls = newVal > oldVal ? 'flash-up' : 'flash-down';
                 cell.classList.remove('fade-out');
                 cell.classList.add(cls);
@@ -112,9 +118,6 @@ function updateTickerUI(snapshot) {
     });
 
     document.getElementById(`d-${tickerName}`).innerText = snapshot.date || '-';
-    document.getElementById(`o-${tickerName}`).innerText = snapshot.open?.toFixed(2) || '-';
-    document.getElementById(`h-${tickerName}`).innerText = snapshot.high?.toFixed(2) || '-';
-    document.getElementById(`l-${tickerName}`).innerText = snapshot.low?.toFixed(2) || '-';
     
     // Update chart if this is the active ticker
     if (activeId === tickerName && candleSeries) {
@@ -166,12 +169,8 @@ function render() {
 }
 
 function toggleSelection(id) {
-    if (activeId === id) {
-        activeId = null;
-        destroyChart();
-    } else {
-        activeId = id;
-    }
+    destroyChart();
+    activeId = (activeId === id) ? null : id;
     render();
 }
 
@@ -195,15 +194,19 @@ function updateButtons() {
 
 async function triggerChart() {
     if (!activeId) return;
+
+    // Always destroy previous chart instance before creating a new one.
+    destroyChart();
+
     const container = document.getElementById('chart-area');
-    container.innerHTML = ''; // Clear idle text
-    
+    container.innerHTML = '';
+
     chart = LightweightCharts.createChart(container, {
-        layout: { backgroundColor: '#080808', textColor: '#d1d1d1' },
+        layout: { background: { color: '#080808' }, textColor: '#d1d1d1' },
         grid: { vertLines: { color: '#111' }, horzLines: { color: '#111' } },
         timeScale: { borderColor: '#222' },
     });
-    
+
     candleSeries = chart.addCandlestickSeries({
         upColor: '#00ff7f', downColor: '#ff453a', borderVisible: false,
         wickUpColor: '#00ff7f', wickDownColor: '#ff453a',
@@ -212,27 +215,32 @@ async function triggerChart() {
     try {
         const res = await fetch(`/api/history/${activeId}`);
         const data = await res.json();
-        // Convert dates if needed (Lightweight Charts prefers YYYY-MM-DD)
-        const formatted = data.history.map(b => ({
-            ...b,
-            time: formatTimeForChart(b.time)
-        })).sort((a, b) => a.time.localeCompare(b.time));
-        
+        const formatted = data.history
+            .map(b => ({ ...b, time: formatTimeForChart(b.time) }))
+            .filter(b => b.time !== null)
+            .sort((a, b) => a.time.localeCompare(b.time));
+
         candleSeries.setData(formatted);
         chart.timeScale().fitContent();
     } catch (e) {
         console.error("Failed to load chart data:", e);
-        container.innerText = "FAILED TO LOAD HISTORY";
+        destroyChart();
+        container.innerText = '[ HISTORY LOAD FAILED ]';
     }
 }
 
 function formatTimeForChart(t) {
-    // Backend returns '23-Dec-2024'. Need 'YYYY-MM-DD'.
-    const months = { 'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04', 'May':'05', 'Jun':'06', 
-                     'Jul':'07', 'Aug':'08', 'Sep':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12' };
+    if (!t) return null;
+    // Already YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+    // DD-Mon-YYYY (e.g. 20-Dec-2024)
+    const months = { Jan:'01', Feb:'02', Mar:'03', Apr:'04', May:'05', Jun:'06',
+                     Jul:'07', Aug:'08', Sep:'09', Oct:'10', Nov:'11', Dec:'12' };
     const parts = t.split('-');
-    if (parts.length !== 3) return t;
-    return `${parts[2]}-${months[parts[1]]}-${parts[0].padStart(2, '0')}`;
+    if (parts.length === 3 && months[parts[1]]) {
+        return `${parts[2]}-${months[parts[1]]}-${parts[0].padStart(2, '0')}`;
+    }
+    return null;
 }
 
 function destroyChart() {
@@ -244,29 +252,42 @@ function destroyChart() {
     document.getElementById('chart-area').innerText = '[ CHART_ENGINE_IDLE ]';
 }
 
+function triggerSeedUpload() {
+    // Resolve target ticker: use selected row, or prompt for a new name.
+    let target = activeId;
+    if (!target) {
+        const name = prompt("Ticker name to seed (e.g. NIFTY):");
+        if (!name || !name.trim()) return;
+        target = name.trim().toLowerCase();
+    }
+    // Store target on the input so the onchange handler can read it.
+    const input = document.getElementById('fileInput');
+    input.dataset.seedTarget = target;
+    // Reset value so re-selecting the same file triggers onchange again.
+    input.value = '';
+    input.click();
+}
+
 function setupSeedUpload() {
     const input = document.getElementById('fileInput');
     input.onchange = async (e) => {
-        if (!activeId) {
-            alert("Select a ticker first!");
-            return;
-        }
+        const target = input.dataset.seedTarget;
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file || !target) return;
 
         const formData = new FormData();
         formData.append('file', file);
-        
+
         try {
-            const res = await fetch(`/api/seed/${activeId}`, {
+            const res = await fetch(`/api/seed/${target}`, {
                 method: 'POST',
                 body: formData
             });
             const result = await res.json();
-            
+
             if (res.ok) {
-                alert(`SUCCESS: Seeded ${result.bars_loaded} bars for ${activeId.toUpperCase()}\nDetection: ${result.column_detection}`);
-                await addTickerToState(activeId);
+                alert(`SUCCESS: Seeded ${result.bars_loaded} bars for ${target.toUpperCase()}\nDetection: ${result.column_detection}`);
+                await addTickerToState(target);
                 render();
             } else {
                 alert(`UPLOAD FAILED: ${result.detail || 'Unknown error'}`);
@@ -275,6 +296,8 @@ function setupSeedUpload() {
             console.error("Seed upload failed:", err);
             alert(`NETWORK ERROR: Could not connect to server.`);
         }
+        // Reset so the same file can be re-uploaded later.
+        input.value = '';
     };
 }
 

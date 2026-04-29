@@ -23,6 +23,7 @@ from app.models import TickerSnapshot
 
 _CAPACITY = 101
 _FUTURES_MIN = 100
+_HISTORY_MAX = 5500  # retain full seed history for charting
 
 
 @dataclass
@@ -44,6 +45,12 @@ class _Checkpoint:
     rsi: RSIState
     bars: deque
     cd_ema: EMAState
+    # EMA state from before the last committed bar — used for futures computation.
+    # compute_futures(ema5_pre, ema20_pre, cd_pre) applies one CE2 step internally,
+    # so callers must pass the PRE-last-bar state, not the post-bar state.
+    ema5_pre: Optional[EMAState]
+    ema20_pre: Optional[EMAState]
+    cd_pre: Optional[float]
 
 
 @dataclass
@@ -58,6 +65,14 @@ class TickerState:
     rsi: RSIState = field(default_factory=RSIState)
     # CD: EMA-5 (decay 2/6) of daily CE2 values, accumulated from bar 100 onward.
     cd_ema: EMAState = field(default_factory=lambda: EMAState(period=5, decay=2/6))
+
+    # Pre-last-bar state saved during _update_commit, used for futures at checkpoint.
+    _futures_ema5_pre: Optional[EMAState] = field(default=None, repr=False)
+    _futures_ema20_pre: Optional[EMAState] = field(default=None, repr=False)
+    _futures_cd_pre: Optional[float] = field(default=None, repr=False)
+
+    # Full bar history for charting (not capped to _CAPACITY)
+    history: deque = field(default_factory=lambda: deque(maxlen=_HISTORY_MAX))
 
     # Live-mode state (populated after commit())
     _checkpoint: Optional[_Checkpoint] = field(default=None, repr=False)
@@ -86,9 +101,16 @@ class TickerState:
         """Permanently append a bar (commit/seed mode)."""
         bar = Bar(date=date, close=close, open=open_, high=high, low=low)
         self.bars.append(bar)
+        self.history.append(bar)
 
         ema5_pre = self.ema5.copy()
         ema20_pre = self.ema20.copy()
+        cd_pre = self.cd_ema.value
+
+        # Save for checkpoint futures computation
+        self._futures_ema5_pre = ema5_pre
+        self._futures_ema20_pre = ema20_pre
+        self._futures_cd_pre = cd_pre
 
         m = self.ema5.update(close)
         o = self.ema20.update(close)
@@ -105,10 +127,11 @@ class TickerState:
         if len(self.bars) >= _FUTURES_MIN and m is not None and o is not None:
             ce2 = _ce2(ema5_pre, ema20_pre)
             self.cd_ema.update(ce2)
-            if self.cd_ema.seeded:
+            if self.cd_ema.seeded and cd_pre is not None:
                 support, bullish = compute_futures(
                     ema5_pre=ema5_pre, ema20_pre=ema20_pre,
-                    cd2=self.cd_ema.value,
+                    cd_pre=cd_pre,
+                    ema5_post=self.ema5, ema20_post=self.ema20,
                 )
 
         return TickerSnapshot(
@@ -147,6 +170,8 @@ class TickerState:
         # Apply the bar
         bar = Bar(date=date, close=close, open=open_, high=high, low=low)
         self.bars.append(bar)
+        if not self.history or self.history[-1].date != date:
+            self.history.append(bar)
 
         m = self.ema5.update(close)
         o = self.ema20.update(close)
@@ -158,16 +183,19 @@ class TickerState:
         hl = calc_hl(highs)
         avg = calc_avg(sma10_val, sma50_val)
 
+        # Update CD state for persistent state tracking (even if futures aren't recomputed)
+        if cp.ema5.value is not None and cp.ema20.value is not None:
+            ce2_today = _ce2(cp.ema5, cp.ema20)
+            self.cd_ema.update(ce2_today)
+
         # Futures — compute once per day (on first tick) or when force=True
         if len(cp.bars) >= _FUTURES_MIN and cp.ema5.value is not None and cp.ema20.value is not None:
             if self._live_support is None or force:
-                ce2 = _ce2(cp.ema5, cp.ema20)
-                cd_temp = cp.cd_ema.copy()
-                cd_temp.update(ce2)
-                if cd_temp.seeded:
+                if cp.cd_ema.seeded:
                     self._live_support, self._live_bullish = compute_futures(
                         ema5_pre=cp.ema5.copy(), ema20_pre=cp.ema20.copy(),
-                        cd2=cd_temp.value,
+                        cd_pre=cp.cd_ema.value,
+                        ema5_post=self.ema5, ema20_post=self.ema20,
                     )
 
         return TickerSnapshot(
@@ -187,4 +215,7 @@ def _make_checkpoint(state: TickerState) -> _Checkpoint:
         rsi=state.rsi.copy(),
         bars=deque(state.bars, maxlen=_CAPACITY),
         cd_ema=state.cd_ema.copy(),
+        ema5_pre=state._futures_ema5_pre.copy() if state._futures_ema5_pre else None,
+        ema20_pre=state._futures_ema20_pre.copy() if state._futures_ema20_pre else None,
+        cd_pre=state._futures_cd_pre,
     )
