@@ -44,7 +44,8 @@ async def start_zerodha_feed(api_key: str, access_token: str, instrument_token: 
 
     async def _ingest(ticker, date, close, open_, high, low):
         state = get_state(ticker)
-        snapshot = state.update(date=date, close=close, open_=open_, high=high, low=low)
+        ts = int(datetime.now().timestamp())
+        snapshot = state.update(date=date, close=close, open_=open_, high=high, low=low, timestamp=ts)
         await publish(ticker, snapshot)
 
     def on_connect(ws, response):

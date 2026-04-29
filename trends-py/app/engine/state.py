@@ -33,6 +33,7 @@ class Bar:
     open: float
     high: float
     low: float
+    timestamp: Optional[int] = None
     hl: Optional[float] = None
     avg: Optional[float] = None
     ema5: Optional[float] = None
@@ -81,6 +82,10 @@ class TickerState:
     # Full bar history for charting (not capped to _CAPACITY)
     history: deque = field(default_factory=lambda: deque(maxlen=_HISTORY_MAX))
 
+    # Intraday bars (last 1000 bars for 1m and 5m)
+    bars_1m: deque = field(default_factory=lambda: deque(maxlen=1000))
+    bars_5m: deque = field(default_factory=lambda: deque(maxlen=1000))
+
     # Live-mode state (populated after commit())
     _checkpoint: Optional[_Checkpoint] = field(default=None, repr=False)
     _live_date: Optional[str] = field(default=None, repr=False)
@@ -99,14 +104,14 @@ class TickerState:
         self._live_bullish = None
 
     def update(self, date: str, close: float, open_: float, high: float, low: float,
-               force: bool = False) -> TickerSnapshot:
+               force: bool = False, timestamp: Optional[int] = None) -> TickerSnapshot:
         if self._checkpoint is not None:
-            return self._update_live(date, close, open_, high, low, force)
-        return self._update_commit(date, close, open_, high, low)
+            return self._update_live(date, close, open_, high, low, force, timestamp)
+        return self._update_commit(date, close, open_, high, low, timestamp)
 
-    def _update_commit(self, date, close, open_, high, low) -> TickerSnapshot:
+    def _update_commit(self, date, close, open_, high, low, timestamp=None) -> TickerSnapshot:
         """Permanently append a bar (commit/seed mode)."""
-        bar = Bar(date=date, close=close, open=open_, high=high, low=low)
+        bar = Bar(date=date, close=close, open=open_, high=high, low=low, timestamp=timestamp)
         self.bars.append(bar)
 
         ema5_pre = self.ema5.copy()
@@ -149,9 +154,10 @@ class TickerState:
             ticker=self.ticker, date=date, close=close, open=open_, high=high, low=low,
             hl=hl, avg=avg, ema5=m, ema20=o, rsi=rsi_val,
             support=support, bullish=bullish,
+            timestamp=timestamp,
         )
 
-    def _update_live(self, date, close, open_, high, low, force: bool) -> TickerSnapshot:
+    def _update_live(self, date, close, open_, high, low, force: bool, timestamp: Optional[int]) -> TickerSnapshot:
         """
         Apply bar on top of checkpoint (live mode).
         Idempotent: same inputs always produce the same snapshot.
@@ -167,6 +173,8 @@ class TickerState:
             self._checkpoint = cp
             self._live_support = None
             self._live_bullish = None
+            self.bars_1m.clear()
+            self.bars_5m.clear()
 
         # Restore from checkpoint — guarantees idempotency
         self.ema5 = cp.ema5.copy()
@@ -179,7 +187,7 @@ class TickerState:
         self._live_date = date
 
         # Apply the bar
-        bar = Bar(date=date, close=close, open=open_, high=high, low=low)
+        bar = Bar(date=date, close=close, open=open_, high=high, low=low, timestamp=timestamp)
         self.bars.append(bar)
 
         m = self.ema5.update(close)
@@ -215,12 +223,34 @@ class TickerState:
         else:
             self.history.append(bar)
 
+        # Intraday aggregation (1m and 5m)
+        if timestamp:
+            self._aggregate_intraday(self.bars_1m, 60, timestamp, close, open_, high, low)
+            self._aggregate_intraday(self.bars_5m, 300, timestamp, close, open_, high, low)
+
         return TickerSnapshot(
             ticker=self.ticker, date=date, close=close, open=open_, high=high, low=low,
             hl=hl, avg=avg, ema5=m, ema20=o, rsi=rsi_val,
             support=self._live_support, bullish=self._live_bullish,
             warning=warning,
+            timestamp=timestamp,
         )
+
+    def _aggregate_intraday(self, target_deque: deque, period_sec: int, ts: int, 
+                             close: float, open_: float, high: float, low: float):
+        """Aggregate per-second ticks into intraday candles."""
+        period_ts = (ts // period_sec) * period_sec
+        if target_deque and target_deque[-1].timestamp == period_ts:
+            # Update current candle
+            b = target_deque[-1]
+            b.close = close
+            b.high = max(b.high, high)
+            b.low = min(b.low, low)
+        else:
+            # Start new candle
+            target_deque.append(Bar(
+                date="", close=close, open=open_, high=high, low=low, timestamp=period_ts
+            ))
 
 
 def _make_checkpoint(state: TickerState) -> _Checkpoint:

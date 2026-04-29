@@ -9,12 +9,14 @@ class TickerPayload(BaseModel):
     open: float
     high: float
     low: float
+    timestamp: Optional[int] = None # Unix timestamp (seconds)
 
 
 class TickerSnapshot(BaseModel):
     """Computed state emitted via SSE and stored in TimescaleDB."""
     ticker: str
     date: str
+    timestamp: Optional[int] = None
 
     close: float
     open: float

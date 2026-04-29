@@ -9,6 +9,8 @@ let candleSeries = null;
 let bullishSeries = null;
 let supportSeries = null;
 let historyView = 'chart';  // 'chart' | 'table'
+let historyTF = 'D';        // 'D' | '1m' | '5m'
+let historySortDir = 'desc'; // 'asc' | 'desc'
 let currentHistoryData = null;
 
 let resizeObserver = null;
@@ -143,11 +145,24 @@ function updateTickerUI(snapshot) {
 
     // Push live tick to open chart
     if (activeId === tickerName && candleSeries && historyView === 'chart') {
-        const ts = dateToTimestamp(snapshot.date);
-        if (ts) {
-            candleSeries.update({ time: ts, open: snapshot.open, high: snapshot.high, low: snapshot.low, close: snapshot.close });
-            if (bullishSeries && snapshot.bullish !== null) bullishSeries.update({ time: ts, value: snapshot.bullish });
-            if (supportSeries && snapshot.support !== null) supportSeries.update({ time: ts, value: snapshot.support });
+        if (historyTF === 'D') {
+            const ts = dateToTimestamp(snapshot.date);
+            if (ts) {
+                candleSeries.update({ time: ts, open: snapshot.open, high: snapshot.high, low: snapshot.low, close: snapshot.close });
+                if (bullishSeries && snapshot.bullish !== null) bullishSeries.update({ time: ts, value: snapshot.bullish });
+                if (supportSeries && snapshot.support !== null) supportSeries.update({ time: ts, value: snapshot.support });
+            }
+        } else {
+            const period = historyTF === '1m' ? 60 : 300;
+            const ts = snapshot.timestamp || Math.floor(Date.now() / 1000);
+            const periodTs = Math.floor(ts / period) * period;
+            candleSeries.update({ 
+                time: periodTs, 
+                open: snapshot.open, 
+                high: snapshot.high, 
+                low: snapshot.low, 
+                close: snapshot.close 
+            });
         }
     }
 }
@@ -270,6 +285,12 @@ async function openHistory() {
     document.getElementById('history-header').style.display = 'flex';
     document.getElementById('history-title').textContent = `${activeId.toUpperCase()} · History`;
 
+    // Reset TF to Daily
+    historyTF = 'D';
+    document.getElementById('tf-picker').value = 'D';
+    document.getElementById('year-picker-container').style.display = 'flex';
+    document.getElementById('chart-series-controls').style.display = 'flex';
+
     const defaultYear = extractYear(tickers[activeId]?.date) || new Date().getFullYear();
     const picker = document.getElementById('year-picker');
     picker.innerHTML = `<option value="${defaultYear}">${defaultYear}</option>`;
@@ -320,6 +341,42 @@ function setHistoryView(mode) {
     renderCurrentHistoryView();
 }
 
+async function setHistoryTF(tf) {
+    historyTF = tf;
+    // Show/hide year picker and chart series controls based on TF
+    document.getElementById('year-picker-container').style.display = tf === 'D' ? 'flex' : 'none';
+    document.getElementById('chart-series-controls').style.display = tf === 'D' ? 'flex' : 'none';
+    
+    if (tf === 'D') {
+        await loadHistory();
+    } else {
+        await loadIntraday();
+    }
+}
+
+async function loadIntraday() {
+    if (!activeId) return;
+    const content = document.getElementById('history-content');
+    content.className = '';
+    content.innerHTML = '<div class="history-loading">LOADING INTRADAY...</div>';
+
+    try {
+        const res = await fetch(`/api/intraday/${activeId}?tf=${historyTF}`);
+        const data = await res.json();
+        currentHistoryData = { history: data };
+        renderCurrentHistoryView();
+    } catch (e) {
+        console.error('Intraday load failed:', e);
+        content.className = 'idle';
+        content.innerHTML = `[ LOAD FAILED: ${e.message} ]`;
+    }
+}
+
+function toggleHistorySort() {
+    historySortDir = historySortDir === 'desc' ? 'asc' : 'desc';
+    renderCurrentHistoryView();
+}
+
 function renderCurrentHistoryView() {
     if (!currentHistoryData) return;
     if (historyView === 'chart') {
@@ -356,7 +413,6 @@ function renderHistoryChart(bars) {
         height: content.clientHeight || 220,
     });
 
-    // Robust resizing using ResizeObserver
     resizeObserver = new ResizeObserver(entries => {
         if (chart && entries[0].contentRect) {
             const { width, height } = entries[0].contentRect;
@@ -370,35 +426,37 @@ function renderHistoryChart(bars) {
         wickUpColor: '#00ff7f', wickDownColor: '#ff453a',
     });
 
-    bullishSeries = chart.addLineSeries({
-        color: '#00ff7f', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed,
-        title: 'Bullish',
-    });
-
-    supportSeries = chart.addLineSeries({
-        color: '#ff453a', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dotted,
-        title: 'Support',
-    });
-
-    updateSeriesVisibility();
+    if (historyTF === 'D') {
+        bullishSeries = chart.addLineSeries({
+            color: '#00ff7f', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed,
+            title: 'Bullish',
+        });
+        supportSeries = chart.addLineSeries({
+            color: '#ff453a', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dotted,
+            title: 'Support',
+        });
+        updateSeriesVisibility();
+    }
 
     const formatted = bars
-        .map(b => ({ ...b, time: dateToTimestamp(b.date) }))
+        .map(b => ({ ...b, time: b.timestamp || dateToTimestamp(b.date) }))
         .filter(b => b.time !== null)
         .sort((a, b) => a.time - b.time);
 
     if (formatted.length) {
         candleSeries.setData(formatted);
 
-        const bullishData = formatted
-            .filter(b => b.bullish !== null)
-            .map(b => ({ time: b.time, value: b.bullish }));
-        bullishSeries.setData(bullishData);
+        if (historyTF === 'D') {
+            const bullishData = formatted
+                .filter(b => b.bullish !== null)
+                .map(b => ({ time: b.time, value: b.bullish }));
+            bullishSeries.setData(bullishData);
 
-        const supportData = formatted
-            .filter(b => b.support !== null)
-            .map(b => ({ time: b.time, value: b.support }));
-        supportSeries.setData(supportData);
+            const supportData = formatted
+                .filter(b => b.support !== null)
+                .map(b => ({ time: b.time, value: b.support }));
+            supportSeries.setData(supportData);
+        }
 
         chart.timeScale().fitContent();
     }
@@ -419,12 +477,18 @@ function renderHistoryTable(bars) {
 
     const fmt = (v, d=2) => v !== null && v !== undefined ? Number(v).toFixed(d) : '-';
 
-    // Newest first
-    const sorted = [...bars].sort((a, b) => (b.time || '').localeCompare(a.time || ''));
+    // Sort logic
+    const sorted = [...bars].sort((a, b) => {
+        const tA = a.timestamp || dateToTimestamp(a.date) || 0;
+        const tB = b.timestamp || dateToTimestamp(b.date) || 0;
+        return historySortDir === 'desc' ? tB - tA : tA - tB;
+    });
 
-    const rows = sorted.map(b => `
+    const rows = sorted.map(b => {
+        const dateStr = b.timestamp ? new Date(b.timestamp * 1000).toLocaleString() : b.date;
+        return `
         <tr>
-            <td style="text-align:left;color:var(--text-muted)">${b.date}</td>
+            <td style="text-align:left;color:var(--text-muted)">${dateStr}</td>
             <td>${fmt(b.close)}</td>
             <td>${fmt(b.open)}</td>
             <td>${fmt(b.high)}</td>
@@ -436,13 +500,14 @@ function renderHistoryTable(bars) {
             <td>${fmt(b.rsi, 1)}</td>
             <td>${fmt(b.support)}</td>
             <td style="color:var(--accent)">${fmt(b.bullish)}</td>
-        </tr>`).join('');
+        </tr>`}).join('');
 
+    const icon = historySortDir === 'desc' ? '↓' : '↑';
     content.innerHTML = `
         <table class="history-table">
             <thead>
                 <tr>
-                    <th style="text-align:left">Date</th>
+                    <th style="text-align:left; cursor:pointer" onclick="toggleHistorySort()">Date ${icon}</th>
                     <th>Close</th><th>Open</th><th>High</th><th>Low</th>
                     <th>H/L</th><th>AVG</th><th>EMA-5</th><th>EMA-20</th>
                     <th>RSI</th><th>Support</th><th>Bullish</th>

@@ -170,6 +170,27 @@ async def get_ticker_history(ticker: str, year: Optional[int] = Query(default=No
     return {"ticker": ticker.upper(), "history": bars, "years": years}
 
 
+@router.get("/api/intraday/{ticker}")
+async def get_ticker_intraday(ticker: str, tf: str = "1m"):
+    """Return intraday bars (1m or 5m) for the current day."""
+    ticker = ticker.lower()
+    if ticker not in _states:
+        raise HTTPException(status_code=404, detail=f"Ticker '{ticker}' not found")
+    
+    state = _states[ticker]
+    bars = state.bars_1m if tf == "1m" else state.bars_5m
+    
+    return [
+        {
+            "time": b.timestamp,
+            "open": b.open,
+            "high": b.high,
+            "low": b.low,
+            "close": b.close,
+        } for b in bars
+    ]
+
+
 @router.delete("/api/tickers/{ticker}")
 async def delete_ticker(ticker: str):
     """

@@ -304,6 +304,15 @@
         </div>
 
         <div style="display:flex;align-items:center;gap:6px">
+            <span class="year-label">TF</span>
+            <select id="tf-picker" class="year-select" onchange="setHistoryTF(this.value)">
+                <option value="D">Daily</option>
+                <option value="1m">1 Min</option>
+                <option value="5m">5 Min</option>
+            </select>
+        </div>
+
+        <div id="year-picker-container" style="display:flex;align-items:center;gap:6px">
             <span class="year-label">Year</span>
             <select id="year-picker" class="year-select" onchange="loadHistory()"></select>
         </div>
