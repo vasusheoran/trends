@@ -202,7 +202,7 @@ async function triggerChart() {
     container.innerHTML = '';
 
     chart = LightweightCharts.createChart(container, {
-        layout: { background: { color: '#080808' }, textColor: '#d1d1d1' },
+        layout: { backgroundColor: '#080808', textColor: '#d1d1d1' },
         grid: { vertLines: { color: '#111' }, horzLines: { color: '#111' } },
         timeScale: { borderColor: '#222' },
     });
