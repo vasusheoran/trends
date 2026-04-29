@@ -18,6 +18,13 @@ async function init() {
     render();
     setupSeedUpload();
     setupSplitter();
+
+    window.addEventListener('resize', () => {
+        if (chart) {
+            const content = document.getElementById('history-content');
+            chart.resize(content.clientWidth, content.clientHeight);
+        }
+    });
 }
 
 // ── Ticker fetching ───────────────────────────────────────
@@ -211,6 +218,7 @@ function updateButtons() {
 function setupSplitter() {
     const splitter = document.getElementById('splitter');
     const history = document.getElementById('chart-area');
+    const content = document.getElementById('history-content');
     let isDragging = false;
 
     splitter.onmousedown = (e) => {
@@ -223,9 +231,14 @@ function setupSplitter() {
         if (!isDragging) return;
         const totalHeight = window.innerHeight;
         const newHistoryHeight = totalHeight - e.clientY;
+        
         if (newHistoryHeight > 40 && newHistoryHeight < totalHeight - 150) {
-            history.style.height = `${newHistoryHeight}px`;
-            if (chart) chart.resize(history.clientWidth, document.getElementById('history-content').clientHeight);
+            requestAnimationFrame(() => {
+                history.style.height = `${newHistoryHeight}px`;
+                if (chart) {
+                    chart.resize(content.clientWidth, content.clientHeight);
+                }
+            });
         }
     };
 
@@ -269,7 +282,7 @@ async function openHistory() {
 
     document.getElementById('splitter').style.display = 'block';
     const panel = document.getElementById('chart-area');
-    panel.style.height = ''; 
+    panel.style.height = '220px'; // Set explicit default height instead of class transition
     panel.classList.add('expanded');
     document.getElementById('history-header').style.display = 'flex';
     document.getElementById('history-title').textContent = `${activeId.toUpperCase()} · History`;
@@ -279,6 +292,14 @@ async function openHistory() {
     picker.innerHTML = `<option value="${defaultYear}">${defaultYear}</option>`;
 
     await loadHistory();
+    
+    // Final check for chart sizing after all data is loaded and DOM has settled
+    setTimeout(() => {
+        if (chart) {
+            const content = document.getElementById('history-content');
+            chart.resize(content.clientWidth, content.clientHeight);
+        }
+    }, 0);
 }
 
 async function loadHistory() {
