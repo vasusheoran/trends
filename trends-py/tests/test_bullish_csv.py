@@ -1,15 +1,16 @@
 """
-Verify bullish (BR) computation from the CSV-seeding path.
+Verify Support and Bullish computation from the CSV-seeding path.
 
-Loads bullish-01-Jan-25.csv, strips trial rows, seeds EMA and CD state from
-real rows, then asserts mathematical convergence of the computed BR value.
+Loads bullish-01-Jan-25.csv, strips trial rows, seeds state from real rows,
+then asserts:
+  1. Support = cd3 at converged cc_trial satisfies BP[d+3]=BP[d+2].
+  2. Bullish W satisfies Support(Day+2 with W) == W (2-day convergence).
 """
 
 import sys
 from pathlib import Path
 
 import pytest
-from scipy.optimize import brentq
 
 ROOT = Path(__file__).parent.parent.parent
 CSV_PATH = ROOT / "data" / "bullish-01-Jan-25.csv"
@@ -17,27 +18,25 @@ CSV_PATH = ROOT / "data" / "bullish-01-Jan-25.csv"
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scripts.compute_bullish_from_csv import compute_from_csv
-from app.engine.futures import _bp_series, _search_br, _ce2
+from app.engine.futures import _bp_series, _ce2, _CD_DECAY, get_support
 from app.engine.indicators import TOLERANCE
 
 CONVERGENCE_TOLERANCE = TOLERANCE * 5
 
 
 @pytest.mark.skipif(not CSV_PATH.exists(), reason="bullish-01-Jan-25.csv not present")
-def test_bullish_csv_converges():
-    """BR found from CSV seeding satisfies |BP[d+3]-BP[d+2]| <= tolerance."""
+def test_bullish_csv_2day_convergence():
+    """Bullish W satisfies |Support(Day+2) - W| <= tolerance."""
     import pandas as pd
     from app.engine.state import TickerState
 
     df = pd.read_csv(str(CSV_PATH), skipinitialspace=True)
     df.columns = ["Date", "Close", "Open", "High", "Low"]
 
-    def _is_trial(row):
-        return row["Open"] == row["High"] == row["Low"] == row["Close"]
-
     split = len(df)
     for i in range(len(df) - 1, -1, -1):
-        if _is_trial(df.iloc[i]):
+        r = df.iloc[i]
+        if r["Open"] == r["High"] == r["Low"] == r["Close"]:
             split = i
         else:
             break
@@ -53,20 +52,37 @@ def test_bullish_csv_converges():
             low=float(row["Low"]),
         )
 
-    ema5_pre = state.ema5.copy()
-    ema20_pre = state.ema20.copy()
-    ce2 = _ce2(ema5_pre, ema20_pre)
+    # Bullish uses post-bar EMA state and cd_curr
+    ema5_pre = state._futures_ema5_pre.copy()
+    ema20_pre = state._futures_ema20_pre.copy()
+    cd_pre = state._futures_cd_pre
+    ce2_today = _ce2(ema5_pre, ema20_pre)
+    cd_curr = _CD_DECAY * (ce2_today - cd_pre) + cd_pre
 
-    fl = _search_br(0.0, ema5_pre, ema20_pre, ce2)
-    fh = _search_br(99999.0, ema5_pre, ema20_pre, ce2)
-    assert fl * fh < 0, f"Bullish bracket has no sign change: fl={fl:.4f} fh={fh:.4f}"
+    # Post-bar EMA (state.ema5/ema20 after all commits)
+    ema5_post = state.ema5.copy()
+    ema20_post = state.ema20.copy()
 
-    bullish = brentq(_search_br, 0.0, 99999.0, args=(ema5_pre, ema20_pre, ce2), xtol=TOLERANCE)
+    _, bullish = compute_from_csv(str(CSV_PATH))
+    assert bullish is not None, "Bullish search must find a bracket"
 
-    bp = _bp_series(ema5_pre, ema20_pre, [bullish, ce2, ce2])
-    diff = abs(bp[2] - bp[1])
+    # Verify 2-day convergence from post-bar state (matches Go's calculateBR)
+    # Day+1 CD step
+    ce2_d1 = _ce2(ema5_post, ema20_post)
+    cd_d1 = _CD_DECAY * (ce2_d1 - cd_curr) + cd_curr
+    e5_d1 = ema5_post.copy(); e5_d1.update(bullish)
+    e20_d1 = ema20_post.copy(); e20_d1.update(bullish)
+
+    # Day+2 CD step
+    ce2_d2 = _ce2(e5_d1, e20_d1)
+    cd_d2 = _CD_DECAY * (ce2_d2 - cd_d1) + cd_d1
+
+    sup_d2 = get_support(e5_d1, e20_d1, cd_d2)
+    assert sup_d2 is not None, "Support(Day+2) must be computable"
+
+    diff = abs(sup_d2 - bullish)
     assert diff <= CONVERGENCE_TOLERANCE, (
-        f"|BP[d+3]-BP[d+2]|={diff:.6f} > {CONVERGENCE_TOLERANCE} at bullish={bullish:.2f}"
+        f"|Support(Day+2) - W|={diff:.6f} > {CONVERGENCE_TOLERANCE} at bullish={bullish:.2f}"
     )
 
 

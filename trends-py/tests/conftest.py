@@ -55,8 +55,9 @@ def excel_rows():
             "ema5":    ws_d[f"AS{row}"].value,
             "ema20":   ws_d[f"BN{row}"].value,   # BN = EMA-20 (2/21) in new file
             "rsi":     ws_d[f"BV{row}"].value,
+            "cd":      ws_d[f"BZ{row}"].value,   # BZ = CD (EMA of daily values)
             "support": ws_d[f"CC{row}"].value,   # CC = Support (binary search result)
-            "bullish": ws_d[f"BR{row}"].value,   # BR = Bullish (binary search result)
+            "bullish": ws_d[f"CB{row}"].value,   # CB = Bullish (Support fixed point)
         })
     wb_data.close()
     wb_formula.close()
