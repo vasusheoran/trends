@@ -6,14 +6,18 @@ let connectionCount = 0;
 
 let chart = null;
 let candleSeries = null;
+let bullishSeries = null;
+let supportSeries = null;
 let historyView = 'chart';  // 'chart' | 'table'
 let currentHistoryData = null;
 
 // ── Init ─────────────────────────────────────────────────
 async function init() {
+    await loadPreferences();
     await fetchTickers();
     render();
     setupSeedUpload();
+    setupSplitter();
 }
 
 // ── Ticker fetching ───────────────────────────────────────
@@ -138,7 +142,11 @@ function updateTickerUI(snapshot) {
     // Push live tick to open chart
     if (activeId === tickerName && candleSeries && historyView === 'chart') {
         const ts = dateToTimestamp(snapshot.date);
-        if (ts) candleSeries.update({ time: ts, open: snapshot.open, high: snapshot.high, low: snapshot.low, close: snapshot.close });
+        if (ts) {
+            candleSeries.update({ time: ts, open: snapshot.open, high: snapshot.high, low: snapshot.low, close: snapshot.close });
+            if (bullishSeries && snapshot.bullish !== null) bullishSeries.update({ time: ts, value: snapshot.bullish });
+            if (supportSeries && snapshot.support !== null) supportSeries.update({ time: ts, value: snapshot.support });
+        }
     }
 }
 
@@ -200,17 +208,74 @@ function updateButtons() {
     document.getElementById('btn-del').disabled  = !on;
 }
 
+function setupSplitter() {
+    const splitter = document.getElementById('splitter');
+    const history = document.getElementById('chart-area');
+    let isDragging = false;
+
+    splitter.onmousedown = (e) => {
+        isDragging = true;
+        history.style.transition = 'none';
+        document.body.style.cursor = 'ns-resize';
+        e.preventDefault();
+    };
+
+    document.onmousemove = (e) => {
+        if (!isDragging) return;
+        const totalHeight = window.innerHeight;
+        const newHistoryHeight = totalHeight - e.clientY;
+        if (newHistoryHeight > 40 && newHistoryHeight < totalHeight - 150) {
+            history.style.height = `${newHistoryHeight}px`;
+            if (chart) chart.resize(history.clientWidth, document.getElementById('history-content').clientHeight);
+        }
+    };
+
+    document.onmouseup = () => {
+        if (isDragging) {
+            isDragging = false;
+            history.style.transition = 'height 0.25s ease';
+            document.body.style.cursor = 'default';
+        }
+    };
+}
+
+async function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-mode');
+    const theme = isLight ? 'light' : 'dark';
+    try {
+        await fetch('/api/preferences', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({theme})
+        });
+    } catch (e) { console.error('Failed to save theme preference', e); }
+    if (chart) renderCurrentHistoryView();
+}
+
+async function loadPreferences() {
+    try {
+        const res = await fetch('/api/preferences');
+        if (res.ok) {
+            const prefs = await res.json();
+            if (prefs.theme === 'light') {
+                document.body.classList.add('light-mode');
+            }
+        }
+    } catch (e) { console.error('Failed to load preferences', e); }
+}
+
 // ── History panel ─────────────────────────────────────────
 async function openHistory() {
     if (!activeId) return;
     destroyChart();
 
-    // Expand panel and show header
-    document.getElementById('chart-area').classList.add('expanded');
+    document.getElementById('splitter').style.display = 'block';
+    const panel = document.getElementById('chart-area');
+    panel.style.height = ''; 
+    panel.classList.add('expanded');
     document.getElementById('history-header').style.display = 'flex';
     document.getElementById('history-title').textContent = `${activeId.toUpperCase()} · History`;
 
-    // Seed the picker with the most recent year from the ticker's last known date
     const defaultYear = extractYear(tickers[activeId]?.date) || new Date().getFullYear();
     const picker = document.getElementById('year-picker');
     picker.innerHTML = `<option value="${defaultYear}">${defaultYear}</option>`;
@@ -220,22 +285,32 @@ async function openHistory() {
 
 async function loadHistory() {
     if (!activeId) return;
-    const year = parseInt(document.getElementById('year-picker').value);
-    if (!year) return;
-
+    const picker = document.getElementById('year-picker');
+    let year = parseInt(picker.value);
+    
     const content = document.getElementById('history-content');
     content.className = '';
     content.innerHTML = '<div class="history-loading">LOADING...</div>';
 
     try {
-        const res = await fetch(`/api/history/${activeId}?year=${year}`);
+        const res = await fetch(`/api/history/${activeId}${year ? `?year=${year}` : ''}`);
         if (!res.ok) {
             const txt = await res.text();
             throw new Error(`HTTP ${res.status}: ${txt.slice(0, 300)}`);
         }
         const data = await res.json();
         currentHistoryData = data;
-        populateYearPicker(data.years || [], year);
+        
+        const years = data.years || [];
+        populateYearPicker(years, year);
+
+        // If we requested a year but got no bars, and there ARE years available, 
+        // retry with the latest year.
+        if (data.history.length === 0 && years.length > 0 && year !== years[0]) {
+            picker.value = years[0];
+            return await loadHistory();
+        }
+
         renderCurrentHistoryView();
     } catch (e) {
         console.error('History load failed:', e);
@@ -273,15 +348,34 @@ function renderHistoryChart(bars) {
     content.className = '';
     content.innerHTML = '';
 
+    const isLight = document.body.classList.contains('light-mode');
+    const colors = isLight ?
+        { bg: '#f5f5f7', text: '#1d1d1f', grid: '#d2d2d7' } :
+        { bg: '#080808', text: '#d1d1d1', grid: '#111' };
+
     chart = LightweightCharts.createChart(content, {
-        layout: { backgroundColor: '#080808', textColor: '#d1d1d1' },
-        grid: { vertLines: { color: '#111' }, horzLines: { color: '#111' } },
-        timeScale: { borderColor: '#222' },
+        layout: { backgroundColor: colors.bg, textColor: colors.text },
+        grid: { vertLines: { color: colors.grid }, horzLines: { color: colors.grid } },
+        timeScale: { borderColor: colors.grid, timeVisible: true, secondsVisible: false },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
     });
+
     candleSeries = chart.addCandlestickSeries({
         upColor: '#00ff7f', downColor: '#ff453a', borderVisible: false,
         wickUpColor: '#00ff7f', wickDownColor: '#ff453a',
     });
+
+    bullishSeries = chart.addLineSeries({
+        color: '#00ff7f', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed,
+        title: 'Bullish',
+    });
+
+    supportSeries = chart.addLineSeries({
+        color: '#ff453a', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dotted,
+        title: 'Support',
+    });
+
+    updateSeriesVisibility();
 
     const formatted = bars
         .map(b => ({ ...b, time: dateToTimestamp(b.date) }))
@@ -290,8 +384,27 @@ function renderHistoryChart(bars) {
 
     if (formatted.length) {
         candleSeries.setData(formatted);
+
+        const bullishData = formatted
+            .filter(b => b.bullish !== null)
+            .map(b => ({ time: b.time, value: b.bullish }));
+        bullishSeries.setData(bullishData);
+
+        const supportData = formatted
+            .filter(b => b.support !== null)
+            .map(b => ({ time: b.time, value: b.support }));
+        supportSeries.setData(supportData);
+
         chart.timeScale().fitContent();
     }
+}
+
+function updateSeriesVisibility() {
+    if (!bullishSeries || !supportSeries) return;
+    const showBullish = document.getElementById('show-bullish').checked;
+    const showSupport = document.getElementById('show-support').checked;
+    bullishSeries.applyOptions({ visible: showBullish });
+    supportSeries.applyOptions({ visible: showSupport });
 }
 
 function renderHistoryTable(bars) {
@@ -336,7 +449,10 @@ function renderHistoryTable(bars) {
 
 function closeHistory() {
     destroyChart();
-    document.getElementById('chart-area').classList.remove('expanded');
+    document.getElementById('splitter').style.display = 'none';
+    const panel = document.getElementById('chart-area');
+    panel.classList.remove('expanded');
+    panel.style.height = '0';
     document.getElementById('history-header').style.display = 'none';
     const content = document.getElementById('history-content');
     content.className = 'idle';

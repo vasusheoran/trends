@@ -24,6 +24,21 @@ def _date_to_iso(d: str) -> Optional[str]:
 
 router = APIRouter()
 
+_USER_PREFS = {"theme": "dark"}
+
+
+@router.get("/api/preferences")
+async def get_preferences():
+    """Return stored user preferences."""
+    return _USER_PREFS
+
+
+@router.post("/api/preferences")
+async def update_preferences(prefs: dict):
+    """Update user preferences (in-memory)."""
+    _USER_PREFS.update(prefs)
+    return _USER_PREFS
+
 
 @router.get("/api/tickers")
 async def get_tickers():
