@@ -10,11 +10,14 @@ _MONTHS = {'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,
            'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
 
 def _date_to_iso(d: str) -> Optional[str]:
-    """Convert 'DD-Mon-YYYY' → 'YYYY-MM-DD'. Returns None if unparseable."""
+    """Convert 'DD-Mon-YYYY' (or 'DD-Mon-YY') → 'YYYY-MM-DD'. Returns None if unparseable."""
     try:
         parts = d.split('-')
         if len(parts) == 3 and parts[1] in _MONTHS:
-            return f"{parts[2]}-{_MONTHS[parts[1]]:02d}-{int(parts[0]):02d}"
+            yr = int(parts[2])
+            if yr < 100:                          # 2-digit year: 03 → 2003
+                yr += 2000 if yr <= 30 else 1900
+            return f"{yr:04d}-{_MONTHS[parts[1]]:02d}-{int(parts[0]):02d}"
     except Exception:
         pass
     return None
