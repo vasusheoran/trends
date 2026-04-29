@@ -229,14 +229,18 @@ async function loadHistory() {
 
     try {
         const res = await fetch(`/api/history/${activeId}?year=${year}`);
+        if (!res.ok) {
+            const txt = await res.text();
+            throw new Error(`HTTP ${res.status}: ${txt.slice(0, 300)}`);
+        }
         const data = await res.json();
         currentHistoryData = data;
-        populateYearPicker(data.years, year);
+        populateYearPicker(data.years || [], year);
         renderCurrentHistoryView();
     } catch (e) {
         console.error('History load failed:', e);
         content.className = 'idle';
-        content.innerHTML = '[ LOAD FAILED ]';
+        content.innerHTML = `[ LOAD FAILED: ${e.message} ]`;
     }
 }
 
