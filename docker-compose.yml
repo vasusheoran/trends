@@ -13,10 +13,4 @@ services:
       - "5001:5001"
     environment:
       DATABASE_URL: postgresql://trends:${DB_PASSWORD:-trends}@db:5432/trends
-      EXCEL_SEED_PATH: /data/Final-bullish-ce.xlsx
-      # Optional — set in Portainer env vars to enable Zerodha feed
-      # ZERODHA_API_KEY: ""
-      # ZERODHA_ACCESS_TOKEN: ""
-    volumes:
-      - ./trends-py/static:/app/static
     restart: unless-stopped
