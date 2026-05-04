@@ -102,16 +102,46 @@ async def get_ticker_state(ticker: str):
 
         # Support uses pre-last-bar EMA; Bullish uses post-last-bar EMA (matches Go timing)
         if cp.ema5_pre is not None and cp.cd_pre is not None:
-            support, bullish = compute_futures(
+            support, bullish, hold = compute_futures(
                 cp.ema5_pre.copy(), cp.ema20_pre.copy(), cp.cd_pre,
                 ema5_post=e5, ema20_post=e20,
             )
         else:
-            support, bullish = compute_futures(e5, e20, cp.cd_ema.value)
+            support, bullish, hold = compute_futures(e5, e20, cp.cd_ema.value)
         result["support"] = round(support, 4) if support else None
         result["bullish"] = round(bullish, 4) if bullish else None
+        result["hold"] = round(hold, 4) if hold else None
 
-    # Include last live values if available
+    # Overlay live bar data if available (most recent PUT)
+    if state._live_date is not None and state.history and state.history[-1].date == state._live_date:
+        live = state.history[-1]
+        result.update({
+            "date":    live.date,
+            "close":   live.close,
+            "open":    live.open,
+            "high":    live.high,
+            "low":     live.low,
+            "hl":      round(live.hl, 4)    if live.hl    is not None else None,
+            "avg":     round(live.avg, 4)   if live.avg   is not None else None,
+            "ema5":    round(live.ema5, 4)  if live.ema5  is not None else None,
+            "ema20":   round(live.ema20, 4) if live.ema20 is not None else None,
+            "ema50":   round(live.ema50, 4) if live.ema50 is not None else None,
+            "rsi":     round(live.rsi, 2)   if live.rsi   is not None else None,
+            "support": round(state._live_support, 4) if state._live_support is not None else None,
+            "bullish": round(state._live_bullish, 4) if state._live_bullish is not None else None,
+            "hold":    round(state._live_hold, 4)    if state._live_hold    is not None else None,
+        })
+    elif not state._live_date and len(state.history) >= 2:
+        # No live ticks yet — show applicable values (previous day's) rather than checkpoint computation
+        prev = state.history[-2]
+        if prev.support is not None:
+            result["support"] = round(prev.support, 4)
+        if prev.bullish is not None:
+            result["bullish"] = round(prev.bullish, 4)
+        if prev.hold is not None:
+            result["hold"] = round(prev.hold, 4)
+
+    # Include last live support for debugging
     if state._live_support is not None:
         result["live_support"] = round(state._live_support, 4)
     if state._live_bullish is not None:
@@ -161,7 +191,9 @@ async def get_ticker_history(ticker: str, year: Optional[int] = Query(default=No
             "avg":     round(b.avg, 2)     if b.avg     is not None else None,
             "ema5":    round(b.ema5, 2)    if b.ema5    is not None else None,
             "ema20":   round(b.ema20, 2)   if b.ema20   is not None else None,
+            "ema50":   round(b.ema50, 2)   if b.ema50   is not None else None,
             "rsi":     round(b.rsi, 1)     if b.rsi     is not None else None,
+            "hold":    round(b.hold, 2)    if b.hold    is not None else None,
             "support": round(b.support, 2) if b.support is not None else None,
             "bullish": round(b.bullish, 2) if b.bullish is not None else None,
         })
@@ -171,24 +203,42 @@ async def get_ticker_history(ticker: str, year: Optional[int] = Query(default=No
 
 
 @router.get("/api/intraday/{ticker}")
-async def get_ticker_intraday(ticker: str, tf: str = "1m"):
-    """Return intraday bars (1m or 5m) for the current day."""
+async def get_ticker_intraday(ticker: str, tf: str = "1m", date: Optional[str] = None):
+    """Return intraday OHLC bars (1m or 5m) plus list of available days.
+
+    If `date` is provided (DD-Mon-YYYY), bars are aggregated from DB ticks for that day.
+    Otherwise, bars come from the in-memory deque (live/today).
+    """
     ticker = ticker.lower()
     if ticker not in _states:
         raise HTTPException(status_code=404, detail=f"Ticker '{ticker}' not found")
-    
-    state = _states[ticker]
-    bars = state.bars_1m if tf == "1m" else state.bars_5m
-    
-    return [
-        {
-            "time": b.timestamp,
-            "open": b.open,
-            "high": b.high,
-            "low": b.low,
-            "close": b.close,
-        } for b in bars
-    ]
+
+    from app.db import timescale as ts_db
+
+    # Fetch available days list (empty if DB not configured)
+    days: list[str] = []
+    try:
+        days = await ts_db.get_available_days(ticker)
+    except Exception:
+        pass
+
+    period_sec = 60 if tf == "1m" else 300
+
+    if date:
+        try:
+            raw = await ts_db.get_ticks_for_day(ticker, date)
+            bars = ts_db.aggregate_ticks(raw, period_sec)
+        except Exception:
+            bars = []
+    else:
+        state = _states[ticker]
+        mem_bars = state.bars_1m if tf == "1m" else state.bars_5m
+        bars = [
+            {"time": b.timestamp, "open": b.open, "high": b.high, "low": b.low, "close": b.close}
+            for b in mem_bars
+        ]
+
+    return {"bars": bars, "days": days}
 
 
 @router.delete("/api/tickers/{ticker}")

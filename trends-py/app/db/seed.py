@@ -58,7 +58,7 @@ async def seed_from_db(state: "TickerState", ticker: str) -> int:
     Returns number of bars loaded.
     """
     from app.db.timescale import load_bars
-    bars = await load_bars(ticker, limit=101)
+    bars = await load_bars(ticker, limit=5500)
     for b in bars:
         state.update(b["date"], b["close"], b["open"], b["high"], b["low"])
     return len(bars)

@@ -38,9 +38,11 @@ class Bar:
     avg: Optional[float] = None
     ema5: Optional[float] = None
     ema20: Optional[float] = None
+    ema50: Optional[float] = None
     rsi: Optional[float] = None
     support: Optional[float] = None
     bullish: Optional[float] = None
+    hold: Optional[float] = None
 
 
 @dataclass
@@ -48,14 +50,13 @@ class _Checkpoint:
     """Frozen indicator state after all committed (historical) bars."""
     ema5: EMAState
     ema20: EMAState
+    ema50: EMAState
     sma10: SMAState
     sma50: SMAState
     rsi: RSIState
     bars: deque
     cd_ema: EMAState
-    # EMA state from before the last committed bar — used for futures computation.
-    # compute_futures(ema5_pre, ema20_pre, cd_pre) applies one CE2 step internally,
-    # so callers must pass the PRE-last-bar state, not the post-bar state.
+    # EMA state from before the last committed bar — used by /api/state endpoint.
     ema5_pre: Optional[EMAState]
     ema20_pre: Optional[EMAState]
     cd_pre: Optional[float]
@@ -68,6 +69,7 @@ class TickerState:
     bars: deque = field(default_factory=lambda: deque(maxlen=_CAPACITY))
     ema5: EMAState = field(default_factory=lambda: EMAState(period=5, decay=2/6))
     ema20: EMAState = field(default_factory=lambda: EMAState(period=20, decay=2/21))
+    ema50: EMAState = field(default_factory=lambda: EMAState(period=50, decay=2/51))
     sma10: SMAState = field(default_factory=lambda: SMAState(period=10))
     sma50: SMAState = field(default_factory=lambda: SMAState(period=50))
     rsi: RSIState = field(default_factory=RSIState)
@@ -91,6 +93,7 @@ class TickerState:
     _live_date: Optional[str] = field(default=None, repr=False)
     _live_support: Optional[float] = field(default=None, repr=False)
     _live_bullish: Optional[float] = field(default=None, repr=False)
+    _live_hold: Optional[float] = field(default=None, repr=False)
 
     def commit(self):
         """
@@ -102,6 +105,7 @@ class TickerState:
         self._live_date = None
         self._live_support = None
         self._live_bullish = None
+        self._live_hold = None
 
     def update(self, date: str, close: float, open_: float, high: float, low: float,
                force: bool = False, timestamp: Optional[int] = None) -> TickerSnapshot:
@@ -125,6 +129,7 @@ class TickerState:
 
         m = self.ema5.update(close)
         o = self.ema20.update(close)
+        e50 = self.ema50.update(close)
         sma10_val = self.sma10.update(close)
         sma50_val = self.sma50.update(close)
         rsi_val = self.rsi.update(close)
@@ -135,25 +140,26 @@ class TickerState:
 
         support = None
         bullish = None
+        hold = None
         if len(self.bars) >= _FUTURES_MIN and m is not None and o is not None:
             ce2 = _ce2(ema5_pre, ema20_pre)
             self.cd_ema.update(ce2)
             if self.cd_ema.seeded and cd_pre is not None:
-                support, bullish = compute_futures(
+                support, bullish, hold = compute_futures(
                     ema5_pre=ema5_pre, ema20_pre=ema20_pre,
                     cd_pre=cd_pre,
                     ema5_post=self.ema5, ema20_post=self.ema20,
                 )
 
         # Enrich bar with computed indicators, then add to full history
-        bar.hl = hl; bar.avg = avg; bar.ema5 = m; bar.ema20 = o
-        bar.rsi = rsi_val; bar.support = support; bar.bullish = bullish
+        bar.hl = hl; bar.avg = avg; bar.ema5 = m; bar.ema20 = o; bar.ema50 = e50
+        bar.rsi = rsi_val; bar.support = support; bar.bullish = bullish; bar.hold = hold
         self.history.append(bar)
 
         return TickerSnapshot(
             ticker=self.ticker, date=date, close=close, open=open_, high=high, low=low,
-            hl=hl, avg=avg, ema5=m, ema20=o, rsi=rsi_val,
-            support=support, bullish=bullish,
+            hl=hl, avg=avg, ema5=m, ema20=o, ema50=e50, rsi=rsi_val,
+            support=support, bullish=bullish, hold=hold,
             timestamp=timestamp,
         )
 
@@ -166,19 +172,41 @@ class TickerState:
         cp = self._checkpoint
         warning = None
 
-        # Date changed — promote previous live state to new checkpoint
+        # On first ever live tick: inherit support/bullish/hold from the applicable seeded bar.
+        # Same-day replay → use history[-2] (D-1 values apply during D's session).
+        # New day → use history[-1] (last seeded bar's values apply today).
+        if self._live_date is None and self._live_bullish is None and self.history:
+            last_seeded_date = self.history[-1].date
+            prev = self.history[-2] if date == last_seeded_date and len(self.history) >= 2 else self.history[-1]
+            self._live_support = prev.support if prev else None
+            self._live_bullish = prev.bullish if prev else None
+            self._live_hold    = prev.hold    if prev else None
+
+        # Date changed — compute futures from D's settled state, promote to new checkpoint
         if self._live_date is not None and date != self._live_date:
             warning = f"Date changed from {self._live_date} to {date} — previous bar committed as history"
+            old_cp = self._checkpoint
+            settled_ema5 = self.ema5.copy()
+            settled_ema20 = self.ema20.copy()
             cp = _make_checkpoint(self)
             self._checkpoint = cp
-            self._live_support = None
-            self._live_bullish = None
+            if len(old_cp.bars) >= _FUTURES_MIN and old_cp.cd_ema.seeded:
+                self._live_support, self._live_bullish, self._live_hold = compute_futures(
+                    ema5_pre=old_cp.ema5.copy(), ema20_pre=old_cp.ema20.copy(),
+                    cd_pre=old_cp.cd_ema.value,
+                    ema5_post=settled_ema5, ema20_post=settled_ema20,
+                )
+            else:
+                self._live_support = None
+                self._live_bullish = None
+                self._live_hold = None
             self.bars_1m.clear()
             self.bars_5m.clear()
 
         # Restore from checkpoint — guarantees idempotency
         self.ema5 = cp.ema5.copy()
         self.ema20 = cp.ema20.copy()
+        self.ema50 = cp.ema50.copy()
         self.sma10 = cp.sma10.copy()
         self.sma50 = cp.sma50.copy()
         self.rsi = cp.rsi.copy()
@@ -192,6 +220,7 @@ class TickerState:
 
         m = self.ema5.update(close)
         o = self.ema20.update(close)
+        e50 = self.ema50.update(close)
         sma10_val = self.sma10.update(close)
         sma50_val = self.sma50.update(close)
         rsi_val = self.rsi.update(close)
@@ -200,24 +229,10 @@ class TickerState:
         hl = calc_hl(highs)
         avg = calc_avg(sma10_val, sma50_val)
 
-        # Update CD state for persistent state tracking (even if futures aren't recomputed)
-        if cp.ema5.value is not None and cp.ema20.value is not None:
-            ce2_today = _ce2(cp.ema5, cp.ema20)
-            self.cd_ema.update(ce2_today)
-
-        # Futures — compute once per day (on first tick) or when force=True
-        if len(cp.bars) >= _FUTURES_MIN and cp.ema5.value is not None and cp.ema20.value is not None:
-            if self._live_support is None or force:
-                if cp.cd_ema.seeded:
-                    self._live_support, self._live_bullish = compute_futures(
-                        ema5_pre=cp.ema5.copy(), ema20_pre=cp.ema20.copy(),
-                        cd_pre=cp.cd_ema.value,
-                        ema5_post=self.ema5, ema20_post=self.ema20,
-                    )
-
         # Enrich bar and update-or-append to history (one entry per day)
-        bar.hl = hl; bar.avg = avg; bar.ema5 = m; bar.ema20 = o
+        bar.hl = hl; bar.avg = avg; bar.ema5 = m; bar.ema20 = o; bar.ema50 = e50
         bar.rsi = rsi_val; bar.support = self._live_support; bar.bullish = self._live_bullish
+        bar.hold = self._live_hold
         if self.history and self.history[-1].date == date:
             self.history[-1] = bar
         else:
@@ -230,8 +245,8 @@ class TickerState:
 
         return TickerSnapshot(
             ticker=self.ticker, date=date, close=close, open=open_, high=high, low=low,
-            hl=hl, avg=avg, ema5=m, ema20=o, rsi=rsi_val,
-            support=self._live_support, bullish=self._live_bullish,
+            hl=hl, avg=avg, ema5=m, ema20=o, ema50=e50, rsi=rsi_val,
+            support=self._live_support, bullish=self._live_bullish, hold=self._live_hold,
             warning=warning,
             timestamp=timestamp,
         )
@@ -257,6 +272,7 @@ def _make_checkpoint(state: TickerState) -> _Checkpoint:
     return _Checkpoint(
         ema5=state.ema5.copy(),
         ema20=state.ema20.copy(),
+        ema50=state.ema50.copy(),
         sma10=state.sma10.copy(),
         sma50=state.sma50.copy(),
         rsi=state.rsi.copy(),
