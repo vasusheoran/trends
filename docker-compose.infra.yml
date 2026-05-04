@@ -1,0 +1,37 @@
+networks:
+  trends-net:
+    external: true
+
+volumes:
+  timescale-data:
+  pgadmin-data:
+
+services:
+  db:
+    image: timescale/timescaledb:latest-pg16
+    networks: [trends-net]
+    environment:
+      POSTGRES_USER: trends
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-trends}
+      POSTGRES_DB: trends
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trends -d trends"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    networks: [trends-net]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@trends.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on: [db]
+    restart: unless-stopped
