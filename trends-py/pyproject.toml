@@ -11,6 +11,7 @@ dependencies = [
     "pandas>=3.0.2",
     "pydantic-settings>=2.14.0",
     "python-multipart>=0.0.26",
+    "requests>=2.33.1",
     "scipy>=1.17.1",
     "uvicorn[standard]>=0.44.0",
 ]

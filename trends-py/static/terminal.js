@@ -6,10 +6,14 @@ let connectionCount = 0;
 
 let chart = null;
 let candleSeries = null;
+let closeSeries  = null;
+let ema5Series   = null;
+let ema20Series  = null;
 let bullishSeries = null;
 let supportSeries = null;
-let historyView = 'chart';  // 'chart' | 'table'
-let historyTF = 'D';        // 'D' | '1m' | '5m'
+let historyView = 'chart';   // 'chart' | 'table'
+let historyMode = 'daily';   // 'daily' | 'live'
+let historyLiveTF = '1m';    // '1m' | '5m'
 let historySortDir = 'desc'; // 'asc' | 'desc'
 let currentHistoryData = null;
 
@@ -54,7 +58,9 @@ async function addTickerToState(tickerName) {
                 avg:     s.avg     || 0,
                 ema5:    s.ema5    || 0,
                 ema20:   s.ema20   || 0,
+                ema50:   s.ema50   || 0,
                 rsi:     s.rsi     || 0,
+                hold:    s.hold    || 0,
                 support: s.support || 0,
                 bullish: s.bullish || 0,
                 warning: null,
@@ -120,7 +126,9 @@ function updateTickerUI(snapshot) {
         { id: `avg-${tickerName}`, key: 'avg',     fmt: v => v.toFixed(2) },
         { id: `e5-${tickerName}`,  key: 'ema5',    fmt: v => v.toFixed(2) },
         { id: `e20-${tickerName}`, key: 'ema20',   fmt: v => v.toFixed(2) },
+        { id: `e50-${tickerName}`, key: 'ema50',   fmt: v => v.toFixed(2) },
         { id: `r-${tickerName}`,   key: 'rsi',     fmt: v => v.toFixed(0) },
+        { id: `hld-${tickerName}`, key: 'hold',    fmt: v => v.toFixed(2) },
         { id: `s-${tickerName}`,   key: 'support', fmt: v => v.toFixed(2) },
         { id: `b-${tickerName}`,   key: 'bullish', fmt: v => v.toFixed(2) },
     ];
@@ -143,26 +151,39 @@ function updateTickerUI(snapshot) {
 
     document.getElementById(`d-${tickerName}`).innerText = snapshot.date || '-';
 
-    // Push live tick to open chart
-    if (activeId === tickerName && candleSeries && historyView === 'chart') {
-        if (historyTF === 'D') {
+    // Push live tick to open chart or table
+    if (activeId === tickerName) {
+        if (historyMode === 'daily' && historyView === 'chart') {
             const ts = dateToTimestamp(snapshot.date);
-            if (ts) {
-                candleSeries.update({ time: ts, open: snapshot.open, high: snapshot.high, low: snapshot.low, close: snapshot.close });
+            if (ts && closeSeries) {
+                closeSeries.update({ time: ts, value: snapshot.close });
+                if (ema5Series  && snapshot.ema5    !== null) ema5Series.update({ time: ts, value: snapshot.ema5 });
+                if (ema20Series && snapshot.ema20   !== null) ema20Series.update({ time: ts, value: snapshot.ema20 });
                 if (bullishSeries && snapshot.bullish !== null) bullishSeries.update({ time: ts, value: snapshot.bullish });
                 if (supportSeries && snapshot.support !== null) supportSeries.update({ time: ts, value: snapshot.support });
             }
-        } else {
-            const period = historyTF === '1m' ? 60 : 300;
-            const ts = snapshot.timestamp || Math.floor(Date.now() / 1000);
-            const periodTs = Math.floor(ts / period) * period;
-            candleSeries.update({ 
-                time: periodTs, 
-                open: snapshot.open, 
-                high: snapshot.high, 
-                low: snapshot.low, 
-                close: snapshot.close 
-            });
+        } else if (historyMode === 'live') {
+            const dayPicker = document.getElementById('day-picker');
+            if (!dayPicker || dayPicker.value === '') {
+                const period = historyLiveTF === '1m' ? 60 : 300;
+                const ts = snapshot.timestamp || Math.floor(Date.now() / 1000);
+                const periodTs = Math.floor(ts / period) * period;
+                if (historyView === 'chart' && candleSeries) {
+                    candleSeries.update({ time: periodTs, open: snapshot.open, high: snapshot.high, low: snapshot.low, close: snapshot.close });
+                } else if (historyView === 'table' && currentHistoryData) {
+                    const bars = currentHistoryData.history;
+                    const idx = bars.findIndex(b => (b.time || b.timestamp) === periodTs);
+                    const candle = {
+                        time: periodTs,
+                        open:  idx >= 0 ? bars[idx].open : snapshot.open,
+                        high:  idx >= 0 ? Math.max(bars[idx].high, snapshot.high) : snapshot.high,
+                        low:   idx >= 0 ? Math.min(bars[idx].low,  snapshot.low)  : snapshot.low,
+                        close: snapshot.close,
+                    };
+                    if (idx >= 0) bars[idx] = candle; else bars.push(candle);
+                    renderHistoryTable(bars);
+                }
+            }
         }
     }
 }
@@ -192,7 +213,9 @@ function render() {
             <td id="avg-${tickerName}">${fmt(t.avg)}</td>
             <td id="e5-${tickerName}"  class="fade-out">${fmt(t.ema5)}</td>
             <td id="e20-${tickerName}">${fmt(t.ema20)}</td>
+            <td id="e50-${tickerName}">${fmt(t.ema50)}</td>
             <td id="r-${tickerName}"   class="fade-out">${fmt(t.rsi, 0)}</td>
+            <td id="hld-${tickerName}" class="fade-out">${fmt(t.hold)}</td>
             <td id="s-${tickerName}"   class="fade-out">${fmt(t.support)}</td>
             <td id="b-${tickerName}"   class="fade-out" style="color:var(--accent)">${fmt(t.bullish)}</td>
             <td id="a-${tickerName}">${t.warning ? '⚠' : '-'}</td>
@@ -285,11 +308,16 @@ async function openHistory() {
     document.getElementById('history-header').style.display = 'flex';
     document.getElementById('history-title').textContent = `${activeId.toUpperCase()} · History`;
 
-    // Reset TF to Daily
-    historyTF = 'D';
-    document.getElementById('tf-picker').value = 'D';
-    document.getElementById('year-picker-container').style.display = 'flex';
+    // Reset to Daily mode
+    historyMode = 'daily';
+    historyLiveTF = '1m';
+    document.getElementById('btn-mode-daily').classList.add('active');
+    document.getElementById('btn-mode-live').classList.remove('active');
+    document.getElementById('daily-controls').style.display = 'flex';
+    document.getElementById('live-controls').style.display = 'none';
     document.getElementById('chart-series-controls').style.display = 'flex';
+    document.getElementById('month-picker').value = '';
+    document.getElementById('day-nav-picker').innerHTML = '<option value="">All</option>';
 
     const defaultYear = extractYear(tickers[activeId]?.date) || new Date().getFullYear();
     const picker = document.getElementById('year-picker');
@@ -326,6 +354,10 @@ async function loadHistory() {
             return await loadHistory();
         }
 
+        // Reset month/day filters and populate day picker
+        document.getElementById('month-picker').value = '';
+        populateDayNavPicker(data.history);
+
         renderCurrentHistoryView();
     } catch (e) {
         console.error('History load failed:', e);
@@ -341,35 +373,109 @@ function setHistoryView(mode) {
     renderCurrentHistoryView();
 }
 
-async function setHistoryTF(tf) {
-    historyTF = tf;
-    // Show/hide year picker and chart series controls based on TF
-    document.getElementById('year-picker-container').style.display = tf === 'D' ? 'flex' : 'none';
-    document.getElementById('chart-series-controls').style.display = tf === 'D' ? 'flex' : 'none';
-    
-    if (tf === 'D') {
+async function setHistoryMode(mode) {
+    historyMode = mode;
+    const isDaily = mode === 'daily';
+    document.getElementById('btn-mode-daily').classList.toggle('active', isDaily);
+    document.getElementById('btn-mode-live').classList.toggle('active', !isDaily);
+    document.getElementById('daily-controls').style.display = isDaily ? 'flex' : 'none';
+    document.getElementById('live-controls').style.display  = isDaily ? 'none' : 'flex';
+    document.getElementById('chart-series-controls').style.display = isDaily ? 'flex' : 'none';
+
+    if (isDaily) {
         await loadHistory();
     } else {
         await loadIntraday();
     }
 }
 
-async function loadIntraday() {
+async function setLiveTF(tf) {
+    historyLiveTF = tf;
+    document.getElementById('btn-tf-1m').classList.toggle('active', tf === '1m');
+    document.getElementById('btn-tf-5m').classList.toggle('active', tf === '5m');
+    await loadIntraday();
+}
+
+function onYearChange() {
+    document.getElementById('month-picker').value = '';
+    document.getElementById('day-nav-picker').innerHTML = '<option value="">All</option>';
+    loadHistory();
+}
+
+function onMonthChange() {
+    if (!currentHistoryData) return;
+    const month = parseInt(document.getElementById('month-picker').value) || 0;
+    let bars = currentHistoryData.history;
+    if (month) {
+        bars = bars.filter(b => parseDateParts(b.date).month === month);
+    }
+    document.getElementById('day-nav-picker').value = '';
+    populateDayNavPicker(bars);
+    if (historyView === 'chart') renderHistoryChart(bars);
+    else renderHistoryTable(bars);
+}
+
+function onDayNav(dateStr) {
+    if (!dateStr || !chart) return;
+    const ts = dateToTimestamp(dateStr);
+    if (!ts) return;
+    chart.timeScale().setVisibleRange({ from: ts - 7 * 86400, to: ts + 7 * 86400 });
+}
+
+function populateDayNavPicker(bars) {
+    const picker = document.getElementById('day-nav-picker');
+    if (!picker) return;
+    const prev = picker.value;
+    picker.innerHTML = '<option value="">All</option>';
+    bars.forEach(b => {
+        if (!b.date) return;
+        const opt = document.createElement('option');
+        opt.value = b.date;
+        opt.textContent = b.date;
+        picker.appendChild(opt);
+    });
+    if (prev) picker.value = prev;
+}
+
+async function loadIntraday(date = null) {
     if (!activeId) return;
     const content = document.getElementById('history-content');
     content.className = '';
     content.innerHTML = '<div class="history-loading">LOADING INTRADAY...</div>';
 
     try {
-        const res = await fetch(`/api/intraday/${activeId}?tf=${historyTF}`);
-        const data = await res.json();
-        currentHistoryData = { history: data };
+        let url = `/api/intraday/${activeId}?tf=${historyLiveTF}`;
+        if (date) url += `&date=${encodeURIComponent(date)}`;
+
+        const res = await fetch(url);
+        const raw = await res.json();
+
+        // Support both new {bars, days} shape and old flat-array shape
+        const bars = Array.isArray(raw) ? raw : (raw.bars || []);
+        const days  = Array.isArray(raw) ? [] : (raw.days || []);
+
+        // Populate day picker
+        const picker = document.getElementById('day-picker');
+        picker.innerHTML = '<option value="">Live (today)</option>';
+        days.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            if (d === date) opt.selected = true;
+            picker.appendChild(opt);
+        });
+
+        currentHistoryData = { history: bars };
         renderCurrentHistoryView();
     } catch (e) {
         console.error('Intraday load failed:', e);
         content.className = 'idle';
         content.innerHTML = `[ LOAD FAILED: ${e.message} ]`;
     }
+}
+
+function onDayChange(date) {
+    loadIntraday(date || null);
 }
 
 function toggleHistorySort() {
@@ -421,12 +527,20 @@ function renderHistoryChart(bars) {
     });
     resizeObserver.observe(content);
 
-    candleSeries = chart.addCandlestickSeries({
-        upColor: '#00ff7f', downColor: '#ff453a', borderVisible: false,
-        wickUpColor: '#00ff7f', wickDownColor: '#ff453a',
-    });
+    const formatted = bars
+        .map(b => ({
+            ...b,
+            time: b.timestamp
+               || (typeof b.time === 'number' ? b.time : null)
+               || dateToTimestamp(b.date)
+        }))
+        .filter(b => b.time !== null && b.time !== 0)
+        .sort((a, b) => a.time - b.time);
 
-    if (historyTF === 'D') {
+    if (historyMode === 'daily') {
+        closeSeries = chart.addLineSeries({ color: '#d1d1d1', lineWidth: 1, title: 'Close' });
+        ema5Series  = chart.addLineSeries({ color: '#f5a623', lineWidth: 1, title: 'EMA5' });
+        ema20Series = chart.addLineSeries({ color: '#4a90e2', lineWidth: 1, title: 'EMA20' });
         bullishSeries = chart.addLineSeries({
             color: '#00ff7f', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed,
             title: 'Bullish',
@@ -436,38 +550,34 @@ function renderHistoryChart(bars) {
             title: 'Support',
         });
         updateSeriesVisibility();
-    }
 
-    const formatted = bars
-        .map(b => ({ ...b, time: b.timestamp || dateToTimestamp(b.date) }))
-        .filter(b => b.time !== null)
-        .sort((a, b) => a.time - b.time);
-
-    if (formatted.length) {
-        candleSeries.setData(formatted);
-
-        if (historyTF === 'D') {
-            const bullishData = formatted
-                .filter(b => b.bullish !== null)
-                .map(b => ({ time: b.time, value: b.bullish }));
-            bullishSeries.setData(bullishData);
-
-            const supportData = formatted
-                .filter(b => b.support !== null)
-                .map(b => ({ time: b.time, value: b.support }));
-            supportSeries.setData(supportData);
+        if (formatted.length) {
+            closeSeries.setData(formatted.map(b => ({ time: b.time, value: b.close })));
+            ema5Series.setData(formatted.filter(b => b.ema5 != null).map(b => ({ time: b.time, value: b.ema5 })));
+            ema20Series.setData(formatted.filter(b => b.ema20 != null).map(b => ({ time: b.time, value: b.ema20 })));
+            bullishSeries.setData(formatted.filter(b => b.bullish != null).map(b => ({ time: b.time, value: b.bullish })));
+            supportSeries.setData(formatted.filter(b => b.support != null).map(b => ({ time: b.time, value: b.support })));
+            chart.timeScale().fitContent();
         }
+    } else {
+        candleSeries = chart.addCandlestickSeries({
+            upColor: '#00ff7f', downColor: '#ff453a', borderVisible: false,
+            wickUpColor: '#00ff7f', wickDownColor: '#ff453a',
+        });
 
-        chart.timeScale().fitContent();
+        if (formatted.length) {
+            candleSeries.setData(formatted);
+            chart.timeScale().fitContent();
+        }
     }
 }
 
 function updateSeriesVisibility() {
-    if (!bullishSeries || !supportSeries) return;
-    const showBullish = document.getElementById('show-bullish').checked;
-    const showSupport = document.getElementById('show-support').checked;
-    bullishSeries.applyOptions({ visible: showBullish });
-    supportSeries.applyOptions({ visible: showSupport });
+    if (closeSeries)   closeSeries.applyOptions({ visible: document.getElementById('show-close').checked });
+    if (ema5Series)    ema5Series.applyOptions({ visible: document.getElementById('show-ema5').checked });
+    if (ema20Series)   ema20Series.applyOptions({ visible: document.getElementById('show-ema20').checked });
+    if (bullishSeries) bullishSeries.applyOptions({ visible: document.getElementById('show-bullish').checked });
+    if (supportSeries) supportSeries.applyOptions({ visible: document.getElementById('show-support').checked });
 }
 
 function renderHistoryTable(bars) {
@@ -477,15 +587,24 @@ function renderHistoryTable(bars) {
 
     const fmt = (v, d=2) => v !== null && v !== undefined ? Number(v).toFixed(d) : '-';
 
+    const barTs = b => b.timestamp || (typeof b.time === 'number' ? b.time : null) || dateToTimestamp(b.date) || 0;
+    const barDateStr = b => {
+        const ts = b.timestamp || (typeof b.time === 'number' ? b.time : null);
+        if (ts) {
+            return historyMode === 'live'
+                ? new Date(ts * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                : new Date(ts * 1000).toLocaleString();
+        }
+        return b.date || '-';
+    };
+
     // Sort logic
     const sorted = [...bars].sort((a, b) => {
-        const tA = a.timestamp || dateToTimestamp(a.date) || 0;
-        const tB = b.timestamp || dateToTimestamp(b.date) || 0;
-        return historySortDir === 'desc' ? tB - tA : tA - tB;
+        return historySortDir === 'desc' ? barTs(b) - barTs(a) : barTs(a) - barTs(b);
     });
 
     const rows = sorted.map(b => {
-        const dateStr = b.timestamp ? new Date(b.timestamp * 1000).toLocaleString() : b.date;
+        const dateStr = barDateStr(b);
         return `
         <tr>
             <td style="text-align:left;color:var(--text-muted)">${dateStr}</td>
@@ -497,7 +616,9 @@ function renderHistoryTable(bars) {
             <td>${fmt(b.avg)}</td>
             <td>${fmt(b.ema5)}</td>
             <td>${fmt(b.ema20)}</td>
+            <td>${fmt(b.ema50)}</td>
             <td>${fmt(b.rsi, 1)}</td>
+            <td>${fmt(b.hold)}</td>
             <td>${fmt(b.support)}</td>
             <td style="color:var(--accent)">${fmt(b.bullish)}</td>
         </tr>`}).join('');
@@ -509,8 +630,8 @@ function renderHistoryTable(bars) {
                 <tr>
                     <th style="text-align:left; cursor:pointer" onclick="toggleHistorySort()">Date ${icon}</th>
                     <th>Close</th><th>Open</th><th>High</th><th>Low</th>
-                    <th>H/L</th><th>AVG</th><th>EMA-5</th><th>EMA-20</th>
-                    <th>RSI</th><th>Support</th><th>Bullish</th>
+                    <th>H/L</th><th>AVG</th><th>EMA-5</th><th>EMA-20</th><th>EMA-50</th>
+                    <th>RSI</th><th>Hold</th><th>Support</th><th>Bullish</th>
                 </tr>
             </thead>
             <tbody>${rows}</tbody>
@@ -532,7 +653,8 @@ function closeHistory() {
 
 function destroyChart() {
     if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
-    if (chart) { chart.remove(); chart = null; candleSeries = null; }
+    if (chart) { chart.remove(); chart = null; }
+    candleSeries = closeSeries = ema5Series = ema20Series = bullishSeries = supportSeries = null;
 }
 
 // ── Seed upload ───────────────────────────────────────────
@@ -601,6 +723,15 @@ function addTicker() {
 }
 
 // ── Helpers ───────────────────────────────────────────────
+const _MONTHS = { Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,
+                  Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12 };
+
+function parseDateParts(dateStr) {
+    if (!dateStr) return { day: 0, month: 0, year: 0 };
+    const [d, mon, y] = dateStr.split('-');
+    return { day: +d, month: _MONTHS[mon] || 0, year: +y };
+}
+
 function dateToTimestamp(t) {
     if (!t) return null;
     let iso = null;

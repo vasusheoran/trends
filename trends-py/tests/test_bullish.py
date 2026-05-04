@@ -31,7 +31,7 @@ def test_bullish_convergence_internal(excel_rows):
         if cd_pre is None:
             continue
 
-        _, bullish = compute_futures(ema5_pre, ema20_pre, cd_pre)
+        _, bullish, _ = compute_futures(ema5_pre, ema20_pre, cd_pre)
         if bullish is None:
             continue
 

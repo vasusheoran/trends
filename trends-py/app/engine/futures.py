@@ -113,6 +113,30 @@ def _search_bullish(
     return support_d2 - w_trial
 
 
+def _search_hold(
+    trial: float,
+    ema5_bull: EMAState,
+    ema20_bull: EMAState,
+    cd_for_bull: float,
+    bullish_target: float,
+) -> float:
+    """
+    Find trial (D+1 close) where Bullish from D+1 state == bullish_target.
+
+    Applies trial for D+1, then delegates to _search_bullish for D+2 onward.
+    Root: Support(D+3) - bullish_target == 0 when D+2 applies bullish_target.
+    """
+    ce2_d1 = _ce2(ema5_bull, ema20_bull)
+    cd_d1 = _CD_DECAY * (ce2_d1 - cd_for_bull) + cd_for_bull
+
+    e5_d1 = ema5_bull.copy()
+    e5_d1.update(trial)
+    e20_d1 = ema20_bull.copy()
+    e20_d1.update(trial)
+
+    return _search_bullish(bullish_target, e5_d1, e20_d1, cd_d1)
+
+
 def compute_futures(
     ema5_pre: EMAState,
     ema20_pre: EMAState,
@@ -121,17 +145,16 @@ def compute_futures(
     search_high: float = 99999.0,
     ema5_post: Optional[EMAState] = None,
     ema20_post: Optional[EMAState] = None,
-) -> Tuple[Optional[float], Optional[float]]:
+) -> Tuple[Optional[float], Optional[float], Optional[float]]:
     """
-    Returns (support, bullish).
+    Returns (support, bullish, hold).
 
     ema5_pre / ema20_pre : EMA state BEFORE today's bar — used for Support.
     cd_pre               : CD EMA value BEFORE updating with today's CE2.
-    ema5_post / ema20_post : EMA state AFTER today's bar — used for Bullish.
+    ema5_post / ema20_post : EMA state AFTER today's bar — used for Bullish and Hold.
                              If omitted, falls back to ema5_pre/ema20_pre.
 
-    Matches Go's updateFutureData order: calculateBR (post-bar EMA, pre-CD)
-    then calculateCC (post-bar EMA, post-CD).
+    Hold: the minimum D+1 close such that Bullish from D+1 state == today's Bullish.
     """
     # CD updated with today's CE2 (using pre-bar EMA per Go's calculateCD)
     ce2_today = _ce2(ema5_pre, ema20_pre)
@@ -140,8 +163,7 @@ def compute_futures(
     # Support uses pre-bar EMA and post-CD value
     support = get_support(ema5_pre, ema20_pre, cd_curr, search_low, search_high)
 
-    # Bullish uses post-bar EMA and cd_curr (matches Go's calculateBR timing:
-    # EMA is post-bar, CD has been stepped once with today's CE2 before Day+1 search)
+    # Bullish and Hold use post-bar EMA and cd_curr
     if ema5_post is not None:
         ema5_bull = ema5_post
         ema20_bull = ema20_post
@@ -164,4 +186,18 @@ def compute_futures(
     except (ValueError, TypeError):
         pass
 
-    return support, bullish
+    hold = None
+    if bullish is not None:
+        try:
+            f_low = _search_hold(search_low, ema5_bull, ema20_bull, cd_for_bull, bullish)
+            f_high = _search_hold(search_high, ema5_bull, ema20_bull, cd_for_bull, bullish)
+            if f_low * f_high < 0:
+                hold = brentq(
+                    _search_hold, search_low, search_high,
+                    args=(ema5_bull, ema20_bull, cd_for_bull, bullish),
+                    xtol=TOLERANCE, full_output=False,
+                )
+        except (ValueError, TypeError):
+            pass
+
+    return support, bullish, hold

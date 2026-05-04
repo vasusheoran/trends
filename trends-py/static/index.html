@@ -274,7 +274,9 @@
                 <th>AVG</th>
                 <th>EMA-5</th>
                 <th>EMA-20</th>
+                <th>EMA-50</th>
                 <th>RSI</th>
+                <th>Hold</th>
                 <th>Support</th>
                 <th>Bullish</th>
                 <th>Alerts</th>
@@ -299,22 +301,49 @@
         </div>
 
         <div id="chart-series-controls" class="chart-controls">
+            <label><input type="checkbox" id="show-close"   checked onchange="updateSeriesVisibility()"> Close</label>
+            <label><input type="checkbox" id="show-ema5"    checked onchange="updateSeriesVisibility()"> EMA-5</label>
+            <label><input type="checkbox" id="show-ema20"   checked onchange="updateSeriesVisibility()"> EMA-20</label>
             <label><input type="checkbox" id="show-bullish" checked onchange="updateSeriesVisibility()"> Bullish</label>
             <label><input type="checkbox" id="show-support" checked onchange="updateSeriesVisibility()"> Support</label>
         </div>
 
-        <div style="display:flex;align-items:center;gap:6px">
-            <span class="year-label">TF</span>
-            <select id="tf-picker" class="year-select" onchange="setHistoryTF(this.value)">
-                <option value="D">Daily</option>
-                <option value="1m">1 Min</option>
-                <option value="5m">5 Min</option>
+        <!-- Mode toggle: Daily | Live -->
+        <div class="view-toggle">
+            <button id="btn-mode-daily" class="toggle-btn active" onclick="setHistoryMode('daily')">Daily</button>
+            <button id="btn-mode-live"  class="toggle-btn"        onclick="setHistoryMode('live')">Live</button>
+        </div>
+
+        <!-- Daily controls -->
+        <div id="daily-controls" style="display:flex;align-items:center;gap:6px">
+            <span class="year-label">Year</span>
+            <select id="year-picker" class="year-select" onchange="onYearChange()"></select>
+            <span class="year-label">Month</span>
+            <select id="month-picker" class="year-select" onchange="onMonthChange()">
+                <option value="">All</option>
+                <option value="1">Jan</option><option value="2">Feb</option>
+                <option value="3">Mar</option><option value="4">Apr</option>
+                <option value="5">May</option><option value="6">Jun</option>
+                <option value="7">Jul</option><option value="8">Aug</option>
+                <option value="9">Sep</option><option value="10">Oct</option>
+                <option value="11">Nov</option><option value="12">Dec</option>
+            </select>
+            <span class="year-label">Day</span>
+            <select id="day-nav-picker" class="year-select" onchange="onDayNav(this.value)">
+                <option value="">All</option>
             </select>
         </div>
 
-        <div id="year-picker-container" style="display:flex;align-items:center;gap:6px">
-            <span class="year-label">Year</span>
-            <select id="year-picker" class="year-select" onchange="loadHistory()"></select>
+        <!-- Live controls -->
+        <div id="live-controls" style="display:none;align-items:center;gap:6px">
+            <div class="view-toggle">
+                <button id="btn-tf-1m" class="toggle-btn active" onclick="setLiveTF('1m')">1m</button>
+                <button id="btn-tf-5m" class="toggle-btn"        onclick="setLiveTF('5m')">5m</button>
+            </div>
+            <span class="year-label">Day</span>
+            <select id="day-picker" class="year-select" onchange="onDayChange(this.value)">
+                <option value="">Live (today)</option>
+            </select>
         </div>
 
         <button class="action-btn close-btn" onclick="closeHistory()">✕ Close</button>
@@ -325,6 +354,6 @@
 </div>
 
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
-<script src="/static/terminal.js?v=5"></script>
+<script src="/static/terminal.js?v=9"></script>
 </body>
 </html>
