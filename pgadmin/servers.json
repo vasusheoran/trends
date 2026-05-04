@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Trends DB",
+      "Group": "Servers",
+      "Host": "db",
+      "Port": 5432,
+      "MaintenanceDB": "trends",
+      "Username": "trends",
+      "PassFile": "/pgpass",
+      "SSLMode": "prefer"
+    }
+  }
+}
