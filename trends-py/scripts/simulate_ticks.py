@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 # Configuration
-TICKER = "NIFTY"
+TICKER = "t"
 BASE_URL = "http://localhost:5001" # Adjust port if needed
 DURATION_HOURS = 2
 INTERVAL_SEC = 1
