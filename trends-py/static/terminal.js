@@ -448,8 +448,8 @@ async function loadIntraday(date = null) {
     content.innerHTML = '<div class="history-loading">LOADING INTRADAY...</div>';
 
     try {
-        // Raw per-second ticks when table view + historical date selected
-        const useRaw = historyView === 'table' && !!date;
+        // Raw per-second ticks for table view (backend fetches most recent day if no date given)
+        const useRaw = historyView === 'table';
         let url = `/api/intraday/${activeId}?tf=${historyLiveTF}`;
         if (date) url += `&date=${encodeURIComponent(date)}`;
         if (useRaw) url += `&raw=true`;
@@ -471,14 +471,9 @@ async function loadIntraday(date = null) {
             picker.appendChild(opt);
         });
 
-        if (historyView === 'table' && !date) {
-            // Live today table: start empty, SSE appends per-second rows
-            currentHistoryData = { history: [] };
-            renderHistoryTable([]);
-        } else {
-            currentHistoryData = { history: bars };
-            renderCurrentHistoryView();
-        }
+        // Pre-load existing ticks; SSE will append new ones
+        currentHistoryData = { history: bars };
+        renderCurrentHistoryView();
     } catch (e) {
         console.error('Intraday load failed:', e);
         content.className = 'idle';

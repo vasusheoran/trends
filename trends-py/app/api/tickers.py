@@ -224,22 +224,24 @@ async def get_ticker_intraday(ticker: str, tf: str = "1m", date: Optional[str] =
 
     period_sec = 60 if tf == "1m" else 300
 
-    if date:
+    def _to_raw_bar(r: dict) -> dict:
+        return {
+            "time":    r["ts_unix"],
+            "open":    r["open"],    "high":    r["high"],
+            "low":     r["low"],     "close":   r["close"],
+            "ema5":    r.get("ema5"),  "ema20": r.get("ema20"),
+            "ema50":   r.get("ema50"), "hl":    r.get("hl"),
+            "avg":     r.get("avg"),   "support": r.get("support"),
+            "rsi":     r.get("rsi"),
+        }
+
+    fetch_date = date or (days[0] if raw and days else None)
+
+    if fetch_date:
         try:
-            tick_rows = await ts_db.get_ticks_for_day(ticker, date)
+            tick_rows = await ts_db.get_ticks_for_day(ticker, fetch_date)
             if raw:
-                bars = [
-                    {
-                        "time":    r["ts_unix"],
-                        "open":    r["open"],    "high":    r["high"],
-                        "low":     r["low"],     "close":   r["close"],
-                        "ema5":    r.get("ema5"),  "ema20": r.get("ema20"),
-                        "ema50":   r.get("ema50"), "hl":    r.get("hl"),
-                        "avg":     r.get("avg"),   "support": r.get("support"),
-                        "rsi":     r.get("rsi"),
-                    }
-                    for r in tick_rows
-                ]
+                bars = [_to_raw_bar(r) for r in tick_rows]
             else:
                 bars = ts_db.aggregate_ticks(tick_rows, period_sec)
         except Exception:
