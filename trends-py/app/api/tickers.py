@@ -203,11 +203,12 @@ async def get_ticker_history(ticker: str, year: Optional[int] = Query(default=No
 
 
 @router.get("/api/intraday/{ticker}")
-async def get_ticker_intraday(ticker: str, tf: str = "1m", date: Optional[str] = None):
+async def get_ticker_intraday(ticker: str, tf: str = "1m", date: Optional[str] = None, raw: bool = False):
     """Return intraday OHLC bars (1m or 5m) plus list of available days.
 
-    If `date` is provided (DD-Mon-YYYY), bars are aggregated from DB ticks for that day.
-    Otherwise, bars come from the in-memory deque (live/today).
+    If `date` is provided (DD-Mon-YYYY), bars come from DB ticks for that day.
+    If `raw=true`, returns unaggregated per-second ticks with all indicator columns.
+    Otherwise returns aggregated candles (1m or 5m). Live/today bars come from memory.
     """
     ticker = ticker.lower()
     if ticker not in _states:
@@ -215,7 +216,6 @@ async def get_ticker_intraday(ticker: str, tf: str = "1m", date: Optional[str] =
 
     from app.db import timescale as ts_db
 
-    # Fetch available days list (empty if DB not configured)
     days: list[str] = []
     try:
         days = await ts_db.get_available_days(ticker)
@@ -226,8 +226,22 @@ async def get_ticker_intraday(ticker: str, tf: str = "1m", date: Optional[str] =
 
     if date:
         try:
-            raw = await ts_db.get_ticks_for_day(ticker, date)
-            bars = ts_db.aggregate_ticks(raw, period_sec)
+            tick_rows = await ts_db.get_ticks_for_day(ticker, date)
+            if raw:
+                bars = [
+                    {
+                        "time":    r["ts_unix"],
+                        "open":    r["open"],    "high":    r["high"],
+                        "low":     r["low"],     "close":   r["close"],
+                        "ema5":    r.get("ema5"),  "ema20": r.get("ema20"),
+                        "ema50":   r.get("ema50"), "hl":    r.get("hl"),
+                        "avg":     r.get("avg"),   "support": r.get("support"),
+                        "rsi":     r.get("rsi"),
+                    }
+                    for r in tick_rows
+                ]
+            else:
+                bars = ts_db.aggregate_ticks(tick_rows, period_sec)
         except Exception:
             bars = []
     else:

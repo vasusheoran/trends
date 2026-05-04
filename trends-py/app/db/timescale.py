@@ -155,7 +155,8 @@ async def get_ticks_for_day(ticker: str, date: str) -> list[dict]:
     async with _pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT EXTRACT(EPOCH FROM ts)::BIGINT AS ts_unix,
-                   open, high, low, close
+                   open, high, low, close,
+                   ema5, ema20, ema50, hl, avg, support, rsi
             FROM ticker_ticks
             WHERE ticker = $1 AND date = $2
             ORDER BY ts ASC

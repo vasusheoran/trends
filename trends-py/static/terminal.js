@@ -165,23 +165,22 @@ function updateTickerUI(snapshot) {
         } else if (historyMode === 'live') {
             const dayPicker = document.getElementById('day-picker');
             if (!dayPicker || dayPicker.value === '') {
-                const period = historyLiveTF === '1m' ? 60 : 300;
-                const ts = snapshot.timestamp || Math.floor(Date.now() / 1000);
-                const periodTs = Math.floor(ts / period) * period;
                 if (historyView === 'chart' && candleSeries) {
+                    const period = historyLiveTF === '1m' ? 60 : 300;
+                    const ts = snapshot.timestamp || Math.floor(Date.now() / 1000);
+                    const periodTs = Math.floor(ts / period) * period;
                     candleSeries.update({ time: periodTs, open: snapshot.open, high: snapshot.high, low: snapshot.low, close: snapshot.close });
-                } else if (historyView === 'table' && currentHistoryData) {
-                    const bars = currentHistoryData.history;
-                    const idx = bars.findIndex(b => (b.time || b.timestamp) === periodTs);
-                    const candle = {
-                        time: periodTs,
-                        open:  idx >= 0 ? bars[idx].open : snapshot.open,
-                        high:  idx >= 0 ? Math.max(bars[idx].high, snapshot.high) : snapshot.high,
-                        low:   idx >= 0 ? Math.min(bars[idx].low,  snapshot.low)  : snapshot.low,
-                        close: snapshot.close,
+                } else if (historyView === 'table') {
+                    if (!currentHistoryData) currentHistoryData = { history: [] };
+                    const ts = snapshot.timestamp || Math.floor(Date.now() / 1000);
+                    const tick = {
+                        time: ts,
+                        open: snapshot.open, high: snapshot.high, low: snapshot.low, close: snapshot.close,
+                        hl: snapshot.hl, avg: snapshot.avg, ema5: snapshot.ema5, ema20: snapshot.ema20,
+                        ema50: snapshot.ema50, rsi: snapshot.rsi, support: snapshot.support,
                     };
-                    if (idx >= 0) bars[idx] = candle; else bars.push(candle);
-                    renderHistoryTable(bars);
+                    currentHistoryData.history.push(tick);
+                    insertLiveTableRow(tick);
                 }
             }
         }
@@ -370,7 +369,12 @@ function setHistoryView(mode) {
     historyView = mode;
     document.getElementById('btn-view-chart').classList.toggle('active', mode === 'chart');
     document.getElementById('btn-view-table').classList.toggle('active', mode === 'table');
-    renderCurrentHistoryView();
+    if (historyMode === 'live') {
+        const dayPicker = document.getElementById('day-picker');
+        loadIntraday(dayPicker?.value || null);
+    } else {
+        renderCurrentHistoryView();
+    }
 }
 
 async function setHistoryMode(mode) {
@@ -444,15 +448,17 @@ async function loadIntraday(date = null) {
     content.innerHTML = '<div class="history-loading">LOADING INTRADAY...</div>';
 
     try {
+        // Raw per-second ticks when table view + historical date selected
+        const useRaw = historyView === 'table' && !!date;
         let url = `/api/intraday/${activeId}?tf=${historyLiveTF}`;
         if (date) url += `&date=${encodeURIComponent(date)}`;
+        if (useRaw) url += `&raw=true`;
 
         const res = await fetch(url);
         const raw = await res.json();
 
-        // Support both new {bars, days} shape and old flat-array shape
         const bars = Array.isArray(raw) ? raw : (raw.bars || []);
-        const days  = Array.isArray(raw) ? [] : (raw.days || []);
+        const days = Array.isArray(raw) ? [] : (raw.days || []);
 
         // Populate day picker
         const picker = document.getElementById('day-picker');
@@ -465,8 +471,14 @@ async function loadIntraday(date = null) {
             picker.appendChild(opt);
         });
 
-        currentHistoryData = { history: bars };
-        renderCurrentHistoryView();
+        if (historyView === 'table' && !date) {
+            // Live today table: start empty, SSE appends per-second rows
+            currentHistoryData = { history: [] };
+            renderHistoryTable([]);
+        } else {
+            currentHistoryData = { history: bars };
+            renderCurrentHistoryView();
+        }
     } catch (e) {
         console.error('Intraday load failed:', e);
         content.className = 'idle';
@@ -585,57 +597,87 @@ function renderHistoryTable(bars) {
     const content = document.getElementById('history-content');
     content.className = '';
 
+    const isLive = historyMode === 'live';
     const fmt = (v, d=2) => v !== null && v !== undefined ? Number(v).toFixed(d) : '-';
 
     const barTs = b => b.timestamp || (typeof b.time === 'number' ? b.time : null) || dateToTimestamp(b.date) || 0;
-    const barDateStr = b => {
+    const barTimeStr = b => {
         const ts = b.timestamp || (typeof b.time === 'number' ? b.time : null);
         if (ts) {
-            return historyMode === 'live'
-                ? new Date(ts * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            return isLive
+                ? new Date(ts * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
                 : new Date(ts * 1000).toLocaleString();
         }
         return b.date || '-';
     };
 
-    // Sort logic
     const sorted = [...bars].sort((a, b) => {
         return historySortDir === 'desc' ? barTs(b) - barTs(a) : barTs(a) - barTs(b);
     });
 
-    const rows = sorted.map(b => {
-        const dateStr = barDateStr(b);
-        return `
-        <tr>
-            <td style="text-align:left;color:var(--text-muted)">${dateStr}</td>
-            <td>${fmt(b.close)}</td>
-            <td>${fmt(b.open)}</td>
-            <td>${fmt(b.high)}</td>
-            <td>${fmt(b.low)}</td>
-            <td>${fmt(b.hl)}</td>
-            <td>${fmt(b.avg)}</td>
-            <td>${fmt(b.ema5)}</td>
-            <td>${fmt(b.ema20)}</td>
-            <td>${fmt(b.ema50)}</td>
-            <td>${fmt(b.rsi, 1)}</td>
-            <td>${fmt(b.hold)}</td>
-            <td>${fmt(b.support)}</td>
-            <td style="color:var(--accent)">${fmt(b.bullish)}</td>
-        </tr>`}).join('');
-
     const icon = historySortDir === 'desc' ? '↓' : '↑';
+
+    let thead, rows;
+    if (isLive) {
+        thead = `<th style="text-align:left;cursor:pointer" onclick="toggleHistorySort()">Time ${icon}</th>
+            <th>Close</th><th>Open</th><th>High</th><th>Low</th>
+            <th>H/L</th><th>AVG</th><th>EMA-5</th><th>EMA-20</th><th>EMA-50</th>
+            <th>RSI</th><th>Support</th>`;
+        rows = sorted.map(b => `
+            <tr>
+                <td style="text-align:left;color:var(--text-muted)">${barTimeStr(b)}</td>
+                <td>${fmt(b.close)}</td><td>${fmt(b.open)}</td>
+                <td>${fmt(b.high)}</td><td>${fmt(b.low)}</td>
+                <td>${fmt(b.hl)}</td><td>${fmt(b.avg)}</td>
+                <td>${fmt(b.ema5)}</td><td>${fmt(b.ema20)}</td><td>${fmt(b.ema50)}</td>
+                <td>${fmt(b.rsi, 1)}</td><td>${fmt(b.support)}</td>
+            </tr>`).join('');
+    } else {
+        thead = `<th style="text-align:left;cursor:pointer" onclick="toggleHistorySort()">Date ${icon}</th>
+            <th>Close</th><th>Open</th><th>High</th><th>Low</th>
+            <th>H/L</th><th>AVG</th><th>EMA-5</th><th>EMA-20</th><th>EMA-50</th>
+            <th>RSI</th><th>Hold</th><th>Support</th><th>Bullish</th>`;
+        rows = sorted.map(b => `
+            <tr>
+                <td style="text-align:left;color:var(--text-muted)">${barTimeStr(b)}</td>
+                <td>${fmt(b.close)}</td><td>${fmt(b.open)}</td>
+                <td>${fmt(b.high)}</td><td>${fmt(b.low)}</td>
+                <td>${fmt(b.hl)}</td><td>${fmt(b.avg)}</td>
+                <td>${fmt(b.ema5)}</td><td>${fmt(b.ema20)}</td><td>${fmt(b.ema50)}</td>
+                <td>${fmt(b.rsi, 1)}</td><td>${fmt(b.hold)}</td>
+                <td>${fmt(b.support)}</td>
+                <td style="color:var(--accent)">${fmt(b.bullish)}</td>
+            </tr>`).join('');
+    }
+
     content.innerHTML = `
         <table class="history-table">
-            <thead>
-                <tr>
-                    <th style="text-align:left; cursor:pointer" onclick="toggleHistorySort()">Date ${icon}</th>
-                    <th>Close</th><th>Open</th><th>High</th><th>Low</th>
-                    <th>H/L</th><th>AVG</th><th>EMA-5</th><th>EMA-20</th><th>EMA-50</th>
-                    <th>RSI</th><th>Hold</th><th>Support</th><th>Bullish</th>
-                </tr>
-            </thead>
+            <thead><tr>${thead}</tr></thead>
             <tbody>${rows}</tbody>
         </table>`;
+}
+
+function insertLiveTableRow(tick) {
+    const tbody = document.querySelector('#history-content table tbody');
+    if (!tbody) return;
+    const fmt = (v, d=2) => v !== null && v !== undefined ? Number(v).toFixed(d) : '-';
+    const ts = tick.time || tick.timestamp;
+    const timeStr = ts
+        ? new Date(ts * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        : '-';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td style="text-align:left;color:var(--text-muted)">${timeStr}</td>
+        <td>${fmt(tick.close)}</td><td>${fmt(tick.open)}</td>
+        <td>${fmt(tick.high)}</td><td>${fmt(tick.low)}</td>
+        <td>${fmt(tick.hl)}</td><td>${fmt(tick.avg)}</td>
+        <td>${fmt(tick.ema5)}</td><td>${fmt(tick.ema20)}</td><td>${fmt(tick.ema50)}</td>
+        <td>${fmt(tick.rsi, 1)}</td><td>${fmt(tick.support)}</td>`;
+    if (historySortDir === 'desc') {
+        tbody.insertBefore(tr, tbody.firstChild);
+    } else {
+        tbody.appendChild(tr);
+    }
 }
 
 function closeHistory() {
