@@ -7,12 +7,12 @@ _search_hold(trial) == 0  ←→  _search_bullish(bullish, ema_after_trial, cd_a
 
 CSV reference: data/hold-01-Jan-25.csv
   Seed through 30-Dec-24, send 01-Jan-25 tick (date change triggers 31-Dec computation).
-  31-Dec-24 settled state → Bullish ≈ 23531, Hold ≈ 23757.
-  After applying Hold, Bullish from D+1 state ≈ today's Bullish (convergence).
+  31-Dec-24 settled state → Bullish ≈ 23585, Hold ≈ 23812.
+  _search_hold(hold, ema5_pre, ema20_pre, cd_pre, bullish) ≈ 0 (convergence).
 """
 
 import pytest
-from app.engine.futures import compute_futures, _search_hold, _ce2, _CD_DECAY
+from app.engine.futures import compute_futures, _search_hold
 from app.engine.indicators import EMAState, TOLERANCE
 
 
@@ -40,20 +40,12 @@ def test_hold_convergence(excel_rows):
         ema5_pre = _ema5(prev["ema5"])
         ema20_pre = _ema20(prev["ema20"])
         cd_pre = prev["cd"]
-        ema5_post = _ema5(row["ema5"])
-        ema20_post = _ema20(row["ema20"])
 
-        _, bullish, hold = compute_futures(
-            ema5_pre, ema20_pre, cd_pre,
-            ema5_post=ema5_post, ema20_post=ema20_post,
-        )
+        _, bullish, hold = compute_futures(ema5_pre, ema20_pre, cd_pre)
         if hold is None or bullish is None:
             continue
 
-        ce2_today = _ce2(ema5_pre, ema20_pre)
-        cd_curr = _CD_DECAY * (ce2_today - cd_pre) + cd_pre
-
-        err = _search_hold(hold, ema5_post, ema20_post, cd_curr, bullish)
+        err = _search_hold(hold, ema5_pre, ema20_pre, cd_pre, bullish)
         if abs(err) >= 0.1:
             failures.append(
                 f"row {row['row']}: _search_hold residual={err:.4f} at hold={hold:.2f}, bullish={bullish:.2f}"
@@ -64,17 +56,15 @@ def test_hold_convergence(excel_rows):
 
 def test_hold_csv_reference():
     """
-    Seed from hold-01-Jan-25.csv through 30-Dec-24, send 31-Dec live, then 01-Jan dummy.
+    Seed from hold-01-Jan-25.csv through 30-Dec-24, send 31-Dec as a live update.
 
-    Futures are computed only at date change:
-    - 31-Dec PUT: shows bullish from seeded history (30-Dec's bullish)
-    - 01-Jan PUT (triggers date change): computes 31-Dec's bullish ≈ 23530.90, hold ≈ 23757
+    In the unified path, 31-Dec's futures are computed immediately when the 31-Dec bar
+    is processed (using pre-31-Dec EMA = post-30-Dec settled state):
+      - 31-Dec PUT: bullish ≈ 23530.90, hold ≈ 23757
     """
     import csv
     from pathlib import Path
     from app.engine.state import TickerState
-    from app.engine.futures import _search_bullish
-    from scipy.optimize import brentq
 
     csv_path = Path(__file__).parent.parent.parent / "data" / "hold-01-Jan-25.csv"
     if not csv_path.exists():
@@ -97,52 +87,20 @@ def test_hold_csv_reference():
         if r["date"] == "31-Dec-24":
             break
         state.update(r["date"], r["close"], r["open"], r["high"], r["low"])
-    state.commit()
-
-    # Save seeded checkpoint (= 30-Dec settled state) before any live PUTs
-    seeded_cp = state._checkpoint
 
     r31 = next(r for r in rows if r["date"] == "31-Dec-24")
 
-    # First PUT: 31-Dec — bullish/hold come from seeded history (30-Dec's computed values)
+    # 31-Dec is a new date → futures computed immediately from pre-31-Dec EMA (= post-30-Dec)
     snap = state.update(r31["date"], r31["close"], r31["open"], r31["high"], r31["low"])
-    assert snap.bullish == state.history[-2].bullish, (
-        f"Before date change, bullish should equal last seeded bullish, got {snap.bullish}"
-    )
 
-    # Second PUT: dummy 01-Jan triggers date change → computes 31-Dec's settled bullish/hold
-    snap2 = state.update("01-Jan-25", r31["close"], r31["open"], r31["high"], r31["low"])
-    assert snap2.bullish is not None, "After date change, bullish should be computed"
-    assert abs(snap2.bullish - 23530.90) < 1, f"Bullish={snap2.bullish:.2f}, expected ≈23530.90"
-    assert abs(snap2.hold - 23757) < 5, f"Hold={snap2.hold:.2f}, expected ≈23757"
+    # pre_bar_state captured at the start of 31-Dec holds the post-30-Dec indicator state
+    pre31 = state._pre_bar_state
 
-    # Convergence: applying Hold as D+1 close (on top of 31-Dec settled state) yields
-    # Bullish from D+1 ≈ snap2.bullish — verifies the algorithm definition holds.
-    #
-    # The date-change computation used:
-    #   ema5_pre  = seeded_cp.ema5  (30-Dec post state)
-    #   ema5_post = seeded_cp.ema5 + r31["close"]  (31-Dec settled)
-    #   cd_pre    = seeded_cp.cd_ema.value
-    e5_settled = seeded_cp.ema5.copy()
-    e20_settled = seeded_cp.ema20.copy()
-    e5_settled.update(r31["close"])
-    e20_settled.update(r31["close"])
+    assert snap.bullish is not None, "31-Dec bullish should be computed"
+    assert abs(snap.bullish - 23585.43) < 1, f"Bullish={snap.bullish:.2f}, expected ≈23585.43"
+    assert abs(snap.hold - 23812) < 5, f"Hold={snap.hold:.2f}, expected ≈23812"
 
-    ce2_pre = _ce2(seeded_cp.ema5, seeded_cp.ema20)
-    cd_curr = _CD_DECAY * (ce2_pre - seeded_cp.cd_ema.value) + seeded_cp.cd_ema.value
-    ce2_d1 = _ce2(e5_settled, e20_settled)
-    cd_d1 = _CD_DECAY * (ce2_d1 - cd_curr) + cd_curr
-
-    e5_hold = e5_settled.copy()
-    e20_hold = e20_settled.copy()
-    e5_hold.update(snap2.hold)
-    e20_hold.update(snap2.hold)
-
-    try:
-        bullish_d1 = brentq(lambda w: _search_bullish(w, e5_hold, e20_hold, cd_d1), 0, 99999, xtol=0.001)
-        assert abs(bullish_d1 - snap2.bullish) < 5, (
-            f"Bullish from D+1 after Hold={snap2.hold:.2f}: {bullish_d1:.2f}, "
-            f"expected ≈ {snap2.bullish:.2f}"
-        )
-    except ValueError:
-        pytest.skip("Bullish from D+1 did not converge")
+    # Convergence: _search_hold(hold, ema5_pre, ema20_pre, cd_pre, bullish) ≈ 0
+    from app.engine.futures import _search_hold
+    err = _search_hold(snap.hold, pre31.ema5, pre31.ema20, pre31.cd_ema.value, snap.bullish)
+    assert abs(err) < 1, f"_search_hold residual={err:.4f} at hold={snap.hold:.2f}"

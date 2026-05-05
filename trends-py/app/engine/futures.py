@@ -143,44 +143,29 @@ def compute_futures(
     cd_pre: float,
     search_low: float = 0.0,
     search_high: float = 99999.0,
-    ema5_post: Optional[EMAState] = None,
-    ema20_post: Optional[EMAState] = None,
 ) -> Tuple[Optional[float], Optional[float], Optional[float]]:
     """
     Returns (support, bullish, hold).
 
-    ema5_pre / ema20_pre : EMA state BEFORE today's bar — used for Support.
-    cd_pre               : CD EMA value BEFORE updating with today's CE2.
-    ema5_post / ema20_post : EMA state AFTER today's bar — used for Bullish and Hold.
-                             If omitted, falls back to ema5_pre/ema20_pre.
+    All three use ema5_pre/ema20_pre — the EMA state BEFORE today's bar.
+    cd_pre: CD EMA value BEFORE updating with today's CE2.
 
     Hold: the minimum D+1 close such that Bullish from D+1 state == today's Bullish.
     """
-    # CD updated with today's CE2 (using pre-bar EMA per Go's calculateCD)
+    # CD updated with today's CE2 (using pre-bar EMA)
     ce2_today = _ce2(ema5_pre, ema20_pre)
     cd_curr = _CD_DECAY * (ce2_today - cd_pre) + cd_pre
 
-    # Support uses pre-bar EMA and post-CD value
     support = get_support(ema5_pre, ema20_pre, cd_curr, search_low, search_high)
-
-    # Bullish and Hold use post-bar EMA and cd_curr
-    if ema5_post is not None:
-        ema5_bull = ema5_post
-        ema20_bull = ema20_post
-        cd_for_bull = cd_curr
-    else:
-        ema5_bull = ema5_pre
-        ema20_bull = ema20_pre
-        cd_for_bull = cd_pre
 
     bullish = None
     try:
-        f_low = _search_bullish(search_low, ema5_bull, ema20_bull, cd_for_bull)
-        f_high = _search_bullish(search_high, ema5_bull, ema20_bull, cd_for_bull)
+        f_low = _search_bullish(search_low, ema5_pre, ema20_pre, cd_pre)
+        f_high = _search_bullish(search_high, ema5_pre, ema20_pre, cd_pre)
         if f_low * f_high < 0:
             bullish = brentq(
                 _search_bullish, search_low, search_high,
-                args=(ema5_bull, ema20_bull, cd_for_bull),
+                args=(ema5_pre, ema20_pre, cd_pre),
                 xtol=TOLERANCE, full_output=False,
             )
     except (ValueError, TypeError):
@@ -189,12 +174,12 @@ def compute_futures(
     hold = None
     if bullish is not None:
         try:
-            f_low = _search_hold(search_low, ema5_bull, ema20_bull, cd_for_bull, bullish)
-            f_high = _search_hold(search_high, ema5_bull, ema20_bull, cd_for_bull, bullish)
+            f_low = _search_hold(search_low, ema5_pre, ema20_pre, cd_pre, bullish)
+            f_high = _search_hold(search_high, ema5_pre, ema20_pre, cd_pre, bullish)
             if f_low * f_high < 0:
                 hold = brentq(
                     _search_hold, search_low, search_high,
-                    args=(ema5_bull, ema20_bull, cd_for_bull, bullish),
+                    args=(ema5_pre, ema20_pre, cd_pre, bullish),
                     xtol=TOLERANCE, full_output=False,
                 )
         except (ValueError, TypeError):

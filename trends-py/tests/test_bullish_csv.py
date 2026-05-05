@@ -18,7 +18,7 @@ CSV_PATH = ROOT / "data" / "bullish-01-Jan-25.csv"
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scripts.compute_bullish_from_csv import compute_from_csv
-from app.engine.futures import _bp_series, _ce2, _CD_DECAY, get_support
+from app.engine.futures import _ce2, _CD_DECAY
 from app.engine.indicators import TOLERANCE
 
 CONVERGENCE_TOLERANCE = TOLERANCE * 5
@@ -44,7 +44,7 @@ def test_bullish_csv_2day_convergence():
 
     state = TickerState(ticker="TEST")
     for _, row in real_df.iterrows():
-        state._update_commit(
+        state.update(
             date=str(row["Date"]),
             close=float(row["Close"]),
             open_=float(row["Open"]),
@@ -52,35 +52,18 @@ def test_bullish_csv_2day_convergence():
             low=float(row["Low"]),
         )
 
-    # Bullish uses post-bar EMA state and cd_curr
-    ema5_pre = state._futures_ema5_pre.copy()
-    ema20_pre = state._futures_ema20_pre.copy()
-    cd_pre = state._futures_cd_pre
-    ce2_today = _ce2(ema5_pre, ema20_pre)
-    cd_curr = _CD_DECAY * (ce2_today - cd_pre) + cd_pre
-
-    # Post-bar EMA (state.ema5/ema20 after all commits)
-    ema5_post = state.ema5.copy()
-    ema20_post = state.ema20.copy()
+    # _pre_bar_state holds the state before the last bar was applied
+    ps = state._pre_bar_state
+    ema5_pre = ps.ema5.copy()
+    ema20_pre = ps.ema20.copy()
+    cd_pre = ps.cd_ema.value
 
     _, bullish = compute_from_csv(str(CSV_PATH))
     assert bullish is not None, "Bullish search must find a bracket"
 
-    # Verify 2-day convergence from post-bar state (matches Go's calculateBR)
-    # Day+1 CD step
-    ce2_d1 = _ce2(ema5_post, ema20_post)
-    cd_d1 = _CD_DECAY * (ce2_d1 - cd_curr) + cd_curr
-    e5_d1 = ema5_post.copy(); e5_d1.update(bullish)
-    e20_d1 = ema20_post.copy(); e20_d1.update(bullish)
-
-    # Day+2 CD step
-    ce2_d2 = _ce2(e5_d1, e20_d1)
-    cd_d2 = _CD_DECAY * (ce2_d2 - cd_d1) + cd_d1
-
-    sup_d2 = get_support(e5_d1, e20_d1, cd_d2)
-    assert sup_d2 is not None, "Support(Day+2) must be computable"
-
-    diff = abs(sup_d2 - bullish)
+    # Verify 2-day convergence from pre-bar state (AGENTS.md spec)
+    from app.engine.futures import _search_bullish
+    diff = abs(_search_bullish(bullish, ema5_pre, ema20_pre, cd_pre))
     assert diff <= CONVERGENCE_TOLERANCE, (
         f"|Support(Day+2) - W|={diff:.6f} > {CONVERGENCE_TOLERANCE} at bullish={bullish:.2f}"
     )

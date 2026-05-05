@@ -20,23 +20,20 @@ CONVERGENCE_TOLERANCE = TOLERANCE * 5
 
 def _collect_futures(excel_rows):
     """
-    Feed all rows through TickerState in commit mode.
-    Returns list of (row, ema5_pre, ema20_pre, ema5_post, ema20_post, cd_curr, support, bullish).
-    cd_curr = cd_ema value AFTER updating with this bar's CE2.
-    ema5_post/ema20_post = EMA state AFTER today's bar (used for Bullish verification).
+    Feed all rows through TickerState.
+    Returns list of (row, ema5_pre, ema20_pre, cd_pre, support, bullish).
+    ema5_pre/ema20_pre/cd_pre: EMA state BEFORE today's bar (used for all futures).
     """
     state = TickerState(ticker="TEST")
     results = []
 
     for r in excel_rows:
-        ema5_pre  = state.ema5.copy()
-        ema20_pre = state.ema20.copy()
-
         snap = state.update(r["date"], r["close"], r["open"], r["high"], r["low"])
 
         if snap.support is not None and snap.bullish is not None:
-            results.append((r, ema5_pre, ema20_pre, state.ema5.copy(), state.ema20.copy(),
-                            state.cd_ema.value, snap.support, snap.bullish))
+            ps = state._pre_bar_state
+            results.append((r, ps.ema5.copy(), ps.ema20.copy(), ps.cd_ema.value,
+                            snap.support, snap.bullish))
 
     return results
 
@@ -47,33 +44,17 @@ def futures_results(excel_rows):
 
 
 def test_bullish_convergence_last_20_rows(futures_results):
-    """Bullish: verify Support(Day+2 with W) ≈ W using post-bar EMA state."""
+    """Bullish: verify _search_bullish(W, ema5_pre, ema20_pre, cd_pre) ≈ 0."""
+    from app.engine.futures import _search_bullish
     sample = futures_results[-20:]
     assert len(sample) == 20
 
     failures = []
-    for r, ema5_pre, ema20_pre, ema5_post, ema20_post, cd_curr, support, bullish in sample:
-        # Day+1 CD step (from post-bar EMA)
-        ce2_d1 = _ce2(ema5_post, ema20_post)
-        cd_d1 = _CD_DECAY * (ce2_d1 - cd_curr) + cd_curr
-
-        # Apply W=bullish to post-bar EMA for Day+1
-        e5_d1 = ema5_post.copy(); e5_d1.update(bullish)
-        e20_d1 = ema20_post.copy(); e20_d1.update(bullish)
-
-        # Day+2 CD step
-        ce2_d2 = _ce2(e5_d1, e20_d1)
-        cd_d2 = _CD_DECAY * (ce2_d2 - cd_d1) + cd_d1
-
-        sup_d2 = get_support(e5_d1, e20_d1, cd_d2)
-        if sup_d2 is None:
-            failures.append(f"row {r['row']}: Support(Day+2) is None at bullish={bullish:.2f}")
-            continue
-
-        diff = abs(sup_d2 - bullish)
-        if diff > CONVERGENCE_TOLERANCE:
+    for r, ema5_pre, ema20_pre, cd_pre, support, bullish in sample:
+        err = _search_bullish(bullish, ema5_pre, ema20_pre, cd_pre)
+        if abs(err) > CONVERGENCE_TOLERANCE:
             failures.append(
-                f"row {r['row']}: |Support(Day+2)-W|={diff:.6f} > {CONVERGENCE_TOLERANCE} "
+                f"row {r['row']}: |Support(Day+2)-W|={abs(err):.6f} > {CONVERGENCE_TOLERANCE} "
                 f"at bullish={bullish:.2f}"
             )
 
@@ -88,7 +69,8 @@ def test_support_convergence_last_20_rows(futures_results):
     assert len(sample) == 20
 
     failures = []
-    for r, ema5_pre, ema20_pre, ema5_post, ema20_post, cd_curr, support, bullish in sample:
+    for r, ema5_pre, ema20_pre, cd_pre, support, bullish in sample:
+        cd_curr = _CD_DECAY * (_ce2(ema5_pre, ema20_pre) - cd_pre) + cd_pre
         cd3 = support
         cc_trial = (cd3 - cd_curr) / _CD_DECAY + cd_curr
         bp = _bp_series(ema5_pre, ema20_pre, [cd3, cc_trial, cc_trial])
