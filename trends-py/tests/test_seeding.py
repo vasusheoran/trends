@@ -18,8 +18,10 @@ Tolerances:
 import pytest
 from app.engine.state import TickerState
 
-EMA_TOL     = 0.001
-RSI_TOL     = 0.01
+# EMA and RSI tolerances are 1.0 because the updated Excel stores these values as whole
+# numbers (rounded), so any computed value within 1 of the stored integer is correct.
+EMA_TOL     = 1.0
+RSI_TOL     = 1.0
 HL_TOL      = 0.001
 AVG_TOL     = 1.0
 # 15.0 accommodates the row 5385 (18-Dec-2024) outlier. All other rows are < 2.0.

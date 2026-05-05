@@ -155,8 +155,6 @@ async def seed_ticker(
         detection = "fallback (B/W/X/Y/Z)" if using_fallback else "Excel headers"
         wb.close()
 
-    # Switch to live mode
-    state.commit()
     log.info("Successfully seeded %s: %d bars loaded via %s", ticker, count, detection)
 
     return {

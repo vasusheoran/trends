@@ -50,102 +50,48 @@ async def get_tickers():
 async def get_ticker_state(ticker: str):
     """
     Return current indicator and futures values for a seeded ticker.
-    Uses the checkpoint EMA state (end of seeded history) plus the last live bar if present.
+    Reflects the most recent update() call — shows live close with day-pinned futures.
     """
     ticker = ticker.lower()
     if ticker not in _states:
         raise HTTPException(status_code=404, detail=f"Ticker '{ticker}' not found")
 
     state = _states[ticker]
-    cp = state._checkpoint
 
-    if cp is None:
-        raise HTTPException(status_code=400, detail="Ticker is still in seed/commit mode — call commit first")
+    if not state.history:
+        raise HTTPException(status_code=400, detail="Ticker has no data — send at least one tick first")
 
-    e5 = cp.ema5.copy()
-    e20 = cp.ema20.copy()
-
-    # Last bar OHLC
-    last_bar = cp.bars[-1] if cp.bars else None
-    highs = deque(b.high for b in cp.bars)
-    hl = calc_hl(highs)
-    sma10_val = cp.sma10._total / len(cp.sma10._buf) if len(cp.sma10._buf) == cp.sma10.period else None
-    sma50_val = cp.sma50._total / len(cp.sma50._buf) if len(cp.sma50._buf) == cp.sma50.period else None
-    avg = calc_avg(sma10_val, sma50_val)
-    rsi_val = cp.rsi._rsi() if cp.rsi.seeded else None
+    live = state.history[-1]
 
     result = {
         "ticker": ticker,
-        "date": last_bar.date if last_bar else None,
-        "close": last_bar.close if last_bar else None,
-        "open": last_bar.open if last_bar else None,
-        "high": last_bar.high if last_bar else None,
-        "low": last_bar.low if last_bar else None,
-        "hl": round(hl, 4) if hl is not None else None,
-        "avg": round(avg, 4) if avg is not None else None,
-        "ema5": round(e5.value, 4) if e5.value else None,
-        "ema20": round(e20.value, 4) if e20.value else None,
-        "rsi": round(rsi_val, 2) if rsi_val is not None else None,
-        "bars_seeded": len(cp.bars),
-        "cd": round(cp.cd_ema.value, 4) if cp.cd_ema.seeded else None,
-        "support": None,
-        "bullish": None,
+        "date":  live.date,
+        "close": live.close,
+        "open":  live.open,
+        "high":  live.high,
+        "low":   live.low,
+        "hl":    round(live.hl, 4)    if live.hl    is not None else None,
+        "avg":   round(live.avg, 4)   if live.avg   is not None else None,
+        "ema5":  round(live.ema5, 4)  if live.ema5  is not None else None,
+        "ema20": round(live.ema20, 4) if live.ema20 is not None else None,
+        "ema50": round(live.ema50, 4) if live.ema50 is not None else None,
+        "rsi":   round(live.rsi, 2)   if live.rsi   is not None else None,
+        "support": round(live.support, 4) if live.support is not None else None,
+        "bullish": round(live.bullish, 4) if live.bullish is not None else None,
+        "hold":    round(live.hold, 4)    if live.hold    is not None else None,
+        "bars_seeded": len(state.bars),
+        "cd": round(state.cd_ema.value, 4) if state.cd_ema.seeded else None,
         "ce2": None,
         "cd_curr": None,
     }
 
-    if cp.cd_ema.seeded and e5.value and e20.value:
+    if state.cd_ema.seeded and state.ema5.value and state.ema20.value:
+        e5 = state.ema5.copy()
+        e20 = state.ema20.copy()
         ce2 = _ce2(e5, e20)
-        cd_curr = _CD_DECAY * (ce2 - cp.cd_ema.value) + cp.cd_ema.value
+        cd_curr = _CD_DECAY * (ce2 - state.cd_ema.value) + state.cd_ema.value
         result["ce2"] = round(ce2, 4)
         result["cd_curr"] = round(cd_curr, 4)
-
-        # Support uses pre-last-bar EMA; Bullish uses post-last-bar EMA (matches Go timing)
-        if cp.ema5_pre is not None and cp.cd_pre is not None:
-            support, bullish, hold = compute_futures(
-                cp.ema5_pre.copy(), cp.ema20_pre.copy(), cp.cd_pre,
-                ema5_post=e5, ema20_post=e20,
-            )
-        else:
-            support, bullish, hold = compute_futures(e5, e20, cp.cd_ema.value)
-        result["support"] = round(support, 4) if support else None
-        result["bullish"] = round(bullish, 4) if bullish else None
-        result["hold"] = round(hold, 4) if hold else None
-
-    # Overlay live bar data if available (most recent PUT)
-    if state._live_date is not None and state.history and state.history[-1].date == state._live_date:
-        live = state.history[-1]
-        result.update({
-            "date":    live.date,
-            "close":   live.close,
-            "open":    live.open,
-            "high":    live.high,
-            "low":     live.low,
-            "hl":      round(live.hl, 4)    if live.hl    is not None else None,
-            "avg":     round(live.avg, 4)   if live.avg   is not None else None,
-            "ema5":    round(live.ema5, 4)  if live.ema5  is not None else None,
-            "ema20":   round(live.ema20, 4) if live.ema20 is not None else None,
-            "ema50":   round(live.ema50, 4) if live.ema50 is not None else None,
-            "rsi":     round(live.rsi, 2)   if live.rsi   is not None else None,
-            "support": round(state._live_support, 4) if state._live_support is not None else None,
-            "bullish": round(state._live_bullish, 4) if state._live_bullish is not None else None,
-            "hold":    round(state._live_hold, 4)    if state._live_hold    is not None else None,
-        })
-    elif not state._live_date and len(state.history) >= 2:
-        # No live ticks yet — show applicable values (previous day's) rather than checkpoint computation
-        prev = state.history[-2]
-        if prev.support is not None:
-            result["support"] = round(prev.support, 4)
-        if prev.bullish is not None:
-            result["bullish"] = round(prev.bullish, 4)
-        if prev.hold is not None:
-            result["hold"] = round(prev.hold, 4)
-
-    # Include last live support for debugging
-    if state._live_support is not None:
-        result["live_support"] = round(state._live_support, 4)
-    if state._live_bullish is not None:
-        result["live_bullish"] = round(state._live_bullish, 4)
 
     return result
 

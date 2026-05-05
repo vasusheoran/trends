@@ -1,11 +1,17 @@
 """
 Tests for indicator calculations against Excel ground truth.
-Asserts within TOLERANCE = 0.001 (matches Go TOLERANCE).
+EMA and RSI tolerances are 1.0 because the updated Excel stores these as whole numbers.
+H/L and AVG tolerances are 0.001 and 1.0 respectively.
 """
 
 import pytest
 from app.engine.state import TickerState
-from app.engine.indicators import TOLERANCE
+
+# The updated Excel stores EMA and RSI as integers; any value within 1.0 is correct.
+_EMA_TOL = 1.0
+_RSI_TOL = 1.0
+_HL_TOL  = 0.001
+_AVG_TOL = 1.0
 
 # Run full history through and spot-check the last N rows
 _SPOT_CHECK_LAST = 20
@@ -21,7 +27,7 @@ def _feed_and_collect(excel_rows):
     return snapshots
 
 
-def _close_enough(actual, expected, tol=TOLERANCE):
+def _close_enough(actual, expected, tol=_EMA_TOL):
     if actual is None and expected is None:
         return True
     if actual is None or expected is None:
@@ -91,7 +97,7 @@ class TestRSI:
         for r, snap in pairs[-_SPOT_CHECK_LAST:]:
             if r["rsi"] is None:
                 continue
-            if not _close_enough(snap.rsi, r["rsi"], tol=0.01):
+            if not _close_enough(snap.rsi, r["rsi"], tol=_RSI_TOL):
                 failures.append(
                     f"row={r['row']} date={r['date']}: got={snap.rsi:.4f} expected={r['rsi']:.4f}"
                 )

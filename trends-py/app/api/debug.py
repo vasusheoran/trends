@@ -23,15 +23,18 @@ async def debug_ticker(ticker: str):
         raise HTTPException(status_code=404, detail=f"Ticker '{ticker}' not found")
 
     state = _states[ticker]
-    cp = state._checkpoint
-    if cp is None:
-        raise HTTPException(status_code=400, detail="Ticker is in commit mode")
-    if not cp.cd_ema.seeded:
-        raise HTTPException(status_code=400, detail="CD state not seeded yet")
+    if not state.history:
+        raise HTTPException(status_code=400, detail="No data loaded for this ticker")
+    if not state.cd_ema.seeded:
+        raise HTTPException(status_code=400, detail="CD state not seeded yet (need ~105 bars)")
 
-    e5 = cp.ema5.copy()
-    e20 = cp.ema20.copy()
-    cd_pre = cp.cd_ema.value
+    # Use pre-bar state for ema5/ema20 so futures match the day's pinned values
+    ps = state._pre_bar_state
+    if ps is None:
+        raise HTTPException(status_code=400, detail="No pre-bar state available")
+    e5 = ps.ema5.copy()
+    e20 = ps.ema20.copy()
+    cd_pre = ps.cd_ema.value
 
     ce2 = _ce2(e5, e20)
     cd_curr = _CD_DECAY * (ce2 - cd_pre) + cd_pre

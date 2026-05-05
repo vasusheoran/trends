@@ -53,11 +53,11 @@ def compute_from_csv(csv_path: str):
 
     current_date = trial_df.iloc[0]["Date"] if not trial_df.empty else "(unknown)"
 
-    # Seed EMA + CD state from all real rows; capture pre-last-bar state for futures
+    # Seed EMA + CD state from all real rows
     state = TickerState(ticker="CSV")
     last_snap = None
     for _, row in real_df.iterrows():
-        last_snap = state._update_commit(
+        last_snap = state.update(
             date=str(row["Date"]),
             close=float(row["Close"]),
             open_=float(row["Open"]),
@@ -66,10 +66,11 @@ def compute_from_csv(csv_path: str):
         )
 
     last_real = real_df.iloc[-1]
-    # Pre-last-bar state is what compute_futures needs (one CE2 step behind)
-    ema5_pre = state._futures_ema5_pre
-    ema20_pre = state._futures_ema20_pre
-    cd_pre = state._futures_cd_pre
+    # _pre_bar_state holds the indicator state captured before the last bar was applied
+    ps = state._pre_bar_state
+    ema5_pre = ps.ema5
+    ema20_pre = ps.ema20
+    cd_pre = ps.cd_ema.value
 
     print(f"CSV      : {csv_path}")
     print(f"Seeded   : {len(real_df)} rows  (up to {last_real['Date']})")

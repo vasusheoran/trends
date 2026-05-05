@@ -68,7 +68,6 @@ async def seed_state(state: "TickerState", ticker: str, excel_path: str) -> str:
     """
     Seed state using DB if available, else Excel.
     Returns 'db' or 'excel' indicating which source was used.
-    Calls state.commit() after loading to switch to live mode.
     """
     from app.db.timescale import get_row_count
     count = await get_row_count(ticker)
@@ -76,5 +75,4 @@ async def seed_state(state: "TickerState", ticker: str, excel_path: str) -> str:
         await seed_from_db(state, ticker)
     else:
         seed_from_excel(state, excel_path)
-    state.commit()
     return "db" if count >= 50 else "excel"

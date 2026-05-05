@@ -24,7 +24,7 @@ restart: down build up
 logs:
 	docker compose logs -f app
 
-rebuild-app:
+rebuild:
 	docker compose build app && docker compose up -d --no-deps app
 
 # ── Backup ────────────────────────────────────────────────────────────────────

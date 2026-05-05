@@ -35,29 +35,43 @@ def excel_rows():
         low = ws_d[f"Z{row}"].value
         if not all([date, close, open_, high, low]):
             continue
+        try:
+            close = float(close)
+            open_ = float(open_)
+            high  = float(high)
+            low   = float(low)
+        except (TypeError, ValueError):
+            continue  # skip embedded header rows or non-numeric cells
         if hasattr(date, "strftime"):
             date = date.strftime("%d-%b-%Y")
 
         # Only trust HL when the Excel formula is the expected MIN(prev 3 highs) pattern.
         # Some rows have hardcoded values or broken formula references — skip those.
         hl_formula = ws_f[f"AD{row}"].value
-        hl = ws_d[f"AD{row}"].value if (isinstance(hl_formula, str) and hl_formula.upper().startswith("=MIN(Y")) else None
+        hl_raw = ws_d[f"AD{row}"].value if (isinstance(hl_formula, str) and hl_formula.upper().startswith("=MIN(Y")) else None
+
+        def _f(v):
+            """Convert cell value to float, returning None for missing/non-numeric."""
+            try:
+                return float(v) if v is not None else None
+            except (TypeError, ValueError):
+                return None
 
         rows.append({
             "row": row,
             "date": str(date),
-            "close": float(close),
-            "open": float(open_),
-            "high": float(high),
-            "low": float(low),
-            "hl":      hl,
-            "avg":     ws_d[f"AR{row}"].value,
-            "ema5":    ws_d[f"AS{row}"].value,
-            "ema20":   ws_d[f"BN{row}"].value,   # BN = EMA-20 (2/21) in new file
-            "rsi":     ws_d[f"BV{row}"].value,
-            "cd":      ws_d[f"BZ{row}"].value,   # BZ = CD (EMA of daily values)
-            "support": ws_d[f"CC{row}"].value,   # CC = Support (binary search result)
-            "bullish": ws_d[f"CB{row}"].value,   # CB = Bullish (Support fixed point)
+            "close": close,
+            "open":  open_,
+            "high":  high,
+            "low":   low,
+            "hl":      _f(hl_raw),
+            "avg":     _f(ws_d[f"AR{row}"].value),
+            "ema5":    _f(ws_d[f"AS{row}"].value),
+            "ema20":   _f(ws_d[f"BN{row}"].value),   # BN = EMA-20 (2/21) in new file
+            "rsi":     _f(ws_d[f"BV{row}"].value),
+            "cd":      _f(ws_d[f"BZ{row}"].value),   # BZ = CD (EMA of daily values)
+            "support": _f(ws_d[f"CC{row}"].value),   # CC = Support (binary search result)
+            "bullish": _f(ws_d[f"CB{row}"].value),   # CB = Bullish (Support fixed point)
         })
     wb_data.close()
     wb_formula.close()

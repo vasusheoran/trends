@@ -4,13 +4,17 @@ networks:
 
 services:
   app:
-    image: trends-py:latest
     build:
       context: .
       dockerfile: Dockerfile
+    pull_policy: never
     networks: [trends-net]
     ports:
       - "5001:5001"
     environment:
       DATABASE_URL: postgresql://trends:${DB_PASSWORD:-trends}@db:5432/trends
+      EXCEL_SEED_PATH: /data/Final-bullish-ce.xlsx
+      # Optional — set in Portainer env vars to enable Zerodha feed
+      # ZERODHA_API_KEY: ""
+      # ZERODHA_ACCESS_TOKEN: ""
     restart: unless-stopped
